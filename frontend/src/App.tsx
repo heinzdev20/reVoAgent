@@ -5,6 +5,17 @@ import { Dashboard } from './components/Dashboard';
 import { PlaceholderView } from './components/PlaceholderView';
 import { EnhancedCodeGenerator } from './components/agents/EnhancedCodeGenerator';
 import { DebugAgent } from './components/agents/DebugAgent';
+import TestingAgent from './components/agents/TestingAgent';
+import DeployAgent from './components/agents/DeployAgent';
+import BrowserAgent from './components/agents/BrowserAgent';
+import Projects from './components/Projects';
+import Workflows from './components/Workflows';
+import Analytics from './components/Analytics';
+import ModelRegistry from './components/ModelRegistry';
+import Settings from './components/Settings';
+import Security from './components/Security';
+import Monitoring from './components/Monitoring';
+import ResourceManagement from './components/ResourceManagement';
 import { useWebSocket } from './hooks/useWebSocket';
 import type { TabId } from './types';
 import { 
@@ -35,31 +46,13 @@ function App() {
         return <Dashboard />;
       
       case 'projects':
-        return (
-          <PlaceholderView
-            title="Projects Management"
-            description="Manage your coding projects with AI-powered insights, automated workflows, and collaborative features."
-            icon={<FolderOpen className="w-16 h-16 mx-auto text-blue-500" />}
-          />
-        );
+        return <Projects />;
       
       case 'workflows':
-        return (
-          <PlaceholderView
-            title="Workflow Orchestration"
-            description="Design and manage complex multi-agent workflows with parallel execution and intelligent coordination."
-            icon={<GitBranch className="w-16 h-16 mx-auto text-purple-500" />}
-          />
-        );
+        return <Workflows />;
       
       case 'analytics':
-        return (
-          <PlaceholderView
-            title="Analytics & Insights"
-            description="Deep analytics on agent performance, code quality metrics, and system optimization insights."
-            icon={<BarChart3 className="w-16 h-16 mx-auto text-green-500" />}
-          />
-        );
+        return <Analytics />;
       
       case 'code-generator':
         return <EnhancedCodeGenerator />;
@@ -68,58 +61,22 @@ function App() {
         return <DebugAgent />;
       
       case 'testing-agent':
-        return (
-          <PlaceholderView
-            title="Testing Agent"
-            description="Comprehensive test generation and execution with coverage analysis and quality assurance."
-            icon={<TestTube className="w-16 h-16 mx-auto text-cyan-500" />}
-          />
-        );
+        return <TestingAgent />;
       
       case 'deploy-agent':
-        return (
-          <PlaceholderView
-            title="Deploy Agent"
-            description="Automated deployment pipelines with Docker, Kubernetes, and monitoring integration."
-            icon={<Rocket className="w-16 h-16 mx-auto text-orange-500" />}
-          />
-        );
+        return <DeployAgent />;
       
       case 'browser-agent':
-        return (
-          <PlaceholderView
-            title="Browser Agent"
-            description="Playwright-powered browser automation with AI-driven web interaction and testing capabilities."
-            icon={<Globe className="w-16 h-16 mx-auto text-indigo-500" />}
-          />
-        );
+        return <BrowserAgent />;
       
       case 'model-registry':
-        return (
-          <PlaceholderView
-            title="Model Registry"
-            description="Manage AI models with performance tracking, auto-quantization, and resource optimization."
-            icon={<Database className="w-16 h-16 mx-auto text-violet-500" />}
-          />
-        );
+        return <ModelRegistry />;
       
       case 'settings':
-        return (
-          <PlaceholderView
-            title="Settings"
-            description="Configure system preferences, integrations, and personalization options."
-            icon={<Settings className="w-16 h-16 mx-auto text-gray-500" />}
-          />
-        );
+        return <Settings />;
       
       case 'security':
-        return (
-          <PlaceholderView
-            title="Security Center"
-            description="Security monitoring, access control, and compliance management for your AI platform."
-            icon={<Shield className="w-16 h-16 mx-auto text-emerald-500" />}
-          />
-        );
+        return <Security />;
       
       case 'monitoring':
         return (
