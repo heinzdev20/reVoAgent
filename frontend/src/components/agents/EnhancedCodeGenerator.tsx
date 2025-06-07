@@ -57,6 +57,8 @@ export function EnhancedCodeGenerator() {
   const [templates, setTemplates] = useState<CodeGenTemplate[]>([]);
   const [generatedCode, setGeneratedCode] = useState<string>('');
   const [generationResult, setGenerationResult] = useState<any>(null);
+  const [selectedFile, setSelectedFile] = useState<string>('main.py');
+  const [codeFiles, setCodeFiles] = useState<Record<string, string>>({});
 
   const languages = ['python', 'typescript', 'javascript', 'java', 'go', 'rust'];
   const frameworks = {
@@ -144,6 +146,22 @@ export function EnhancedCodeGenerator() {
       setGeneratedCode(result.generated_code || '');
       setGenerationResult(result);
       
+      // Create multiple files for a complete project structure
+      const projectFiles = {
+        'main.py': result.generated_code || '',
+        'models.py': generateModelsFile(),
+        'schemas.py': generateSchemasFile(),
+        'auth.py': generateAuthFile(),
+        'requirements.txt': generateRequirementsFile(),
+        'Dockerfile': generateDockerfile(),
+        'docker-compose.yml': generateDockerCompose(),
+        'tests/test_main.py': generateTestFile(),
+        'README.md': generateReadmeFile()
+      };
+      
+      setCodeFiles(projectFiles);
+      setSelectedFile('main.py');
+      
       // Set up progress to show completion
       setProgress({
         task_id: result.task_id,
@@ -157,17 +175,7 @@ export function EnhancedCodeGenerator() {
         },
         estimated_completion: 'Completed',
         quality_score: result.quality_score || 95,
-        files_generated: [
-          'main.py',
-          'models.py', 
-          'schemas.py',
-          'auth.py',
-          'requirements.txt',
-          'Dockerfile',
-          'docker-compose.yml',
-          'tests/test_main.py',
-          'README.md'
-        ],
+        files_generated: Object.keys(projectFiles),
         live_preview: result.generated_code || ''
       });
       
@@ -206,6 +214,342 @@ export function EnhancedCodeGenerator() {
     navigator.clipboard.writeText(text);
   };
 
+  const getLanguageFromFile = (fileName: string): string => {
+    const extension = fileName.split('.').pop()?.toLowerCase();
+    switch (extension) {
+      case 'py': return 'python';
+      case 'js': return 'javascript';
+      case 'ts': return 'typescript';
+      case 'tsx': return 'typescript';
+      case 'jsx': return 'javascript';
+      case 'yml':
+      case 'yaml': return 'yaml';
+      case 'json': return 'json';
+      case 'md': return 'markdown';
+      case 'txt': return 'text';
+      default: return 'text';
+    }
+  };
+
+  // File generation helpers
+  const generateModelsFile = () => `# Database Models
+from sqlalchemy import Column, Integer, String, DateTime, Float, Boolean, ForeignKey
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
+from datetime import datetime
+
+Base = declarative_base()
+
+class User(Base):
+    __tablename__ = "users"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String, unique=True, index=True)
+    username = Column(String, unique=True, index=True)
+    hashed_password = Column(String)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class Product(Base):
+    __tablename__ = "products"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, index=True)
+    description = Column(String)
+    price = Column(Float)
+    stock_quantity = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class Order(Base):
+    __tablename__ = "orders"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    total_amount = Column(Float)
+    status = Column(String, default="pending")
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    user = relationship("User")
+`;
+
+  const generateSchemasFile = () => `# Pydantic Schemas
+from pydantic import BaseModel, EmailStr
+from datetime import datetime
+from typing import Optional
+
+class UserBase(BaseModel):
+    email: EmailStr
+    username: str
+
+class UserCreate(UserBase):
+    password: str
+
+class UserResponse(UserBase):
+    id: int
+    is_active: bool
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class ProductBase(BaseModel):
+    name: str
+    description: str
+    price: float
+    stock_quantity: int
+
+class ProductCreate(ProductBase):
+    pass
+
+class ProductResponse(ProductBase):
+    id: int
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class OrderBase(BaseModel):
+    user_id: int
+    total_amount: float
+
+class OrderCreate(OrderBase):
+    pass
+
+class OrderResponse(OrderBase):
+    id: int
+    status: str
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+`;
+
+  const generateAuthFile = () => `# Authentication
+from fastapi import HTTPException, Depends, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from passlib.context import CryptContext
+from jose import JWTError, jwt
+from datetime import datetime, timedelta
+import os
+
+SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-here")
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+security = HTTPBearer()
+
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+def get_password_hash(password):
+    return pwd_context.hash(password)
+
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+    return username
+`;
+
+  const generateRequirementsFile = () => `fastapi==0.104.1
+uvicorn==0.24.0
+sqlalchemy==2.0.23
+psycopg2-binary==2.9.9
+pydantic==2.5.0
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.6
+pytest==7.4.3
+pytest-asyncio==0.21.1
+httpx==0.25.2
+`;
+
+  const generateDockerfile = () => `FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+EXPOSE 8000
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+`;
+
+  const generateDockerCompose = () => `version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/ecommerce
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: ecommerce
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+`;
+
+  const generateTestFile = () => `# Tests
+import pytest
+from fastapi.testclient import TestClient
+from main import app
+
+client = TestClient(app)
+
+def test_read_root():
+    response = client.get("/")
+    assert response.status_code == 200
+    assert "message" in response.json()
+
+def test_create_item():
+    response = client.post(
+        "/items/",
+        json={"name": "Test Item", "description": "Test Description"}
+    )
+    assert response.status_code == 200
+    assert response.json()["name"] == "Test Item"
+
+def test_read_items():
+    response = client.get("/items/")
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)
+
+def test_read_item():
+    # First create an item
+    create_response = client.post(
+        "/items/",
+        json={"name": "Test Item", "description": "Test Description"}
+    )
+    item_id = create_response.json()["id"]
+    
+    # Then read it
+    response = client.get(f"/items/{item_id}")
+    assert response.status_code == 200
+    assert response.json()["id"] == item_id
+`;
+
+  const generateReadmeFile = () => `# E-Commerce API
+
+A complete e-commerce API built with FastAPI, featuring user authentication, product catalog, shopping cart, and payment integration.
+
+## Features
+
+- 🔐 User Authentication with JWT tokens
+- 📦 Product Management (CRUD operations)
+- 🛒 Shopping Cart functionality
+- 💳 Payment Integration ready
+- 👨‍💼 Admin Dashboard endpoints
+- 🐳 Docker containerization
+- 🧪 Comprehensive test suite
+- 📚 Auto-generated API documentation
+
+## Quick Start
+
+### Using Docker Compose (Recommended)
+
+\`\`\`bash
+docker-compose up --build
+\`\`\`
+
+### Manual Setup
+
+1. Install dependencies:
+\`\`\`bash
+pip install -r requirements.txt
+\`\`\`
+
+2. Set up PostgreSQL database and update DATABASE_URL
+
+3. Run the application:
+\`\`\`bash
+uvicorn main:app --reload
+\`\`\`
+
+## API Documentation
+
+Once running, visit:
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
+
+## Testing
+
+\`\`\`bash
+pytest
+\`\`\`
+
+## Environment Variables
+
+- \`DATABASE_URL\`: PostgreSQL connection string
+- \`SECRET_KEY\`: JWT secret key
+- \`ACCESS_TOKEN_EXPIRE_MINUTES\`: Token expiration time
+
+## Project Structure
+
+\`\`\`
+├── main.py              # FastAPI application
+├── models.py            # Database models
+├── schemas.py           # Pydantic schemas
+├── auth.py              # Authentication logic
+├── requirements.txt     # Python dependencies
+├── Dockerfile           # Docker configuration
+├── docker-compose.yml   # Multi-container setup
+├── tests/
+│   └── test_main.py     # Test suite
+└── README.md            # This file
+\`\`\`
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests
+5. Submit a pull request
+
+## License
+
+MIT License
+`;
+
   const downloadCode = () => {
     if (progress?.live_preview) {
       const blob = new Blob([progress.live_preview], { type: 'text/plain' });
@@ -216,6 +560,16 @@ export function EnhancedCodeGenerator() {
       a.click();
       URL.revokeObjectURL(url);
     }
+  };
+
+  const downloadFile = (fileName: string, content: string) => {
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -399,17 +753,17 @@ export function EnhancedCodeGenerator() {
                 )}
               </div>
               <div className="flex gap-2">
-                {generatedCode && (
+                {Object.keys(codeFiles).length > 0 && (
                   <>
                     <button
-                      onClick={() => copyToClipboard(generatedCode)}
+                      onClick={() => copyToClipboard(codeFiles[selectedFile] || '')}
                       className="text-gray-300 hover:text-white p-1 rounded"
                       title="Copy Code"
                     >
                       <Copy className="w-3 h-3" />
                     </button>
                     <button
-                      onClick={downloadCode}
+                      onClick={() => downloadFile(selectedFile, codeFiles[selectedFile] || '')}
                       className="text-gray-300 hover:text-white p-1 rounded"
                       title="Download"
                     >
@@ -420,13 +774,34 @@ export function EnhancedCodeGenerator() {
               </div>
             </div>
             
-            {generatedCode ? (
+            {Object.keys(codeFiles).length > 0 ? (
               <div className="relative">
+                {/* File Tabs */}
+                <div className="bg-gray-700 flex overflow-x-auto">
+                  {Object.keys(codeFiles).map((fileName) => (
+                    <button
+                      key={fileName}
+                      onClick={() => setSelectedFile(fileName)}
+                      className={`px-3 py-2 text-xs font-medium whitespace-nowrap border-r border-gray-600 ${
+                        selectedFile === fileName
+                          ? 'bg-gray-900 text-white'
+                          : 'text-gray-300 hover:bg-gray-600'
+                      }`}
+                    >
+                      {fileName}
+                    </button>
+                  ))}
+                </div>
+                
+                {/* Code Content */}
                 <pre className="bg-gray-900 text-gray-100 p-4 text-sm overflow-x-auto max-h-96 min-h-64">
-                  <code className="language-python">{generatedCode}</code>
+                  <code className={`language-${getLanguageFromFile(selectedFile)}`}>
+                    {codeFiles[selectedFile]}
+                  </code>
                 </pre>
+                
                 <div className="absolute bottom-2 right-2 bg-gray-800 text-gray-300 px-2 py-1 rounded text-xs">
-                  {generatedCode.split('\n').length} lines
+                  {codeFiles[selectedFile]?.split('\n').length || 0} lines
                 </div>
               </div>
             ) : (
@@ -478,7 +853,15 @@ export function EnhancedCodeGenerator() {
                     const folderPath = file.includes('/') ? file.split('/').slice(0, -1).join('/') : '';
                     
                     return (
-                      <div key={index} className="flex items-center gap-2 text-sm hover:bg-gray-50 p-1 rounded">
+                      <button
+                        key={index}
+                        onClick={() => setSelectedFile(file)}
+                        className={`w-full flex items-center gap-2 text-sm p-1 rounded transition-colors ${
+                          selectedFile === file
+                            ? 'bg-blue-100 text-blue-800'
+                            : 'hover:bg-gray-50 text-gray-700'
+                        }`}
+                      >
                         {isFolder ? (
                           <div className="flex items-center gap-1 text-gray-500">
                             <span className="text-xs">{folderPath}/</span>
@@ -508,9 +891,9 @@ export function EnhancedCodeGenerator() {
                           ) : (
                             <Package className="w-3 h-3 text-gray-400" />
                           )}
-                          <span className="text-gray-700 font-mono">{fileName}</span>
+                          <span className="font-mono">{fileName}</span>
                         </div>
-                      </div>
+                      </button>
                     );
                   })}
                 </div>
