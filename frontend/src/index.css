@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Monaco', 'Consolas', monospace;
+  }
+}
+
+@layer components {
+  .status-indicator {
+    @apply w-2 h-2 rounded-full inline-block;
+  }
+  
+  .status-online {
+    @apply bg-green-500 animate-pulse-green;
+  }
+  
+  .quick-action {
+    @apply border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer transition-all duration-200 hover:border-primary-500 hover:bg-primary-50 hover:-translate-y-0.5;
+  }
+  
+  .progress-bar {
+    @apply bg-gray-200 rounded-full h-2 overflow-hidden;
+  }
+  
+  .progress-fill {
+    @apply h-full rounded-full transition-all duration-300 ease-in-out;
+  }
+  
+  .sidebar-item {
+    @apply w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150;
+  }
+  
+  .sidebar-item-active {
+    @apply bg-primary-100 text-primary-700;
+  }
+  
+  .sidebar-item-inactive {
+    @apply text-gray-700 hover:bg-gray-100;
+  }
+  
+  .metric-card {
+    @apply bg-white p-6 rounded-lg shadow-sm border border-gray-200;
+  }
+  
+  .activity-item {
+    @apply flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors duration-150;
+  }
+}
