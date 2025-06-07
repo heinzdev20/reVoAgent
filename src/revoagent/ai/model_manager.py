@@ -93,9 +93,9 @@ class ModelManager:
             model_id="deepseek-r1-0528",
             model_path="deepseek-ai/DeepSeek-R1-0528",
             device="auto",
-            max_length=32768,
+            max_length=4096,  # Reduced for CPU environments
             temperature=0.7,
-            quantization="4bit"
+            quantization="4bit" if torch.cuda.is_available() else None
         )
         
         self.model_info["deepseek-r1-0528"] = ModelInfo(
@@ -161,20 +161,27 @@ class ModelManager:
                     raise ValueError(f"Unsupported model type: {model_type}")
                 
                 # Load the model
-                await model.load()
-                self.models[model_id] = model
-                
-                # Update model info
-                self.model_info[model_id].status = ModelStatus.LOADED
-                self.model_info[model_id].memory_usage = self._get_model_memory_usage(model)
-                self.model_info[model_id].gpu_memory = self._get_model_gpu_memory(model)
-                
-                # Set as active if no active model
-                if self.active_model is None:
-                    self.active_model = model_id
-                
-                logger.info(f"Successfully loaded model {model_id}")
-                return True
+                success = await model.load()
+                if success:
+                    self.models[model_id] = model
+                    
+                    # Update model info
+                    self.model_info[model_id].status = ModelStatus.LOADED
+                    self.model_info[model_id].memory_usage = self._get_model_memory_usage(model)
+                    self.model_info[model_id].gpu_memory = self._get_model_gpu_memory(model)
+                    
+                    # Set as active if no active model
+                    if self.active_model is None:
+                        self.active_model = model_id
+                    
+                    logger.info(f"Successfully loaded model {model_id}")
+                    return True
+                else:
+                    # Model failed to load
+                    self.model_info[model_id].status = ModelStatus.ERROR
+                    self.model_info[model_id].error_message = "Failed to load model"
+                    logger.error(f"Failed to load model {model_id}")
+                    return False
                 
             except Exception as e:
                 logger.error(f"Failed to load model {model_id}: {str(e)}")

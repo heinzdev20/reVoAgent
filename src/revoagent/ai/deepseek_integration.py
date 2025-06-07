@@ -51,18 +51,27 @@ class DeepSeekR1Model:
         """Get quantization configuration if specified."""
         if not self.config.quantization:
             return None
+        
+        # Disable quantization on CPU-only environments
+        if self.device == "cpu":
+            logger.warning("Quantization disabled on CPU-only environment")
+            return None
             
-        if self.config.quantization == "4bit":
-            return BitsAndBytesConfig(
-                load_in_4bit=True,
-                bnb_4bit_compute_dtype=torch.float16,
-                bnb_4bit_use_double_quant=True,
-                bnb_4bit_quant_type="nf4"
-            )
-        elif self.config.quantization == "8bit":
-            return BitsAndBytesConfig(
-                load_in_8bit=True
-            )
+        try:
+            if self.config.quantization == "4bit":
+                return BitsAndBytesConfig(
+                    load_in_4bit=True,
+                    bnb_4bit_compute_dtype=torch.float16,
+                    bnb_4bit_use_double_quant=True,
+                    bnb_4bit_quant_type="nf4"
+                )
+            elif self.config.quantization == "8bit":
+                return BitsAndBytesConfig(
+                    load_in_8bit=True
+                )
+        except Exception as e:
+            logger.warning(f"Quantization not available: {e}")
+            return None
         
         return None
     
