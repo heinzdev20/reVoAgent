@@ -115,13 +115,19 @@ class DashboardServer:
         if not dashboard_file.exists():
             self._create_default_dashboard()
         
-        # Mount static files
-        self.app.mount("/static", StaticFiles(directory=str(self.static_dir)), name="static")
-        
         # Mount built React assets if they exist
         dist_dir = self.static_dir / "dist"
         if dist_dir.exists():
-            self.app.mount("/assets", StaticFiles(directory=str(dist_dir / "assets")), name="assets")
+            # Mount the assets directory
+            assets_dir = dist_dir / "assets"
+            if assets_dir.exists():
+                self.app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
+            
+            # Mount the entire dist directory for other static files
+            self.app.mount("/dist", StaticFiles(directory=str(dist_dir)), name="dist")
+        
+        # Mount static files (fallback)
+        self.app.mount("/static", StaticFiles(directory=str(self.static_dir)), name="static")
     
     async def _serve_dashboard(self):
         """Serve the main dashboard."""

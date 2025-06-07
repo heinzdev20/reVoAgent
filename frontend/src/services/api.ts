@@ -103,6 +103,21 @@ class ApiService {
   async healthCheck(): Promise<{ status: string }> {
     return this.request<{ status: string }>('/health');
   }
+
+  // Generic request methods for agent components
+  async get<T = any>(endpoint: string): Promise<{ data: T }> {
+    const data = await this.request<T>(endpoint);
+    return { data };
+  }
+
+  async post<T = any>(endpoint: string, body?: any): Promise<{ data: T }> {
+    const data = await this.request<T>(endpoint, {
+      method: 'POST',
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    return { data };
+  }
 }
 
 export const apiService = new ApiService();
+export const api = apiService;

@@ -1,0 +1,431 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  Code2, 
+  Play, 
+  Download, 
+  Copy, 
+  Rocket, 
+  CheckCircle, 
+  Clock,
+  FileText,
+  Database,
+  Shield,
+  TestTube,
+  Package
+} from 'lucide-react';
+import { api } from '../../services/api';
+
+interface CodeGenTemplate {
+  id: string;
+  name: string;
+  description: string;
+  language: string;
+  framework: string;
+  features: string[];
+}
+
+interface CodeGenProgress {
+  task_id: string;
+  current_phase: string;
+  phase_progress: Record<string, number>;
+  estimated_completion: string;
+  quality_score: number;
+  files_generated: string[];
+  live_preview: string;
+}
+
+interface CodeGenRequest {
+  task_description: string;
+  template_id: string;
+  language: string;
+  framework: string;
+  database: string;
+  features: string[];
+}
+
+export function EnhancedCodeGenerator() {
+  const [taskDescription, setTaskDescription] = useState(
+    'Create a complete e-commerce API with user auth, product catalog, shopping cart, payment integration, and admin dashboard'
+  );
+  const [selectedTemplate, setSelectedTemplate] = useState('rest_api');
+  const [selectedLanguage, setSelectedLanguage] = useState('python');
+  const [selectedFramework, setSelectedFramework] = useState('fastapi');
+  const [selectedDatabase, setSelectedDatabase] = useState('postgresql');
+  const [selectedFeatures, setSelectedFeatures] = useState(['auth', 'tests', 'docs', 'docker', 'cicd']);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [progress, setProgress] = useState<CodeGenProgress | null>(null);
+  const [templates, setTemplates] = useState<CodeGenTemplate[]>([]);
+
+  const languages = ['python', 'typescript', 'javascript', 'java', 'go', 'rust'];
+  const frameworks = {
+    python: ['fastapi', 'django', 'flask', 'tornado'],
+    typescript: ['react', 'nextjs', 'nestjs', 'express'],
+    javascript: ['express', 'koa', 'hapi', 'meteor'],
+    java: ['spring', 'quarkus', 'micronaut'],
+    go: ['gin', 'echo', 'fiber', 'gorilla'],
+    rust: ['actix', 'warp', 'rocket', 'axum']
+  };
+  const databases = ['postgresql', 'mysql', 'mongodb', 'redis', 'sqlite'];
+  const availableFeatures = ['auth', 'tests', 'docs', 'docker', 'cicd', 'monitoring', 'caching', 'logging'];
+
+  const phases = [
+    { id: 'architecture_planning', name: 'Architecture Planning', icon: FileText },
+    { id: 'database_models', name: 'Database Models', icon: Database },
+    { id: 'api_endpoints', name: 'API Endpoints', icon: Code2 },
+    { id: 'authentication', name: 'Authentication', icon: Shield },
+    { id: 'tests_documentation', name: 'Tests & Documentation', icon: TestTube }
+  ];
+
+  useEffect(() => {
+    loadTemplates();
+  }, []);
+
+  const loadTemplates = async () => {
+    try {
+      const response = await api.get('/agents/code-generator/templates');
+      setTemplates((response.data as any).templates);
+    } catch (error) {
+      console.error('Failed to load templates:', error);
+      // Fallback templates
+      setTemplates([
+        {
+          id: 'rest_api',
+          name: 'REST API',
+          description: 'Complete REST API with authentication and database',
+          language: 'python',
+          framework: 'fastapi',
+          features: ['auth', 'tests', 'docs', 'docker', 'cicd']
+        },
+        {
+          id: 'web_app',
+          name: 'Web App',
+          description: 'Full-stack web application',
+          language: 'typescript',
+          framework: 'react',
+          features: ['auth', 'tests', 'docs', 'docker', 'cicd']
+        },
+        {
+          id: 'microservice',
+          name: 'Microservice',
+          description: 'Containerized microservice architecture',
+          language: 'python',
+          framework: 'fastapi',
+          features: ['auth', 'tests', 'docs', 'docker', 'k8s', 'monitoring']
+        }
+      ]);
+    }
+  };
+
+  const handleStartGeneration = async () => {
+    setIsGenerating(true);
+    try {
+      const request: CodeGenRequest = {
+        task_description: taskDescription,
+        template_id: selectedTemplate,
+        language: selectedLanguage,
+        framework: selectedFramework,
+        database: selectedDatabase,
+        features: selectedFeatures
+      };
+
+      const response = await api.post('/agents/code-generator/generate', request);
+      const taskId = (response.data as any).task_id;
+      
+      // Start polling for progress
+      pollProgress(taskId);
+    } catch (error) {
+      console.error('Failed to start generation:', error);
+      setIsGenerating(false);
+    }
+  };
+
+  const pollProgress = async (taskId: string) => {
+    try {
+      const response = await api.get(`/agents/code-generator/progress/${taskId}`);
+      setProgress(response.data as CodeGenProgress);
+      
+      if ((response.data as any).current_phase !== 'completed') {
+        setTimeout(() => pollProgress(taskId), 2000);
+      } else {
+        setIsGenerating(false);
+      }
+    } catch (error) {
+      console.error('Failed to get progress:', error);
+      setIsGenerating(false);
+    }
+  };
+
+  const handleFeatureToggle = (feature: string) => {
+    setSelectedFeatures(prev => 
+      prev.includes(feature) 
+        ? prev.filter(f => f !== feature)
+        : [...prev, feature]
+    );
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+  };
+
+  const downloadCode = () => {
+    if (progress?.live_preview) {
+      const blob = new Blob([progress.live_preview], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'generated_code.py';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  };
+
+  return (
+    <div className="p-6 animate-fade-in">
+      <div className="mb-6">
+        <div className="flex items-center gap-3 mb-2">
+          <Code2 className="w-8 h-8 text-blue-600" />
+          <h1 className="text-2xl font-bold text-gray-900">Enhanced Code Generator</h1>
+        </div>
+        <p className="text-gray-600">
+          AI-powered code generation with OpenHands integration, supporting multiple languages and frameworks.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        {/* Configuration Panel */}
+        <div className="xl:col-span-2 space-y-6">
+          {/* Task Description */}
+          <div className="metric-card">
+            <h3 className="text-lg font-semibold mb-4">Task Description</h3>
+            <textarea
+              value={taskDescription}
+              onChange={(e) => setTaskDescription(e.target.value)}
+              className="w-full h-24 p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Describe what you want to build..."
+            />
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Language</label>
+                <select
+                  value={selectedLanguage}
+                  onChange={(e) => setSelectedLanguage(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                >
+                  {languages.map(lang => (
+                    <option key={lang} value={lang}>{lang.charAt(0).toUpperCase() + lang.slice(1)}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Framework</label>
+                <select
+                  value={selectedFramework}
+                  onChange={(e) => setSelectedFramework(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                >
+                  {frameworks[selectedLanguage as keyof typeof frameworks]?.map(fw => (
+                    <option key={fw} value={fw}>{fw.charAt(0).toUpperCase() + fw.slice(1)}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Database</label>
+                <select
+                  value={selectedDatabase}
+                  onChange={(e) => setSelectedDatabase(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                >
+                  {databases.map(db => (
+                    <option key={db} value={db}>{db.charAt(0).toUpperCase() + db.slice(1)}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Features</label>
+              <div className="flex flex-wrap gap-2">
+                {availableFeatures.map(feature => (
+                  <button
+                    key={feature}
+                    onClick={() => handleFeatureToggle(feature)}
+                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                      selectedFeatures.includes(feature)
+                        ? 'bg-blue-100 text-blue-800 border border-blue-300'
+                        : 'bg-gray-100 text-gray-600 border border-gray-300 hover:bg-gray-200'
+                    }`}
+                  >
+                    {selectedFeatures.includes(feature) && <CheckCircle className="w-3 h-3 inline mr-1" />}
+                    {feature.charAt(0).toUpperCase() + feature.slice(1)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <button
+                onClick={handleStartGeneration}
+                disabled={isGenerating}
+                className="btn-primary flex items-center gap-2"
+              >
+                {isGenerating ? (
+                  <>
+                    <Clock className="w-4 h-4 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-4 h-4" />
+                    Start Generation
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Generation Progress */}
+          {progress && (
+            <div className="metric-card">
+              <h3 className="text-lg font-semibold mb-4">Generation Progress</h3>
+              <div className="space-y-3">
+                {phases.map((phase, index) => {
+                  const phaseProgress = progress.phase_progress[phase.id] || 0;
+                  const Icon = phase.icon;
+                  const isActive = progress.current_phase === phase.id;
+                  const isCompleted = phaseProgress === 100;
+                  
+                  return (
+                    <div key={phase.id} className="flex items-center gap-3">
+                      <div className={`p-2 rounded-lg ${
+                        isCompleted ? 'bg-green-100 text-green-600' :
+                        isActive ? 'bg-blue-100 text-blue-600' :
+                        'bg-gray-100 text-gray-400'
+                      }`}>
+                        <Icon className="w-4 h-4" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex justify-between items-center mb-1">
+                          <span className={`text-sm font-medium ${
+                            isActive ? 'text-blue-600' : 'text-gray-700'
+                          }`}>
+                            Phase {index + 1}: {phase.name}
+                          </span>
+                          <span className="text-sm text-gray-500">{phaseProgress}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className={`h-2 rounded-full transition-all duration-300 ${
+                              isCompleted ? 'bg-green-500' :
+                              isActive ? 'bg-blue-500' :
+                              'bg-gray-300'
+                            }`}
+                            style={{ width: `${phaseProgress}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              
+              <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-blue-700">Estimated completion:</span>
+                  <span className="text-sm font-medium text-blue-800">{progress.estimated_completion}</span>
+                </div>
+                <div className="flex items-center justify-between mt-1">
+                  <span className="text-sm text-blue-700">Quality Score:</span>
+                  <span className="text-sm font-medium text-blue-800">{progress.quality_score}%</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Live Preview & File Structure */}
+        <div className="space-y-6">
+          {/* Live Code Preview */}
+          <div className="metric-card">
+            <h3 className="text-lg font-semibold mb-4">Live Code Preview</h3>
+            {progress?.live_preview ? (
+              <div>
+                <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto max-h-64">
+                  <code>{progress.live_preview}</code>
+                </pre>
+                <div className="flex gap-2 mt-4">
+                  <button
+                    onClick={() => copyToClipboard(progress.live_preview)}
+                    className="btn-secondary flex items-center gap-2 text-sm"
+                  >
+                    <Copy className="w-3 h-3" />
+                    Copy Code
+                  </button>
+                  <button
+                    onClick={downloadCode}
+                    className="btn-secondary flex items-center gap-2 text-sm"
+                  >
+                    <Download className="w-3 h-3" />
+                    Download
+                  </button>
+                  <button className="btn-primary flex items-center gap-2 text-sm">
+                    <Rocket className="w-3 h-3" />
+                    Deploy
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <Code2 className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                <p>Code preview will appear here during generation</p>
+              </div>
+            )}
+          </div>
+
+          {/* File Structure */}
+          <div className="metric-card">
+            <h3 className="text-lg font-semibold mb-4">File Structure</h3>
+            {progress?.files_generated.length ? (
+              <div className="space-y-1">
+                {progress.files_generated.map((file, index) => (
+                  <div key={index} className="flex items-center gap-2 text-sm">
+                    <Package className="w-3 h-3 text-gray-400" />
+                    <span className="text-gray-700">{file}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <FileText className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                <p>File structure will appear here during generation</p>
+              </div>
+            )}
+          </div>
+
+          {/* Templates */}
+          <div className="metric-card">
+            <h3 className="text-lg font-semibold mb-4">Templates</h3>
+            <div className="space-y-2">
+              {templates.map(template => (
+                <button
+                  key={template.id}
+                  onClick={() => setSelectedTemplate(template.id)}
+                  className={`w-full text-left p-3 rounded-lg border transition-colors ${
+                    selectedTemplate === template.id
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="font-medium text-gray-900">{template.name}</div>
+                  <div className="text-sm text-gray-500">{template.description}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

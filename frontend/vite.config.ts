@@ -12,8 +12,9 @@ export default defineConfig({
   },
   server: {
     host: '0.0.0.0',
-    port: 12001,
+    port: 12002,
     cors: true,
+    allowedHosts: ['all'],
     proxy: {
       '/api': {
         target: 'http://localhost:12000',

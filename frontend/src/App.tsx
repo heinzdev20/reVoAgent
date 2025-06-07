@@ -3,6 +3,8 @@ import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
 import { Dashboard } from './components/Dashboard';
 import { PlaceholderView } from './components/PlaceholderView';
+import { EnhancedCodeGenerator } from './components/agents/EnhancedCodeGenerator';
+import { DebugAgent } from './components/agents/DebugAgent';
 import { useWebSocket } from './hooks/useWebSocket';
 import type { TabId } from './types';
 import { 
@@ -60,22 +62,10 @@ function App() {
         );
       
       case 'code-generator':
-        return (
-          <PlaceholderView
-            title="Enhanced Code Generator"
-            description="AI-powered code generation with OpenHands integration, supporting multiple languages and frameworks."
-            icon={<Code2 className="w-16 h-16 mx-auto text-blue-600" />}
-          />
-        );
+        return <EnhancedCodeGenerator />;
       
       case 'debug-agent':
-        return (
-          <PlaceholderView
-            title="Debug Agent"
-            description="Intelligent debugging agent that automatically identifies, analyzes, and fixes code issues."
-            icon={<Bug className="w-16 h-16 mx-auto text-red-500" />}
-          />
-        );
+        return <DebugAgent />;
       
       case 'testing-agent':
         return (

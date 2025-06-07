@@ -30,7 +30,6 @@ psutil>=5.9.0
 
 # Database and storage
 redis>=5.0.0
-sqlite3
 
 # Web framework (enhanced from xCodeAgent01)
 fastapi>=0.104.0

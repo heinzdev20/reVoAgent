@@ -455,6 +455,148 @@ class APIRoutes:
                 logger.error(f"Error getting system metrics: {e}")
                 raise HTTPException(status_code=500, detail=str(e))
         
+        # Enhanced Code Generator Agent Routes
+        @self.router.get("/agents/code-generator/templates")
+        async def get_code_templates():
+            """Get available code generation templates."""
+            templates = [
+                {
+                    "id": "rest_api",
+                    "name": "REST API",
+                    "description": "Complete REST API with authentication and database",
+                    "language": "python",
+                    "framework": "fastapi",
+                    "features": ["auth", "tests", "docs", "docker", "cicd"]
+                },
+                {
+                    "id": "web_app",
+                    "name": "Web App",
+                    "description": "Full-stack web application",
+                    "language": "typescript",
+                    "framework": "react",
+                    "features": ["auth", "tests", "docs", "docker", "cicd"]
+                },
+                {
+                    "id": "microservice",
+                    "name": "Microservice",
+                    "description": "Containerized microservice architecture",
+                    "language": "python",
+                    "framework": "fastapi",
+                    "features": ["auth", "tests", "docs", "docker", "k8s", "monitoring"]
+                },
+                {
+                    "id": "ml_pipeline",
+                    "name": "ML Pipeline",
+                    "description": "Machine learning pipeline with training and inference",
+                    "language": "python",
+                    "framework": "pytorch",
+                    "features": ["data_processing", "training", "inference", "monitoring"]
+                }
+            ]
+            return {"templates": templates}
+
+        @self.router.post("/agents/code-generator/generate")
+        async def start_code_generation(request: CodeGenRequest):
+            """Start code generation process."""
+            task_id = str(uuid.uuid4())
+            
+            # Store task in mock data for demo
+            self.active_code_tasks = getattr(self, 'active_code_tasks', {})
+            self.active_code_tasks[task_id] = {
+                "task_id": task_id,
+                "current_phase": "architecture_planning",
+                "phase_progress": {
+                    "architecture_planning": 0,
+                    "database_models": 0,
+                    "api_endpoints": 0,
+                    "authentication": 0,
+                    "tests_documentation": 0
+                },
+                "estimated_completion": "4 minutes",
+                "quality_score": 0,
+                "files_generated": [],
+                "live_preview": "",
+                "request": request.dict()
+            }
+            
+            # Start background task simulation
+            asyncio.create_task(self._simulate_code_generation(task_id))
+            
+            return {"task_id": task_id, "status": "started"}
+
+        @self.router.get("/agents/code-generator/progress/{task_id}")
+        async def get_code_generation_progress(task_id: str):
+            """Get code generation progress."""
+            self.active_code_tasks = getattr(self, 'active_code_tasks', {})
+            task = self.active_code_tasks.get(task_id)
+            if not task:
+                raise HTTPException(status_code=404, detail="Task not found")
+            return task
+
+        # Debug Agent Routes
+        @self.router.post("/agents/debug/analyze")
+        async def start_debug_analysis(request: dict):
+            """Start code analysis for debugging."""
+            session_id = str(uuid.uuid4())
+            
+            # Store session in mock data
+            self.debug_sessions = getattr(self, 'debug_sessions', {})
+            self.debug_sessions[session_id] = {
+                "id": session_id,
+                "status": "scanning",
+                "progress": 0,
+                "issues_found": 0,
+                "issues_fixed": 0,
+                "files_scanned": 0,
+                "current_file": "main.py"
+            }
+            
+            # Start background analysis simulation
+            asyncio.create_task(self._simulate_debug_analysis(session_id))
+            
+            return {"session_id": session_id, "status": "started"}
+
+        @self.router.get("/agents/debug/session/{session_id}")
+        async def get_debug_session(session_id: str):
+            """Get debug session status and issues."""
+            self.debug_sessions = getattr(self, 'debug_sessions', {})
+            session = self.debug_sessions.get(session_id)
+            if not session:
+                raise HTTPException(status_code=404, detail="Session not found")
+            
+            # Mock issues for demo
+            issues = [
+                {
+                    "id": "1",
+                    "type": "error",
+                    "severity": "high",
+                    "title": "Negative Price Validation",
+                    "description": "The code allows negative prices which could lead to incorrect calculations.",
+                    "file": "main.py",
+                    "line": 6,
+                    "suggestion": "Add validation to ensure price is non-negative before processing.",
+                    "status": "detected"
+                },
+                {
+                    "id": "2",
+                    "type": "warning",
+                    "severity": "medium",
+                    "title": "Zero Quantity Edge Case",
+                    "description": "Items with zero quantity are processed but contribute nothing to the total.",
+                    "file": "main.py",
+                    "line": 4,
+                    "suggestion": "Consider skipping items with zero quantity to improve performance.",
+                    "status": "detected"
+                }
+            ]
+            
+            return {"session": session, "issues": issues}
+
+        @self.router.post("/agents/debug/fix/{issue_id}")
+        async def fix_debug_issue(issue_id: str):
+            """Apply fix for a specific issue."""
+            return {"message": f"Fix applied for issue {issue_id}", "status": "fixed"}
+
         @self.router.get("/activity/recent")
         async def get_recent_activity():
             """Get recent activity feed."""
@@ -828,3 +970,66 @@ class APIRoutes:
             "status": "completed",
             "result": f"Task {task_id} completed successfully"
         })
+
+    async def _simulate_code_generation(self, task_id: str):
+        """Simulate code generation progress."""
+        phases = ["architecture_planning", "database_models", "api_endpoints", "authentication", "tests_documentation"]
+        
+        for i, phase in enumerate(phases):
+            # Update current phase
+            self.active_code_tasks[task_id]["current_phase"] = phase
+            
+            # Simulate progress within phase
+            for progress in range(0, 101, 20):
+                await asyncio.sleep(1)
+                self.active_code_tasks[task_id]["phase_progress"][phase] = progress
+                self.active_code_tasks[task_id]["quality_score"] = min(94, (i * 20) + (progress // 5))
+                
+                # Add files as we progress
+                if progress == 40 and phase == "database_models":
+                    self.active_code_tasks[task_id]["files_generated"].append("models/user.py")
+                    self.active_code_tasks[task_id]["files_generated"].append("models/product.py")
+                elif progress == 60 and phase == "api_endpoints":
+                    self.active_code_tasks[task_id]["files_generated"].append("routes/auth.py")
+                    self.active_code_tasks[task_id]["files_generated"].append("routes/products.py")
+                
+                # Update live preview
+                if phase == "api_endpoints" and progress >= 40:
+                    self.active_code_tasks[task_id]["live_preview"] = """# E-commerce API - FastAPI
+from fastapi import FastAPI, Depends, HTTPException
+from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy.orm import Session
+from . import models, schemas, crud
+from .database import get_db
+
+app = FastAPI(title="E-commerce API", version="1.0.0")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+@app.post("/auth/register", response_model=schemas.User)
+def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    db_user = crud.get_user_by_email(db, email=user.email)
+    if db_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    return crud.create_user(db=db, user=user)
+
+@app.get("/products/", response_model=List[schemas.Product])
+def read_products(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    products = crud.get_products(db, skip=skip, limit=limit)
+    return products"""
+        
+        # Mark as completed
+        self.active_code_tasks[task_id]["current_phase"] = "completed"
+        self.active_code_tasks[task_id]["quality_score"] = 94
+
+    async def _simulate_debug_analysis(self, session_id: str):
+        """Simulate debug analysis progress."""
+        for progress in range(0, 101, 10):
+            await asyncio.sleep(0.5)
+            self.debug_sessions[session_id]["progress"] = progress
+            self.debug_sessions[session_id]["files_scanned"] = progress // 20
+            
+            if progress >= 50:
+                self.debug_sessions[session_id]["issues_found"] = 3
+            
+            if progress == 100:
+                self.debug_sessions[session_id]["status"] = "completed"
