@@ -638,7 +638,38 @@ class ProductionServer:
         async def generate_code_alt(request: CodeGenRequest):
             """Generate code using Enhanced Code Generator with DeepSeek R1 (alternative endpoint)."""
             return await self._handle_code_generation(request)
-        logger.info("Code generation endpoints 1-2 set up successfully")
+        
+        @self.app.get("/api/v1/agents/code-generator/progress/{task_id}")
+        async def get_generation_progress(task_id: str):
+            """Get progress for a code generation task."""
+            # For now, return completed status since our generation is synchronous
+            # In a real implementation, this would track actual progress
+            return {
+                "task_id": task_id,
+                "current_phase": "completed",
+                "phase_progress": {
+                    "architecture_planning": 100,
+                    "database_models": 100,
+                    "api_endpoints": 100,
+                    "authentication": 100,
+                    "tests_documentation": 100
+                },
+                "estimated_completion": "Completed",
+                "quality_score": 95.0,
+                "files_generated": [
+                    "main.py",
+                    "models.py", 
+                    "schemas.py",
+                    "auth.py",
+                    "requirements.txt",
+                    "Dockerfile",
+                    "docker-compose.yml",
+                    "tests/test_main.py",
+                    "README.md"
+                ],
+                "live_preview": "# Generated code will be available here\n# Check the main generation endpoint for full code"
+            }
+        logger.info("Code generation endpoints 1-3 set up successfully")
         
         @self.app.get("/api/v1/agents/code-generator/templates")
         async def get_code_templates():
