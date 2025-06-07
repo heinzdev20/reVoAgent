@@ -28,7 +28,6 @@ import {
   Rocket,
   Globe,
   Database,
-  Settings,
   Shield,
   Activity,
   HardDrive
@@ -79,22 +78,10 @@ function App() {
         return <Security />;
       
       case 'monitoring':
-        return (
-          <PlaceholderView
-            title="System Monitoring"
-            description="Real-time monitoring with Grafana dashboards, Prometheus metrics, and alerting."
-            icon={<Activity className="w-16 h-16 mx-auto text-pink-500" />}
-          />
-        );
+        return <Monitoring />;
       
       case 'resource-mgmt':
-        return (
-          <PlaceholderView
-            title="Resource Management"
-            description="Optimize system resources, manage GPU allocation, and monitor performance metrics."
-            icon={<HardDrive className="w-16 h-16 mx-auto text-yellow-500" />}
-          />
-        );
+        return <ResourceManagement />;
       
       default:
         return <Dashboard />;
