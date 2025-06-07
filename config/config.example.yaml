@@ -1,0 +1,124 @@
+# reVoAgent Configuration Example
+# Copy this file to config.yaml and customize for your setup
+
+platform:
+  name: "reVoAgent"
+  version: "1.0.0"
+  debug: false
+  log_level: "INFO"
+  data_dir: "./data"
+  models_dir: "./models"
+  temp_dir: "./temp"
+
+# Model configurations
+models:
+  # Local models using LLAMA.cpp
+  local/deepseek-coder:
+    name: "deepseek-coder"
+    type: "local"
+    path: "./models/deepseek-coder-6.7b-instruct.gguf"
+    max_tokens: 4096
+    temperature: 0.0
+    quantization: true
+    context_length: 8192
+  
+  local/llama-3.2:
+    name: "llama-3.2"
+    type: "local"
+    path: "./models/llama-3.2-3b-instruct.gguf"
+    max_tokens: 2048
+    temperature: 0.1
+    quantization: true
+    context_length: 4096
+  
+  # API models (optional)
+  api/gpt-4:
+    name: "gpt-4"
+    type: "api"
+    base_url: "https://api.openai.com/v1"
+    api_key: "${OPENAI_API_KEY}"  # Set environment variable
+    max_tokens: 4096
+    temperature: 0.0
+  
+  api/deepseek-chat:
+    name: "deepseek-chat"
+    type: "api"
+    base_url: "https://api.deepseek.com/v1"
+    api_key: "${DEEPSEEK_API_KEY}"  # Set environment variable
+    max_tokens: 4096
+    temperature: 0.0
+
+# Agent configurations
+agents:
+  code_generator:
+    enabled: true
+    model: "local/deepseek-coder"
+    tools: ["git", "editor", "terminal", "docker"]
+    max_iterations: 50
+    timeout: 300
+    memory_size: 1000
+  
+  browser_agent:
+    enabled: true
+    model: "local/llama-3.2"
+    tools: ["browser", "screenshot", "web_search"]
+    max_iterations: 30
+    timeout: 180
+    memory_size: 500
+  
+  debugging_agent:
+    enabled: true
+    model: "local/deepseek-coder"
+    tools: ["debugger", "profiler", "log_analyzer", "terminal"]
+    max_iterations: 40
+    timeout: 240
+    memory_size: 800
+  
+  testing_agent:
+    enabled: true
+    model: "local/deepseek-coder"
+    tools: ["pytest", "coverage", "test_generator", "terminal"]
+    max_iterations: 35
+    timeout: 200
+    memory_size: 600
+
+# Security configuration
+security:
+  sandbox_enabled: true
+  network_isolation: true
+  file_system_limits: true
+  allowed_domains:
+    - "github.com"
+    - "stackoverflow.com"
+    - "docs.python.org"
+  blocked_commands:
+    - "rm -rf"
+    - "sudo"
+    - "chmod 777"
+    - "dd"
+  max_file_size: 104857600  # 100MB
+
+# Resource management
+resources:
+  max_memory_mb: 4096
+  max_cpu_percent: 80.0
+  max_disk_mb: 10240
+  gpu_enabled: false  # Set to true if you have GPU support
+  gpu_memory_fraction: 0.8
+
+# Web server configuration (for dashboard)
+web_server:
+  host: "0.0.0.0"
+  port: 8000
+  cors_enabled: true
+  allowed_origins:
+    - "http://localhost:3000"
+    - "http://127.0.0.1:3000"
+
+# Logging configuration
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "./logs/revoagent.log"
+  max_size_mb: 100
+  backup_count: 5
