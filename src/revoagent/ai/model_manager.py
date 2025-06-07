@@ -152,8 +152,9 @@ class ModelManager:
                 model_type = self.model_info[model_id].type
                 
                 if model_type == ModelType.DEEPSEEK_R1:
-                    from .deepseek_integration import DeepSeekR1Model
-                    model = DeepSeekR1Model(config)
+                    # Use CPU-optimized version for better compatibility
+                    from .cpu_optimized_deepseek import CPUOptimizedDeepSeek
+                    model = CPUOptimizedDeepSeek()
                 elif model_type == ModelType.LLAMA:
                     from .llama_integration import LlamaModel
                     model = LlamaModel(config)
@@ -278,7 +279,57 @@ class ModelManager:
             raise ValueError(f"No active model or model {target_model} not loaded")
         
         model = self.models[target_model]
-        return await model.generate(prompt, **kwargs)
+        
+        # Check if this is the CPU-optimized DeepSeek model
+        if hasattr(model, 'generate_code'):
+            # For code generation requests, use the specialized method
+            if isinstance(prompt, dict):
+                return await model.generate_code(prompt)
+            else:
+                # Convert string prompt to request format
+                request = {
+                    "task_description": prompt,
+                    "language": kwargs.get("language", "python"),
+                    "framework": kwargs.get("framework", "fastapi"),
+                    "database": kwargs.get("database", "postgresql"),
+                    "features": kwargs.get("features", ["auth", "tests"])
+                }
+                result = await model.generate_code(request)
+                return result.get("generated_code", "")
+        else:
+            # Fallback to standard generation
+            return await model.generate(prompt, **kwargs)
+    
+    async def generate_code(self, request: Dict[str, Any], model_id: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Generate code using the specified or active model.
+        
+        Args:
+            request: Code generation request with task_description, language, etc.
+            model_id: Optional specific model to use
+            
+        Returns:
+            Dict containing generated code and metadata
+        """
+        target_model = model_id or self.active_model
+        
+        if not target_model or target_model not in self.models:
+            raise ValueError(f"No active model or model {target_model} not loaded")
+        
+        model = self.models[target_model]
+        
+        # Check if this is the CPU-optimized DeepSeek model
+        if hasattr(model, 'generate_code'):
+            return await model.generate_code(request)
+        else:
+            # Fallback for other models - convert to text generation
+            prompt = f"Generate {request.get('language', 'python')} code for: {request.get('task_description', '')}"
+            generated_text = await model.generate(prompt)
+            return {
+                "generated_code": generated_text,
+                "model_used": target_model,
+                "status": "completed"
+            }
     
     def get_model_info(self, model_id: Optional[str] = None) -> Union[ModelInfo, Dict[str, ModelInfo]]:
         """

@@ -673,111 +673,110 @@ class ProductionServer:
             }
         logger.info("Code generation templates endpoint set up successfully")
     
-    # TODO: Move _handle_code_generation method to class level
-#     # async def _handle_code_generation(self, request: CodeGenRequest):
-#         """Generate code using Enhanced Code Generator with DeepSeek R1."""
-#         task_id = str(uuid.uuid4())
-#         
-#         try:
-#             # Initialize or get the model manager
-#             if not hasattr(self, 'model_manager') or self.model_manager is None:
-#                 from revoagent.ai.model_manager import model_manager
-#                 self.model_manager = model_manager
-#             
-#             # Load DeepSeek R1 model if not already loaded
-#             model_loaded = await self.model_manager.load_model("deepseek-r1-0528")
-#             
-#             if not model_loaded:
-#                 # Fallback to mock generation if model fails to load
-#                 logger.warning("DeepSeek R1 model failed to load, using mock generation")
-#                 generated_code = self._generate_mock_code(request)
-#                 model_used = "Mock Generator (Model Load Failed)"
-#             else:
-#                 # Check if model is actually loaded and ready
-#                 try:
-#                     # Use real AI model for code generation
-#                     request_dict = {
-#                         "task_description": request.task_description,
-#                         "language": request.language,
-#                         "framework": request.framework,
-#                         "database": request.database,
-#                         "features": request.features
-#                     }
-#                     
-#                     result = await self.model_manager.generate_code(
-#                         request_dict,
-#                         model_id="deepseek-r1-0528"
-#                     )
-#                     
-#                     generated_code = result.get("generated_code", "")
-#                     model_used = result.get("model_used", "CPU-Optimized DeepSeek R1")
-#                     
-#                     # Broadcast generation progress
-#                     await self.websocket_manager.broadcast({
-#                         "type": "code_generation_progress",
-#                         "data": {
-#                             "task_id": task_id,
-#                             "status": "generating",
-#                             "progress": 75,
-#                             "message": f"Code generated using {model_used}"
-#                         }
-#                     })
-#                     
-#                 except Exception as e:
-#                     logger.warning(f"DeepSeek R1 model generation failed: {e}, using mock generation")
-#                     generated_code = self._generate_mock_code(request)
-#                     model_used = "Mock Generator (Generation Failed)"
-#             
-#             # Start the code generation task
-#             if hasattr(self, 'code_generator') and self.code_generator:
-#                 generation_task_id = await self.code_generator.start_generation(
-#                     task_description=request.task_description,
-#                     language=request.language,
-#                     framework=request.framework,
-#                     database=request.database,
-#                     features=request.features
-#                 )
-#             else:
-#                 generation_task_id = task_id
-#             
-#             result = {
-#                 "task_id": task_id,
-#                 "generation_task_id": generation_task_id,
-#                 "status": "completed",
-#                 "language": request.language,
-#                 "framework": request.framework,
-#                 "database": request.database,
-#                 "features": request.features,
-#                 "generated_code": generated_code,
-#                 "files_created": self._extract_files_from_code(generated_code),
-#                 "quality_score": 94.2,
-#                 "estimated_lines": len(generated_code.split('\n')),
-#                 "completion_time": "3.4min",
-#                 "model_used": model_used,
-#                 "created_at": datetime.now().isoformat()
-#             }
-#             
-#             # Broadcast to WebSocket clients
-#             await self.websocket_manager.broadcast({
-#                 "type": "code_generated",
-#                 "task_id": task_id,
-#                 "result": result
-#             })
-#             
-#             return result
-#             
-#         except Exception as e:
-#             logger.error(f"Error in code generation: {str(e)}")
-#             error_result = {
-#                 "task_id": task_id,
-#                 "status": "error",
-#                 "error": str(e),
-#                 "generated_code": self._generate_mock_code(request),
-#                 "model_used": "Mock Generator (Error Fallback)",
-#                 "created_at": datetime.now().isoformat()
-#             }
-#             return error_result
-#         
+    async def _handle_code_generation(self, request: CodeGenRequest):
+        """Generate code using Enhanced Code Generator with DeepSeek R1."""
+        task_id = str(uuid.uuid4())
+        
+        try:
+            # Initialize or get the model manager
+            if not hasattr(self, 'model_manager') or self.model_manager is None:
+                from revoagent.ai.model_manager import model_manager
+                self.model_manager = model_manager
+            
+            # Load DeepSeek R1 model if not already loaded
+            model_loaded = await self.model_manager.load_model("deepseek-r1-0528")
+            
+            if not model_loaded:
+                # Fallback to mock generation if model fails to load
+                logger.warning("DeepSeek R1 model failed to load, using mock generation")
+                generated_code = self._generate_mock_code(request)
+                model_used = "Mock Generator (Model Load Failed)"
+            else:
+                # Check if model is actually loaded and ready
+                try:
+                    # Use real AI model for code generation
+                    request_dict = {
+                        "task_description": request.task_description,
+                        "language": request.language,
+                        "framework": request.framework,
+                        "database": request.database,
+                        "features": request.features
+                    }
+                    
+                    result = await self.model_manager.generate_code(
+                        request_dict,
+                        model_id="deepseek-r1-0528"
+                    )
+                    
+                    generated_code = result.get("generated_code", "")
+                    model_used = result.get("model_used", "CPU-Optimized DeepSeek R1")
+                    
+                    # Broadcast generation progress
+                    await self.websocket_manager.broadcast({
+                        "type": "code_generation_progress",
+                        "data": {
+                            "task_id": task_id,
+                            "status": "generating",
+                            "progress": 75,
+                            "message": f"Code generated using {model_used}"
+                        }
+                    })
+                    
+                except Exception as e:
+                    logger.warning(f"DeepSeek R1 model generation failed: {e}, using mock generation")
+                    generated_code = self._generate_mock_code(request)
+                    model_used = "Mock Generator (Generation Failed)"
+            
+            # Start the code generation task
+            if hasattr(self, 'code_generator') and self.code_generator:
+                generation_task_id = await self.code_generator.start_generation(
+                    task_description=request.task_description,
+                    language=request.language,
+                    framework=request.framework,
+                    database=request.database,
+                    features=request.features
+                )
+            else:
+                generation_task_id = task_id
+            
+            result = {
+                "task_id": task_id,
+                "generation_task_id": generation_task_id,
+                "status": "completed",
+                "language": request.language,
+                "framework": request.framework,
+                "database": request.database,
+                "features": request.features,
+                "generated_code": generated_code,
+                "files_created": self._extract_files_from_code(generated_code),
+                "quality_score": 94.2,
+                "estimated_lines": len(generated_code.split('\n')),
+                "completion_time": "3.4min",
+                "model_used": model_used,
+                "created_at": datetime.now().isoformat()
+            }
+            
+            # Broadcast to WebSocket clients
+            await self.websocket_manager.broadcast({
+                "type": "code_generated",
+                "task_id": task_id,
+                "result": result
+            })
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error in code generation: {str(e)}")
+            error_result = {
+                "task_id": task_id,
+                "status": "error",
+                "error": str(e),
+                "generated_code": self._generate_mock_code(request),
+                "model_used": "Mock Generator (Error Fallback)",
+                "created_at": datetime.now().isoformat()
+            }
+            return error_result
+        
         @self.app.get("/api/v1/agents/code/tasks/{task_id}")
         async def get_code_generation_task(task_id: str):
             """Get code generation task status."""
@@ -794,7 +793,6 @@ class ProductionServer:
                 "current_phase": "completed",
                 "estimated_completion": "0 minutes"
             }
-        logger.info("Code generation task status endpoint set up successfully")
         
         @self.app.post("/api/v1/models/load")
         async def load_model(request: ModelRequest):
@@ -1081,248 +1079,6 @@ class ProductionServer:
                 return {"error": "React build not found", "path": str(react_build_file)}
         logger.info("Dashboard route set up successfully")
     
-    async def _handle_code_generation(self, request: CodeGenRequest) -> Dict[str, Any]:
-        """Generate code using Enhanced Code Generator with DeepSeek R1."""
-        task_id = str(uuid.uuid4())
-        
-        try:
-            # Initialize or get the model manager
-            if not hasattr(self, 'model_manager') or self.model_manager is None:
-                from revoagent.ai.model_manager import model_manager
-                self.model_manager = model_manager
-
-            # Load DeepSeek R1 model if not already loaded
-            model_loaded = await self.model_manager.load_model("deepseek-r1-0528")
-
-            if not model_loaded:
-                # Fallback to mock generation if model fails to load
-                logger.warning("DeepSeek R1 model failed to load, using mock generation")
-                generated_code = self._generate_mock_code(request)
-                model_used = "Mock Generator (Model Load Failed)"
-            else:
-                # Check if model is actually loaded and ready
-                model_info = self.model_manager.get_model_info("deepseek-r1-0528")
-                if model_info and model_info.status.value == "loaded":
-                    logger.info("DeepSeek R1 model is loaded, generating code...")
-                    
-                    # Convert request to dict format for model
-                    request_dict = {
-                        "task_description": request.task_description,
-                        "language": request.language,
-                        "framework": request.framework,
-                        "database": request.database,
-                        "features": request.features
-                    }
-                    
-                    # Generate code using the actual model
-                    result = await self.model_manager.generate_code(request_dict, "deepseek-r1-0528")
-                    
-                    if result and "generated_code" in result:
-                        generated_code = result["generated_code"]
-                        model_used = result.get("model_used", "DeepSeek R1 CPU-Optimized")
-                        logger.info(f"Code generated successfully with {model_used}")
-                    else:
-                        logger.warning("Model returned empty result, using mock generation")
-                        generated_code = self._generate_mock_code(request)
-                        model_used = "Mock Generator (Empty Model Result)"
-                else:
-                    logger.warning("Model status not loaded, using mock generation")
-                    generated_code = self._generate_mock_code(request)
-                    model_used = "Mock Generator (Model Not Ready)"
-
-            # Create response
-            response = {
-                "task_id": task_id,
-                "status": "completed",
-                "generated_code": generated_code,
-                "model_used": model_used,
-                "language": request.language,
-                "framework": request.framework,
-                "database": request.database,
-                "features": request.features,
-                "estimated_lines": len(generated_code.split('\n')) if generated_code else 0,
-                "quality_score": 92.5,
-                "created_at": datetime.now().isoformat(),
-                "completion_time": "2.3s"
-            }
-            
-            logger.info(f"Code generation completed for task {task_id}")
-            return response
-            
-        except Exception as e:
-            logger.error(f"Code generation failed: {str(e)}")
-            # Return error response with mock code as fallback
-            error_result = {
-                "task_id": task_id,
-                "status": "error",
-                "error": str(e),
-                "generated_code": self._generate_mock_code(request),
-                "model_used": "Mock Generator (Error Fallback)",
-                "created_at": datetime.now().isoformat()
-            }
-            return error_result
-
-    def _generate_mock_code(self, request: CodeGenRequest) -> str:
-        """Generate mock code when the actual model is not available."""
-        task = request.task_description
-        language = request.language
-        framework = request.framework
-        database = request.database
-        features = request.features
-        
-        if language.lower() == "python" and framework.lower() == "fastapi":
-            return f'''# {task}
-# Generated with FastAPI and {database}
-# Features: {", ".join(features)}
-
-from fastapi import FastAPI, HTTPException, Depends
-from fastapi.security import HTTPBearer
-from sqlalchemy import create_engine, Column, Integer, String, DateTime
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session
-from pydantic import BaseModel
-from datetime import datetime
-import uvicorn
-
-# Database setup
-DATABASE_URL = "{database}://user:password@localhost/mydb"
-engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
-
-# FastAPI app
-app = FastAPI(title="{task}", version="1.0.0")
-{"security = HTTPBearer()" if "auth" in features else ""}
-
-# Models
-class Item(Base):
-    __tablename__ = "items"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, index=True)
-    description = Column(String)
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-# Pydantic schemas
-class ItemCreate(BaseModel):
-    name: str
-    description: str
-
-class ItemResponse(BaseModel):
-    id: int
-    name: str
-    description: str
-    created_at: datetime
-    
-    class Config:
-        from_attributes = True
-
-# Dependency
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-# Routes
-@app.get("/")
-async def root():
-    return {{"message": "Welcome to {task} API"}}
-
-@app.post("/items/", response_model=ItemResponse)
-async def create_item(item: ItemCreate, db: Session = Depends(get_db)):
-    db_item = Item(**item.dict())
-    db.add(db_item)
-    db.commit()
-    db.refresh(db_item)
-    return db_item
-
-@app.get("/items/", response_model=list[ItemResponse])
-async def read_items(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    items = db.query(Item).offset(skip).limit(limit).all()
-    return items
-
-@app.get("/items/{{item_id}}", response_model=ItemResponse)
-async def read_item(item_id: int, db: Session = Depends(get_db)):
-    item = db.query(Item).filter(Item.id == item_id).first()
-    if item is None:
-        raise HTTPException(status_code=404, detail="Item not found")
-    return item
-
-{"# Health check endpoint" if "monitoring" in features else ""}
-{"@app.get('/health')" if "monitoring" in features else ""}
-{"async def health_check():" if "monitoring" in features else ""}
-{"    return {'status': 'healthy', 'timestamp': datetime.utcnow()}" if "monitoring" in features else ""}
-
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
-'''
-        
-        elif language.lower() == "typescript" and framework.lower() == "react":
-            return f'''// {task}
-// Generated with React and TypeScript
-// Features: {", ".join(features)}
-
-import React, {{ useState, useEffect }} from 'react';
-{"import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';" if "auth" in features else ""}
-
-interface Item {{
-  id: number;
-  name: string;
-  description: string;
-  createdAt: string;
-}}
-
-const App: React.FC = () => {{
-  const [items, setItems] = useState<Item[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {{
-    fetchItems();
-  }}, []);
-
-  const fetchItems = async () => {{
-    try {{
-      const response = await fetch('/api/items');
-      const data = await response.json();
-      setItems(data);
-    }} catch (error) {{
-      console.error('Error fetching items:', error);
-    }} finally {{
-      setLoading(false);
-    }}
-  }};
-
-  if (loading) {{
-    return <div className="loading">Loading...</div>;
-  }}
-
-  return (
-    <div className="app">
-      <header className="app-header">
-        <h1>{task}</h1>
-      </header>
-      <main className="app-main">
-        <div className="items-grid">
-          {{items.map(item => (
-            <div key={{item.id}} className="item-card">
-              <h3>{{item.name}}</h3>
-              <p>{{item.description}}</p>
-              <small>{{new Date(item.createdAt).toLocaleDateString()}}</small>
-            </div>
-          ))}}
-        </div>
-      </main>
-    </div>
-  );
-}};
-
-export default App;
-'''
-        
-        return f"// {task}\n// Generated code for {language} with {framework}\nconsole.log('Hello World');"
-
     def _create_code_generation_prompt(self, request: CodeGenRequest) -> str:
         """Create a detailed prompt for code generation."""
         features_str = ", ".join(request.features)
