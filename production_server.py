@@ -676,7 +676,7 @@ class ProductionServer:
                     "estimated_lines": len(generated_code.split('\n')),
                     "completion_time": "3.4min",
                     "model_used": model_used,
-                    "created_at": datetime.now()
+                    "created_at": datetime.now().isoformat()
                 }
                 
                 # Broadcast to WebSocket clients
@@ -696,7 +696,7 @@ class ProductionServer:
                     "error": str(e),
                     "generated_code": self._generate_mock_code(request),
                     "model_used": "Mock Generator (Error Fallback)",
-                    "created_at": datetime.now()
+                    "created_at": datetime.now().isoformat()
                 }
                 return error_result
         
