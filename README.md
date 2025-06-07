@@ -87,47 +87,70 @@ The platform follows a modular, extensible architecture designed for zero-cost, 
 - **API Management**: External service integration and management
 
 ### 🧠 AI Model Management
-- **Local Models**: Support for local LLM execution (LLAMA.cpp, ONNX)
-- **Model Quantization**: Resource optimization for constrained environments
-- **Dynamic Switching**: Intelligent model selection based on task requirements
-- **Zero-Cost Operation**: No API costs with local model support
+- **DeepSeek R1 0528**: Latest DeepSeek R1 model with enhanced reasoning and coding capabilities
+- **Zero-Cost AI**: Complete local execution without API costs
+- **Auto-Detection**: Automatic system capability detection and optimization
+- **Multiple Formats**: Support for Transformers and GGUF (llama.cpp) formats
+- **CPU/GPU Flexibility**: Intelligent execution mode selection based on available hardware
+- **Model Quantization**: Automatic resource optimization for constrained environments
+- **Interactive Selection**: User-friendly model selection interface
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Python 3.12+
-- Docker (optional, for sandbox environments)
+- Python 3.8+ (3.10+ recommended)
+- 8GB+ RAM (16GB+ recommended)
+- GPU with 4GB+ VRAM (optional, for best performance)
 - Git
 
-### Installation
-
-1. **Clone the repository**:
+### Option 1: Automated Setup (Recommended)
 ```bash
 git clone https://github.com/heinzstkdev/reVoAgent.git
 cd reVoAgent
+./scripts/quick_setup.sh
 ```
 
-2. **Install dependencies**:
+### Option 2: Interactive Model Selection
 ```bash
+git clone https://github.com/heinzstkdev/reVoAgent.git
+cd reVoAgent
+./scripts/quick_setup.sh
+./select_model.sh  # Interactive model selection
+```
+
+### Option 3: Manual Setup
+```bash
+# Clone repository
+git clone https://github.com/heinzstkdev/reVoAgent.git
+cd reVoAgent
+
+# Install dependencies
 pip install -r requirements.txt
+
+# Start with interactive model selection
+python main.py --interactive-model-selection
 ```
 
-3. **Configure the platform**:
+### Option 4: Production Docker Deployment
 ```bash
-cp config/config.example.yaml config/config.yaml
-# Edit config/config.yaml with your preferences
+git clone https://github.com/heinzstkdev/reVoAgent.git
+cd reVoAgent
+docker-compose -f docker-compose.production.yml up -d
 ```
 
-4. **Start the platform**:
+### Option 5: Specific Execution Modes
 ```bash
-python main.py
-```
+# CPU-only mode (lower resource usage)
+python main.py --cpu-only
 
-### Docker Installation
+# GPU-accelerated mode (best performance)
+python main.py --gpu-only
 
-```bash
-docker build -t revoagent .
-docker run -it -p 8000:8000 revoagent
+# Web dashboard only
+python main.py --mode web
+
+# CLI interface only  
+python main.py --mode cli
 ```
 
 ## 📖 Usage
