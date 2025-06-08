@@ -1,3 +1,14 @@
+# ============================================================================
+# CRITICAL: Prevent junk files that caused issues in repository analysis
+# ============================================================================
+=*                      # Files like =0.1.99 (pip output redirects)
+*_backup.py            # Backup files should not be in version control
+*.log                  # Log files
+.DS_Store             # macOS files
+
+# ============================================================================
+# Python
+# ============================================================================
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -121,6 +132,10 @@ celerybeat.pid
 
 # Environments
 .env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 .venv
 env/
 venv/
@@ -158,36 +173,55 @@ cython_debug/
 #  project, it is generally recommended to exclude the entire .idea directory.
 .idea/
 
-# reVoAgent specific
+# ============================================================================
+# reVoAgent Specific
+# ============================================================================
 config/config.yaml
+config/local.yaml
+config/development.yaml
 data/
 models/
 temp/
 logs/
 screenshots/
 
-# Model files
+# ============================================================================
+# AI/ML Models & Data
+# ============================================================================
 *.gguf
 *.bin
 *.safetensors
 *.onnx
+*.model
+checkpoints/
+wandb/
 
+# ============================================================================
 # API keys and secrets
+# ============================================================================
 .env.local
 .env.production
 secrets.yaml
+*.pem
+*.key
 
+# ============================================================================
 # Database files
+# ============================================================================
 *.db
 *.sqlite
 *.sqlite3
 
+# ============================================================================
 # Cache directories
+# ============================================================================
 .cache/
 .pytest_cache/
 .mypy_cache/
 
+# ============================================================================
 # OS specific
+# ============================================================================
 .DS_Store
 .DS_Store?
 ._*
@@ -196,31 +230,47 @@ secrets.yaml
 ehthumbs.db
 Thumbs.db
 
+# ============================================================================
 # Editor specific
+# ============================================================================
 .vscode/
 *.swp
 *.swo
 *~
+.project
+.pydevproject
 
+# ============================================================================
 # Docker
+# ============================================================================
 .dockerignore
+docker-compose.override.yml
 
-# Backup files
+# ============================================================================
+# Backup and temporary files
+# ============================================================================
 *.bak
 *.backup
 *.old
-
-# Temporary files
 *.tmp
 *.temp
+*_backup.*
 
-# Node.js (for web dashboard)
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# ============================================================================
+# Frontend (Node.js/React)
+# ============================================================================
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.vite/
+frontend/coverage/
+*.tsbuildinfo
+.npm
+.eslintcache
 
+# ============================================================================
 # Build outputs
+# ============================================================================
 build/
 dist/
 *.tar.gz
