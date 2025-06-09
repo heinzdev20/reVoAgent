@@ -1,0 +1,8 @@
+{
+  "migration_date": "2025-06-09",
+  "old_structure": "src/revoagent/",
+  "new_structure": "packages/",
+  "files_migrated": 90,
+  "status": "completed",
+  "note": "Old structure preserved in src/ for reference"
+}

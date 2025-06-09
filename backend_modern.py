@@ -20,7 +20,7 @@ from pydantic import BaseModel, Field
 import uvicorn
 
 # Phase 4 Imports
-from src.revoagent.core.framework import ThreeEngineArchitecture
+from packages.core.framework import ThreeEngineArchitecture
 from src.revoagent.specialized_agents import (
     WorkflowIntelligence, AgentDashboard, CodeAnalysisAgent, 
     DebugDetectiveAgent, ArchitectureAdvisorAgent, PerformanceOptimizerAgent,
