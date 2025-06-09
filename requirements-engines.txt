@@ -1,0 +1,33 @@
+# Three-Engine Architecture Dependencies
+# Advanced dependencies for the revolutionary Three-Engine Architecture
+
+# Perfect Recall Engine Dependencies
+redis>=4.5.0                    # High-performance memory store
+chromadb>=0.4.0                 # Vector database for semantic search
+sentence-transformers>=2.2.0    # Embedding generation
+numpy>=1.24.0                   # Numerical operations
+
+# Parallel Mind Engine Dependencies
+psutil>=5.9.0                   # System monitoring and metrics
+concurrent-futures>=3.1.1       # Enhanced parallel processing
+
+# Creative Engine Dependencies
+# (Uses built-in libraries for creativity techniques)
+
+# Engine Coordination Dependencies
+asyncio-mqtt>=0.11.0            # Optional: For distributed coordination
+websockets>=11.0                # Optional: For real-time communication
+
+# Optional Performance Enhancements
+uvloop>=0.17.0                  # High-performance event loop (Unix only)
+orjson>=3.8.0                   # Fast JSON serialization
+msgpack>=1.0.0                  # Efficient binary serialization
+
+# Optional Monitoring and Observability
+prometheus-client>=0.16.0       # Metrics collection
+structlog>=22.3.0               # Structured logging
+
+# Development and Testing
+pytest>=7.2.0                   # Testing framework
+pytest-asyncio>=0.21.0          # Async testing support
+pytest-benchmark>=4.0.0         # Performance benchmarking

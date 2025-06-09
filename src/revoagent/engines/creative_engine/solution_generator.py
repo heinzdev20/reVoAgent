@@ -1,817 +1,497 @@
 """
-Creative Engine - Solution Generator
-Generate 3-5 alternative solutions with innovation scoring
+🎨 Creative Engine Solution Generator
+
+Advanced solution generation with multiple creativity techniques.
+Implements the complete solution generation from the implementation guide.
 """
 
 import asyncio
-import time
-import uuid
 import random
+import time
 from typing import Dict, List, Any, Optional, Tuple
 from dataclasses import dataclass, field
-from datetime import datetime
 from enum import Enum
-import logging
-
-logger = logging.getLogger(__name__)
+import uuid
+import json
 
 class SolutionType(Enum):
-    CONVENTIONAL = "conventional"
+    ALGORITHMIC = "algorithmic"
+    ARCHITECTURAL = "architectural"
+    OPTIMIZATION = "optimization"
+    ALTERNATIVE = "alternative"
     INNOVATIVE = "innovative"
-    EXPERIMENTAL = "experimental"
-    HYBRID = "hybrid"
-    BREAKTHROUGH = "breakthrough"
 
-class CreativityLevel(Enum):
-    CONSERVATIVE = 0.3
-    MODERATE = 0.5
-    CREATIVE = 0.7
-    HIGHLY_CREATIVE = 0.9
-    REVOLUTIONARY = 1.0
+class CreativityTechnique(Enum):
+    BRAINSTORMING = "brainstorming"
+    LATERAL_THINKING = "lateral_thinking"
+    ANALOGICAL_REASONING = "analogical_reasoning"
+    CONSTRAINT_RELAXATION = "constraint_relaxation"
+    PATTERN_BREAKING = "pattern_breaking"
+    SYNTHESIS = "synthesis"
 
 @dataclass
-class Problem:
-    """Problem definition for solution generation"""
-    problem_id: str
-    description: str
+class SolutionCriteria:
+    """Criteria for solution generation"""
+    problem_domain: str
     constraints: List[str]
-    requirements: List[str]
-    context: Dict[str, Any]
-    domain: str
-    complexity: float  # 0.0 to 1.0
-    priority: int = 1
+    performance_requirements: Dict[str, Any]
+    innovation_level: float  # 0.0 (conservative) to 1.0 (highly innovative)
+    target_count: int = 5
+    timeout_seconds: int = 30
 
 @dataclass
 class Solution:
     """Generated solution with metadata"""
-    solution_id: str
-    problem_id: str
-    approach: str
-    implementation: Dict[str, Any]
-    innovation_score: float
-    feasibility_score: float
-    creativity_score: float
+    id: str
     solution_type: SolutionType
-    estimated_effort: float
+    title: str
+    description: str
+    implementation: str
+    creativity_score: float
+    feasibility_score: float
+    innovation_score: float
+    technique_used: CreativityTechnique
+    estimated_effort: str  # "low", "medium", "high"
     pros: List[str]
     cons: List[str]
-    risks: List[str]
-    generated_at: datetime = field(default_factory=datetime.now)
+    generated_at: float = field(default_factory=time.time)
 
 @dataclass
-class GenerationRequest:
-    """Request for solution generation"""
-    request_id: str
-    problem: Problem
-    solution_count: int = 5
-    creativity_level: float = 0.8
-    innovation_bias: float = 0.6
-    time_limit: float = 30.0
-    exclude_patterns: List[str] = field(default_factory=list)
+class GenerationContext:
+    """Context for solution generation"""
+    problem_statement: str
+    existing_solutions: List[str]
+    domain_knowledge: Dict[str, Any]
+    user_preferences: Dict[str, Any]
+    constraints: List[str]
 
 class SolutionGenerator:
-    """
-    Advanced solution generation with multiple creative strategies
-    Generates 3-5 alternative approaches per problem
-    """
+    """Advanced solution generation with multiple creativity techniques"""
     
-    def __init__(self, creativity_level: float = 0.8, innovation_bias: float = 0.6):
-        self.creativity_level = creativity_level
-        self.innovation_bias = innovation_bias
-        self.generation_strategies = {
-            'analogical_reasoning': self._generate_analogical_solutions,
-            'constraint_relaxation': self._generate_constraint_relaxed_solutions,
-            'combination_synthesis': self._generate_combination_solutions,
-            'inversion_thinking': self._generate_inversion_solutions,
-            'random_stimulation': self._generate_random_stimulated_solutions,
-            'pattern_breaking': self._generate_pattern_breaking_solutions,
-            'biomimetic': self._generate_biomimetic_solutions,
-            'lateral_thinking': self._generate_lateral_solutions
+    def __init__(self):
+        self.creativity_techniques = {
+            CreativityTechnique.BRAINSTORMING: self._brainstorm_solutions,
+            CreativityTechnique.LATERAL_THINKING: self._lateral_thinking_solutions,
+            CreativityTechnique.ANALOGICAL_REASONING: self._analogical_solutions,
+            CreativityTechnique.CONSTRAINT_RELAXATION: self._constraint_relaxation_solutions,
+            CreativityTechnique.PATTERN_BREAKING: self._pattern_breaking_solutions,
+            CreativityTechnique.SYNTHESIS: self._synthesis_solutions,
         }
-        self.domain_knowledge = {
-            'software_engineering': {
-                'patterns': ['mvc', 'observer', 'factory', 'singleton', 'strategy'],
-                'paradigms': ['oop', 'functional', 'reactive', 'event_driven'],
-                'technologies': ['microservices', 'serverless', 'containers', 'ai_ml']
+        
+        # Knowledge bases for different domains
+        self.domain_patterns = {
+            "web_development": {
+                "architectural_patterns": ["MVC", "MVP", "MVVM", "Component-based", "Microservices"],
+                "performance_patterns": ["Caching", "CDN", "Lazy loading", "Code splitting", "SSR"],
+                "innovation_areas": ["PWA", "WebAssembly", "Edge computing", "AI integration"]
             },
-            'data_science': {
-                'algorithms': ['clustering', 'classification', 'regression', 'deep_learning'],
-                'techniques': ['feature_engineering', 'ensemble', 'transfer_learning'],
-                'tools': ['neural_networks', 'decision_trees', 'svm', 'random_forest']
+            "data_processing": {
+                "algorithmic_patterns": ["Streaming", "Batch", "MapReduce", "Pipeline", "Event-driven"],
+                "optimization_patterns": ["Parallel processing", "Caching", "Indexing", "Compression"],
+                "innovation_areas": ["ML integration", "Real-time analytics", "Auto-scaling"]
             },
-            'system_design': {
-                'architectures': ['monolithic', 'microservices', 'serverless', 'event_driven'],
-                'patterns': ['cqrs', 'event_sourcing', 'saga', 'circuit_breaker'],
-                'scaling': ['horizontal', 'vertical', 'caching', 'load_balancing']
+            "api_design": {
+                "architectural_patterns": ["REST", "GraphQL", "gRPC", "Event-driven", "CQRS"],
+                "performance_patterns": ["Rate limiting", "Caching", "Pagination", "Compression"],
+                "innovation_areas": ["Self-documenting", "Auto-versioning", "AI-powered routing"]
             }
         }
-        self.innovation_patterns = [
-            'reverse_engineering', 'abstraction_elevation', 'modularization',
-            'automation', 'optimization', 'simplification', 'integration',
-            'parallelization', 'caching', 'prediction', 'adaptation'
+        
+        # Innovation templates
+        self.innovation_templates = [
+            "What if we applied {technology} to {problem_domain}?",
+            "How would {industry} solve this problem?",
+            "What if we removed the constraint of {constraint}?",
+            "How could we make this {adjective}?",
+            "What if we combined {approach1} with {approach2}?"
+        ]
+    
+    async def generate_solutions(self, criteria: SolutionCriteria, 
+                               context: GenerationContext) -> List[Solution]:
+        """Generate multiple creative solutions"""
+        start_time = time.time()
+        solutions = []
+        
+        # Determine which techniques to use based on innovation level
+        techniques_to_use = self._select_techniques(criteria.innovation_level)
+        
+        # Generate solutions using different techniques
+        generation_tasks = []
+        for technique in techniques_to_use:
+            task = asyncio.create_task(
+                self._generate_with_technique(technique, criteria, context)
+            )
+            generation_tasks.append(task)
+        
+        # Wait for all techniques to complete or timeout
+        try:
+            technique_results = await asyncio.wait_for(
+                asyncio.gather(*generation_tasks, return_exceptions=True),
+                timeout=criteria.timeout_seconds
+            )
+            
+            # Collect valid solutions
+            for result in technique_results:
+                if isinstance(result, list):
+                    solutions.extend(result)
+                elif isinstance(result, Exception):
+                    print(f"Technique failed: {result}")
+        
+        except asyncio.TimeoutError:
+            print(f"Solution generation timed out after {criteria.timeout_seconds}s")
+        
+        # Score and rank solutions
+        scored_solutions = await self._score_solutions(solutions, criteria, context)
+        
+        # Select top solutions
+        top_solutions = sorted(scored_solutions, key=lambda s: s.innovation_score, reverse=True)
+        final_solutions = top_solutions[:criteria.target_count]
+        
+        generation_time = time.time() - start_time
+        print(f"Generated {len(final_solutions)} solutions in {generation_time:.2f}s")
+        
+        return final_solutions
+    
+    def _select_techniques(self, innovation_level: float) -> List[CreativityTechnique]:
+        """Select creativity techniques based on innovation level"""
+        if innovation_level < 0.3:
+            return [CreativityTechnique.BRAINSTORMING, CreativityTechnique.SYNTHESIS]
+        elif innovation_level < 0.7:
+            return [
+                CreativityTechnique.BRAINSTORMING,
+                CreativityTechnique.ANALOGICAL_REASONING,
+                CreativityTechnique.CONSTRAINT_RELAXATION
+            ]
+        else:
+            return list(CreativityTechnique)  # Use all techniques for high innovation
+    
+    async def _generate_with_technique(self, technique: CreativityTechnique,
+                                     criteria: SolutionCriteria,
+                                     context: GenerationContext) -> List[Solution]:
+        """Generate solutions using a specific technique"""
+        try:
+            generator_func = self.creativity_techniques[technique]
+            return await generator_func(criteria, context)
+        except Exception as e:
+            print(f"Error in technique {technique}: {e}")
+            return []
+    
+    async def _brainstorm_solutions(self, criteria: SolutionCriteria,
+                                   context: GenerationContext) -> List[Solution]:
+        """Traditional brainstorming approach"""
+        solutions = []
+        domain = criteria.problem_domain
+        
+        if domain in self.domain_patterns:
+            patterns = self.domain_patterns[domain]
+            
+            # Generate solutions based on known patterns
+            for pattern_type, pattern_list in patterns.items():
+                for pattern in pattern_list[:2]:  # Limit to avoid too many solutions
+                    solution = Solution(
+                        id=str(uuid.uuid4()),
+                        solution_type=SolutionType.ARCHITECTURAL,
+                        title=f"{pattern}-based approach",
+                        description=f"Implement using {pattern} pattern for {context.problem_statement}",
+                        implementation=self._generate_implementation_sketch(pattern, context),
+                        creativity_score=0.6,
+                        feasibility_score=0.8,
+                        innovation_score=0.5,
+                        technique_used=CreativityTechnique.BRAINSTORMING,
+                        estimated_effort="medium",
+                        pros=[f"Well-established {pattern} pattern", "Proven approach", "Good documentation"],
+                        cons=["Not highly innovative", "May be overcomplicated for simple cases"]
+                    )
+                    solutions.append(solution)
+        
+        return solutions[:3]  # Return top 3 brainstormed solutions
+    
+    async def _lateral_thinking_solutions(self, criteria: SolutionCriteria,
+                                        context: GenerationContext) -> List[Solution]:
+        """Lateral thinking approach - unexpected connections"""
+        solutions = []
+        
+        # Random word/concept injection for lateral thinking
+        random_concepts = ["nature", "music", "sports", "cooking", "art", "games"]
+        
+        for concept in random.sample(random_concepts, 2):
+            solution = Solution(
+                id=str(uuid.uuid4()),
+                solution_type=SolutionType.INNOVATIVE,
+                title=f"{concept.title()}-inspired approach",
+                description=f"Drawing inspiration from {concept}, we could approach {context.problem_statement} by...",
+                implementation=self._generate_lateral_implementation(concept, context),
+                creativity_score=0.9,
+                feasibility_score=0.6,
+                innovation_score=0.8,
+                technique_used=CreativityTechnique.LATERAL_THINKING,
+                estimated_effort="high",
+                pros=["Highly creative", "Unexpected approach", "Potential breakthrough"],
+                cons=["High risk", "Unproven concept", "May require research"]
+            )
+            solutions.append(solution)
+        
+        return solutions
+    
+    async def _analogical_solutions(self, criteria: SolutionCriteria,
+                                   context: GenerationContext) -> List[Solution]:
+        """Analogical reasoning - solutions from other domains"""
+        solutions = []
+        
+        # Cross-domain analogies
+        analogies = {
+            "biological": "How would nature solve this? (evolution, adaptation, ecosystem)",
+            "mechanical": "How would an engineer solve this? (gears, leverage, efficiency)",
+            "social": "How would a community solve this? (collaboration, voting, leadership)",
+            "economic": "How would a market solve this? (supply/demand, competition, optimization)"
+        }
+        
+        for domain, analogy_question in analogies.items():
+            solution = Solution(
+                id=str(uuid.uuid4()),
+                solution_type=SolutionType.ALTERNATIVE,
+                title=f"{domain.title()} analogy approach",
+                description=f"{analogy_question} Applied to: {context.problem_statement}",
+                implementation=self._generate_analogical_implementation(domain, context),
+                creativity_score=0.8,
+                feasibility_score=0.7,
+                innovation_score=0.7,
+                technique_used=CreativityTechnique.ANALOGICAL_REASONING,
+                estimated_effort="medium",
+                pros=["Cross-domain insights", "Proven in other fields", "Novel application"],
+                cons=["May not directly translate", "Requires adaptation", "Unvalidated in domain"]
+            )
+            solutions.append(solution)
+        
+        return solutions[:2]  # Return top 2 analogical solutions
+    
+    async def _constraint_relaxation_solutions(self, criteria: SolutionCriteria,
+                                             context: GenerationContext) -> List[Solution]:
+        """Constraint relaxation - what if we remove limitations?"""
+        solutions = []
+        
+        for constraint in context.constraints[:2]:  # Work with first 2 constraints
+            solution = Solution(
+                id=str(uuid.uuid4()),
+                solution_type=SolutionType.OPTIMIZATION,
+                title=f"Without '{constraint}' constraint",
+                description=f"If we didn't have to worry about {constraint}, we could solve {context.problem_statement} by...",
+                implementation=self._generate_unconstrained_implementation(constraint, context),
+                creativity_score=0.7,
+                feasibility_score=0.5,  # Lower feasibility due to constraint violation
+                innovation_score=0.8,
+                technique_used=CreativityTechnique.CONSTRAINT_RELAXATION,
+                estimated_effort="high",
+                pros=["Optimal solution", "No artificial limitations", "Maximum performance"],
+                cons=[f"Violates {constraint} constraint", "May not be implementable", "High resource requirements"]
+            )
+            solutions.append(solution)
+        
+        return solutions
+    
+    async def _pattern_breaking_solutions(self, criteria: SolutionCriteria,
+                                        context: GenerationContext) -> List[Solution]:
+        """Pattern breaking - challenge assumptions"""
+        solutions = []
+        
+        # Challenge common assumptions
+        assumptions_to_break = [
+            "synchronous processing",
+            "single-threaded execution",
+            "centralized architecture",
+            "traditional database storage",
+            "HTTP-based communication"
         ]
         
-    async def initialize(self) -> bool:
-        """Initialize solution generator"""
-        try:
-            logger.info("🩷 Creative Engine: Solution Generator initialized")
-            return True
-        except Exception as e:
-            logger.error(f"🩷 Failed to initialize Solution Generator: {e}")
-            return False
-    
-    async def generate_solutions(self, request: GenerationRequest) -> List[Solution]:
-        """
-        Generate multiple alternative solutions for a problem
-        """
-        start_time = time.time()
-        
-        try:
-            solutions = []
-            
-            # Determine which strategies to use
-            strategies_to_use = await self._select_generation_strategies(
-                request.problem, request.solution_count
-            )
-            
-            # Generate solutions using different strategies
-            for strategy_name in strategies_to_use:
-                if strategy_name in self.generation_strategies:
-                    strategy_func = self.generation_strategies[strategy_name]
-                    
-                    try:
-                        strategy_solutions = await strategy_func(request)
-                        solutions.extend(strategy_solutions)
-                    except Exception as e:
-                        logger.warning(f"🩷 Strategy {strategy_name} failed: {e}")
-                        continue
-            
-            # Ensure we have enough solutions
-            while len(solutions) < request.solution_count:
-                fallback_solution = await self._generate_fallback_solution(request)
-                solutions.append(fallback_solution)
-            
-            # Score and rank solutions
-            scored_solutions = await self._score_solutions(solutions, request)
-            
-            # Select best solutions based on diversity and quality
-            final_solutions = await self._select_diverse_solutions(
-                scored_solutions, request.solution_count
-            )
-            
-            generation_time = time.time() - start_time
-            logger.info(f"🩷 Generated {len(final_solutions)} solutions in {generation_time:.3f}s")
-            
-            return final_solutions
-            
-        except Exception as e:
-            logger.error(f"🩷 Error generating solutions: {e}")
-            return []
-    
-    async def generate_code_solutions(self, problem_description: str,
-                                    requirements: List[str],
-                                    constraints: List[str] = None,
-                                    solution_count: int = 5) -> List[Solution]:
-        """
-        Generate code-specific solutions
-        """
-        problem = Problem(
-            problem_id=f"code_{uuid.uuid4().hex[:8]}",
-            description=problem_description,
-            constraints=constraints or [],
-            requirements=requirements,
-            context={'domain': 'software_engineering'},
-            domain='software_engineering',
-            complexity=0.7
-        )
-        
-        request = GenerationRequest(
-            request_id=f"req_{uuid.uuid4().hex[:8]}",
-            problem=problem,
-            solution_count=solution_count,
-            creativity_level=self.creativity_level,
-            innovation_bias=self.innovation_bias
-        )
-        
-        return await self.generate_solutions(request)
-    
-    async def generate_architecture_solutions(self, system_requirements: Dict[str, Any],
-                                            constraints: List[str] = None,
-                                            solution_count: int = 4) -> List[Solution]:
-        """
-        Generate system architecture solutions
-        """
-        problem = Problem(
-            problem_id=f"arch_{uuid.uuid4().hex[:8]}",
-            description=f"Design system architecture for: {system_requirements.get('description', 'Unknown system')}",
-            constraints=constraints or [],
-            requirements=[f"{k}: {v}" for k, v in system_requirements.items()],
-            context=system_requirements,
-            domain='system_design',
-            complexity=0.8
-        )
-        
-        request = GenerationRequest(
-            request_id=f"req_{uuid.uuid4().hex[:8]}",
-            problem=problem,
-            solution_count=solution_count,
-            creativity_level=self.creativity_level,
-            innovation_bias=self.innovation_bias
-        )
-        
-        return await self.generate_solutions(request)
-    
-    async def generate_optimization_solutions(self, optimization_target: Dict[str, Any],
-                                            current_metrics: Dict[str, float],
-                                            solution_count: int = 3) -> List[Solution]:
-        """
-        Generate optimization solutions
-        """
-        problem = Problem(
-            problem_id=f"opt_{uuid.uuid4().hex[:8]}",
-            description=f"Optimize {optimization_target.get('target', 'system')}",
-            constraints=[f"Current {k}: {v}" for k, v in current_metrics.items()],
-            requirements=[f"Improve {k}" for k in optimization_target.get('metrics', [])],
-            context={'current_metrics': current_metrics, 'target': optimization_target},
-            domain='optimization',
-            complexity=0.6
-        )
-        
-        request = GenerationRequest(
-            request_id=f"req_{uuid.uuid4().hex[:8]}",
-            problem=problem,
-            solution_count=solution_count,
-            creativity_level=self.creativity_level,
-            innovation_bias=self.innovation_bias
-        )
-        
-        return await self.generate_solutions(request)
-    
-    async def _select_generation_strategies(self, problem: Problem, 
-                                          solution_count: int) -> List[str]:
-        """
-        Select appropriate generation strategies based on problem characteristics
-        """
-        try:
-            strategies = []
-            
-            # Always include core strategies
-            strategies.extend(['analogical_reasoning', 'constraint_relaxation'])
-            
-            # Add domain-specific strategies
-            if problem.domain == 'software_engineering':
-                strategies.extend(['combination_synthesis', 'pattern_breaking'])
-            elif problem.domain == 'system_design':
-                strategies.extend(['inversion_thinking', 'lateral_thinking'])
-            elif problem.complexity > 0.7:
-                strategies.extend(['biomimetic', 'random_stimulation'])
-            
-            # Ensure we have enough strategies
-            all_strategies = list(self.generation_strategies.keys())
-            while len(strategies) < min(solution_count, len(all_strategies)):
-                remaining = [s for s in all_strategies if s not in strategies]
-                if remaining:
-                    strategies.append(random.choice(remaining))
-                else:
-                    break
-            
-            return strategies[:solution_count]
-            
-        except Exception as e:
-            logger.error(f"🩷 Error selecting strategies: {e}")
-            return ['analogical_reasoning', 'constraint_relaxation']
-    
-    async def _generate_analogical_solutions(self, request: GenerationRequest) -> List[Solution]:
-        """
-        Generate solutions using analogical reasoning
-        """
-        try:
-            solutions = []
-            problem = request.problem
-            
-            # Find analogies from different domains
-            analogies = [
-                {'domain': 'nature', 'concept': 'ecosystem', 'principle': 'symbiosis'},
-                {'domain': 'architecture', 'concept': 'foundation', 'principle': 'load_distribution'},
-                {'domain': 'biology', 'concept': 'immune_system', 'principle': 'adaptive_defense'},
-                {'domain': 'economics', 'concept': 'market', 'principle': 'supply_demand_balance'}
-            ]
-            
-            for analogy in analogies[:2]:  # Generate 2 analogical solutions
-                solution = Solution(
-                    solution_id=f"analog_{uuid.uuid4().hex[:8]}",
-                    problem_id=problem.problem_id,
-                    approach=f"Analogical approach inspired by {analogy['concept']} from {analogy['domain']}",
-                    implementation={
-                        'analogy_source': analogy,
-                        'principle': analogy['principle'],
-                        'adaptation': f"Apply {analogy['principle']} to {problem.description}",
-                        'components': self._generate_analogical_components(analogy, problem)
-                    },
-                    innovation_score=0.7 + random.uniform(0, 0.2),
-                    feasibility_score=0.6 + random.uniform(0, 0.3),
-                    creativity_score=0.8 + random.uniform(0, 0.2),
-                    solution_type=SolutionType.INNOVATIVE,
-                    estimated_effort=random.uniform(0.5, 0.8),
-                    pros=[f"Novel approach from {analogy['domain']}", "Cross-domain innovation"],
-                    cons=["May require adaptation", "Unproven in this context"],
-                    risks=["Implementation complexity", "Unknown edge cases"]
-                )
-                solutions.append(solution)
-            
-            return solutions
-            
-        except Exception as e:
-            logger.error(f"🩷 Error in analogical generation: {e}")
-            return []
-    
-    async def _generate_constraint_relaxed_solutions(self, request: GenerationRequest) -> List[Solution]:
-        """
-        Generate solutions by relaxing constraints
-        """
-        try:
-            solutions = []
-            problem = request.problem
-            
-            # Identify constraints that can be relaxed
-            relaxable_constraints = problem.constraints[:2]  # Take first 2 constraints
-            
-            for constraint in relaxable_constraints:
-                solution = Solution(
-                    solution_id=f"relax_{uuid.uuid4().hex[:8]}",
-                    problem_id=problem.problem_id,
-                    approach=f"Solution with relaxed constraint: {constraint}",
-                    implementation={
-                        'relaxed_constraint': constraint,
-                        'alternative_approach': f"Alternative that bypasses {constraint}",
-                        'compensation_strategy': f"Compensate for relaxed {constraint}",
-                        'components': self._generate_relaxed_components(constraint, problem)
-                    },
-                    innovation_score=0.6 + random.uniform(0, 0.3),
-                    feasibility_score=0.8 + random.uniform(0, 0.2),
-                    creativity_score=0.7 + random.uniform(0, 0.2),
-                    solution_type=SolutionType.HYBRID,
-                    estimated_effort=random.uniform(0.3, 0.6),
-                    pros=["Removes limiting constraint", "Potentially simpler implementation"],
-                    cons=["May not meet all original requirements", "Requires stakeholder approval"],
-                    risks=["Constraint may be critical", "May impact other requirements"]
-                )
-                solutions.append(solution)
-            
-            return solutions
-            
-        except Exception as e:
-            logger.error(f"🩷 Error in constraint relaxation: {e}")
-            return []
-    
-    async def _generate_combination_solutions(self, request: GenerationRequest) -> List[Solution]:
-        """
-        Generate solutions by combining existing approaches
-        """
-        try:
-            solutions = []
-            problem = request.problem
-            
-            # Get domain knowledge for combinations
-            domain_info = self.domain_knowledge.get(problem.domain, {})
-            patterns = domain_info.get('patterns', ['pattern_a', 'pattern_b'])
-            paradigms = domain_info.get('paradigms', ['approach_a', 'approach_b'])
-            
-            # Generate combination solutions
-            combinations = [
-                (patterns[0], paradigms[0]) if len(patterns) > 0 and len(paradigms) > 0 else ('approach_1', 'method_1'),
-                (patterns[1] if len(patterns) > 1 else 'approach_2', 
-                 paradigms[1] if len(paradigms) > 1 else 'method_2')
-            ]
-            
-            for i, (approach1, approach2) in enumerate(combinations):
-                solution = Solution(
-                    solution_id=f"combo_{uuid.uuid4().hex[:8]}",
-                    problem_id=problem.problem_id,
-                    approach=f"Hybrid solution combining {approach1} and {approach2}",
-                    implementation={
-                        'primary_approach': approach1,
-                        'secondary_approach': approach2,
-                        'integration_strategy': f"Integrate {approach1} with {approach2}",
-                        'synergy_points': [f"Leverage {approach1} strengths", f"Complement with {approach2}"],
-                        'components': self._generate_combination_components(approach1, approach2, problem)
-                    },
-                    innovation_score=0.5 + random.uniform(0, 0.4),
-                    feasibility_score=0.7 + random.uniform(0, 0.3),
-                    creativity_score=0.6 + random.uniform(0, 0.3),
-                    solution_type=SolutionType.HYBRID,
-                    estimated_effort=random.uniform(0.4, 0.7),
-                    pros=["Combines proven approaches", "Balanced solution"],
-                    cons=["May be complex to implement", "Potential conflicts between approaches"],
-                    risks=["Integration challenges", "Performance overhead"]
-                )
-                solutions.append(solution)
-            
-            return solutions
-            
-        except Exception as e:
-            logger.error(f"🩷 Error in combination generation: {e}")
-            return []
-    
-    async def _generate_inversion_solutions(self, request: GenerationRequest) -> List[Solution]:
-        """
-        Generate solutions using inversion thinking
-        """
-        try:
-            solutions = []
-            problem = request.problem
-            
-            # Inversion strategies
-            inversions = [
-                "Instead of solving the problem, prevent it from occurring",
-                "Instead of adding features, remove complexity",
-                "Instead of centralized approach, use distributed solution",
-                "Instead of reactive handling, use proactive prediction"
-            ]
-            
-            for inversion in inversions[:1]:  # Generate 1 inversion solution
-                solution = Solution(
-                    solution_id=f"invert_{uuid.uuid4().hex[:8]}",
-                    problem_id=problem.problem_id,
-                    approach=f"Inversion approach: {inversion}",
-                    implementation={
-                        'inversion_principle': inversion,
-                        'inverted_strategy': f"Apply inversion to {problem.description}",
-                        'implementation_details': self._generate_inversion_details(inversion, problem),
-                        'components': self._generate_inversion_components(inversion, problem)
-                    },
-                    innovation_score=0.8 + random.uniform(0, 0.2),
-                    feasibility_score=0.5 + random.uniform(0, 0.4),
-                    creativity_score=0.9 + random.uniform(0, 0.1),
-                    solution_type=SolutionType.EXPERIMENTAL,
-                    estimated_effort=random.uniform(0.6, 0.9),
-                    pros=["Highly innovative", "Challenges assumptions"],
-                    cons=["Unproven approach", "May be counterintuitive"],
-                    risks=["High uncertainty", "May not be accepted"]
-                )
-                solutions.append(solution)
-            
-            return solutions
-            
-        except Exception as e:
-            logger.error(f"🩷 Error in inversion generation: {e}")
-            return []
-    
-    async def _generate_random_stimulated_solutions(self, request: GenerationRequest) -> List[Solution]:
-        """
-        Generate solutions using random stimulation
-        """
-        try:
-            solutions = []
-            problem = request.problem
-            
-            # Random stimuli
-            stimuli = [
-                "quantum computing principles",
-                "blockchain consensus mechanisms",
-                "machine learning optimization",
-                "biological neural networks",
-                "swarm intelligence"
-            ]
-            
-            stimulus = random.choice(stimuli)
-            
+        for assumption in random.sample(assumptions_to_break, 2):
             solution = Solution(
-                solution_id=f"random_{uuid.uuid4().hex[:8]}",
-                problem_id=problem.problem_id,
-                approach=f"Solution inspired by {stimulus}",
-                implementation={
-                    'inspiration_source': stimulus,
-                    'adapted_principles': f"Adapt {stimulus} to solve {problem.description}",
-                    'novel_elements': self._generate_novel_elements(stimulus, problem),
-                    'components': self._generate_stimulated_components(stimulus, problem)
-                },
-                innovation_score=0.9 + random.uniform(0, 0.1),
-                feasibility_score=0.4 + random.uniform(0, 0.4),
-                creativity_score=0.95 + random.uniform(0, 0.05),
-                solution_type=SolutionType.BREAKTHROUGH,
-                estimated_effort=random.uniform(0.7, 1.0),
-                pros=["Highly creative", "Potential breakthrough"],
-                cons=["High risk", "May be impractical"],
-                risks=["Unproven technology", "Implementation complexity"]
-            )
-            solutions.append(solution)
-            
-            return solutions
-            
-        except Exception as e:
-            logger.error(f"🩷 Error in random stimulation: {e}")
-            return []
-    
-    async def _generate_pattern_breaking_solutions(self, request: GenerationRequest) -> List[Solution]:
-        """
-        Generate solutions that break conventional patterns
-        """
-        try:
-            solutions = []
-            problem = request.problem
-            
-            # Pattern breaking strategies
-            breaking_strategies = [
-                "Eliminate intermediate steps",
-                "Reverse the typical flow",
-                "Use opposite of standard approach",
-                "Question fundamental assumptions"
-            ]
-            
-            strategy = random.choice(breaking_strategies)
-            
-            solution = Solution(
-                solution_id=f"break_{uuid.uuid4().hex[:8]}",
-                problem_id=problem.problem_id,
-                approach=f"Pattern-breaking solution: {strategy}",
-                implementation={
-                    'breaking_strategy': strategy,
-                    'conventional_pattern': "Standard approach to similar problems",
-                    'pattern_break': f"Break pattern by: {strategy}",
-                    'new_paradigm': f"New approach that {strategy.lower()}",
-                    'components': self._generate_breaking_components(strategy, problem)
-                },
-                innovation_score=0.85 + random.uniform(0, 0.15),
-                feasibility_score=0.5 + random.uniform(0, 0.3),
-                creativity_score=0.9 + random.uniform(0, 0.1),
-                solution_type=SolutionType.EXPERIMENTAL,
-                estimated_effort=random.uniform(0.6, 0.8),
-                pros=["Breaks conventional thinking", "Potential for major improvement"],
-                cons=["Challenges established practices", "May face resistance"],
-                risks=["Unproven approach", "May have hidden issues"]
-            )
-            solutions.append(solution)
-            
-            return solutions
-            
-        except Exception as e:
-            logger.error(f"🩷 Error in pattern breaking: {e}")
-            return []
-    
-    async def _generate_biomimetic_solutions(self, request: GenerationRequest) -> List[Solution]:
-        """
-        Generate solutions inspired by biological systems
-        """
-        try:
-            solutions = []
-            problem = request.problem
-            
-            # Biological inspirations
-            bio_systems = [
-                {'system': 'ant_colony', 'principle': 'swarm_optimization'},
-                {'system': 'neural_network', 'principle': 'adaptive_learning'},
-                {'system': 'immune_system', 'principle': 'pattern_recognition'},
-                {'system': 'ecosystem', 'principle': 'self_organization'}
-            ]
-            
-            bio_system = random.choice(bio_systems)
-            
-            solution = Solution(
-                solution_id=f"bio_{uuid.uuid4().hex[:8]}",
-                problem_id=problem.problem_id,
-                approach=f"Biomimetic solution inspired by {bio_system['system']}",
-                implementation={
-                    'biological_system': bio_system['system'],
-                    'core_principle': bio_system['principle'],
-                    'adaptation': f"Apply {bio_system['principle']} to {problem.description}",
-                    'bio_mechanisms': self._generate_bio_mechanisms(bio_system, problem),
-                    'components': self._generate_biomimetic_components(bio_system, problem)
-                },
-                innovation_score=0.75 + random.uniform(0, 0.25),
-                feasibility_score=0.6 + random.uniform(0, 0.3),
-                creativity_score=0.8 + random.uniform(0, 0.2),
+                id=str(uuid.uuid4()),
                 solution_type=SolutionType.INNOVATIVE,
-                estimated_effort=random.uniform(0.5, 0.8),
-                pros=["Nature-inspired efficiency", "Proven biological principles"],
-                cons=["May need significant adaptation", "Biological complexity"],
-                risks=["Translation challenges", "Scalability issues"]
+                title=f"Breaking '{assumption}' assumption",
+                description=f"What if we didn't assume {assumption}? For {context.problem_statement}...",
+                implementation=self._generate_pattern_breaking_implementation(assumption, context),
+                creativity_score=0.9,
+                feasibility_score=0.6,
+                innovation_score=0.9,
+                technique_used=CreativityTechnique.PATTERN_BREAKING,
+                estimated_effort="high",
+                pros=["Breakthrough potential", "Challenges status quo", "Revolutionary approach"],
+                cons=["High complexity", "Unknown risks", "May require new infrastructure"]
             )
             solutions.append(solution)
-            
-            return solutions
-            
-        except Exception as e:
-            logger.error(f"🩷 Error in biomimetic generation: {e}")
-            return []
-    
-    async def _generate_lateral_solutions(self, request: GenerationRequest) -> List[Solution]:
-        """
-        Generate solutions using lateral thinking
-        """
-        try:
-            solutions = []
-            problem = request.problem
-            
-            # Lateral thinking techniques
-            lateral_techniques = [
-                "Random entry point",
-                "Provocative operation",
-                "Alternative perspectives",
-                "Concept extraction"
-            ]
-            
-            technique = random.choice(lateral_techniques)
-            
-            solution = Solution(
-                solution_id=f"lateral_{uuid.uuid4().hex[:8]}",
-                problem_id=problem.problem_id,
-                approach=f"Lateral thinking solution using {technique}",
-                implementation={
-                    'lateral_technique': technique,
-                    'thinking_process': f"Apply {technique} to generate new perspectives",
-                    'alternative_view': f"View problem through lens of {technique}",
-                    'lateral_insights': self._generate_lateral_insights(technique, problem),
-                    'components': self._generate_lateral_components(technique, problem)
-                },
-                innovation_score=0.7 + random.uniform(0, 0.3),
-                feasibility_score=0.6 + random.uniform(0, 0.3),
-                creativity_score=0.85 + random.uniform(0, 0.15),
-                solution_type=SolutionType.INNOVATIVE,
-                estimated_effort=random.uniform(0.4, 0.7),
-                pros=["Fresh perspective", "Unexpected insights"],
-                cons=["May seem unconventional", "Requires open mindset"],
-                risks=["May not be immediately obvious", "Acceptance challenges"]
-            )
-            solutions.append(solution)
-            
-            return solutions
-            
-        except Exception as e:
-            logger.error(f"🩷 Error in lateral generation: {e}")
-            return []
-    
-    async def _generate_fallback_solution(self, request: GenerationRequest) -> Solution:
-        """
-        Generate a fallback conventional solution
-        """
-        problem = request.problem
         
-        return Solution(
-            solution_id=f"fallback_{uuid.uuid4().hex[:8]}",
-            problem_id=problem.problem_id,
-            approach="Conventional approach with proven methods",
-            implementation={
-                'method': 'standard_approach',
-                'components': ['analysis', 'design', 'implementation', 'testing'],
-                'best_practices': 'Follow industry standards and best practices'
-            },
-            innovation_score=0.3 + random.uniform(0, 0.2),
-            feasibility_score=0.9 + random.uniform(0, 0.1),
-            creativity_score=0.4 + random.uniform(0, 0.2),
-            solution_type=SolutionType.CONVENTIONAL,
-            estimated_effort=random.uniform(0.3, 0.5),
-            pros=["Proven approach", "Low risk", "Well understood"],
-            cons=["Limited innovation", "May not be optimal"],
-            risks=["May not differentiate", "Could be outdated"]
-        )
+        return solutions
     
-    async def _score_solutions(self, solutions: List[Solution], 
-                             request: GenerationRequest) -> List[Solution]:
-        """
-        Score and enhance solution ratings
-        """
-        try:
-            for solution in solutions:
-                # Adjust scores based on request parameters
-                creativity_boost = request.creativity_level * 0.2
-                innovation_boost = request.innovation_bias * 0.15
+    async def _synthesis_solutions(self, criteria: SolutionCriteria,
+                                 context: GenerationContext) -> List[Solution]:
+        """Synthesis - combine existing approaches"""
+        solutions = []
+        
+        if len(context.existing_solutions) >= 2:
+            # Combine pairs of existing solutions
+            for i in range(min(2, len(context.existing_solutions) - 1)):
+                solution1 = context.existing_solutions[i]
+                solution2 = context.existing_solutions[i + 1]
                 
-                solution.creativity_score = min(1.0, solution.creativity_score + creativity_boost)
-                solution.innovation_score = min(1.0, solution.innovation_score + innovation_boost)
-                
-                # Calculate composite score for ranking
-                composite_score = (
-                    solution.innovation_score * 0.4 +
-                    solution.feasibility_score * 0.3 +
-                    solution.creativity_score * 0.3
+                solution = Solution(
+                    id=str(uuid.uuid4()),
+                    solution_type=SolutionType.ALTERNATIVE,
+                    title=f"Hybrid approach combining multiple methods",
+                    description=f"Combining strengths of {solution1} and {solution2} for {context.problem_statement}",
+                    implementation=self._generate_synthesis_implementation(solution1, solution2, context),
+                    creativity_score=0.7,
+                    feasibility_score=0.8,
+                    innovation_score=0.6,
+                    technique_used=CreativityTechnique.SYNTHESIS,
+                    estimated_effort="medium",
+                    pros=["Best of both worlds", "Reduced individual weaknesses", "Practical approach"],
+                    cons=["Increased complexity", "Potential conflicts", "May dilute strengths"]
                 )
-                
-                # Store composite score in implementation for sorting
-                solution.implementation['composite_score'] = composite_score
+                solutions.append(solution)
+        
+        return solutions
+    
+    def _generate_implementation_sketch(self, pattern: str, context: GenerationContext) -> str:
+        """Generate implementation sketch for pattern-based solution"""
+        return f"""
+# {pattern}-based implementation for: {context.problem_statement}
+
+class {pattern}Solution:
+    def __init__(self):
+        # Initialize {pattern} components
+        pass
+    
+    def solve(self, input_data):
+        # Implement {pattern} logic
+        # Step 1: Process input using {pattern} principles
+        # Step 2: Apply {pattern} transformations
+        # Step 3: Return optimized result
+        pass
+        
+# Usage example:
+# solution = {pattern}Solution()
+# result = solution.solve(problem_data)
+"""
+    
+    def _generate_lateral_implementation(self, concept: str, context: GenerationContext) -> str:
+        """Generate implementation inspired by lateral concept"""
+        return f"""
+# {concept.title()}-inspired solution for: {context.problem_statement}
+
+# Drawing inspiration from {concept}:
+# - How does {concept} handle similar challenges?
+# - What principles from {concept} can we apply?
+
+class {concept.title()}InspiredSolution:
+    def __init__(self):
+        # Apply {concept} principles to problem structure
+        pass
+    
+    def solve_like_{concept}(self, input_data):
+        # Mimic {concept} behavior patterns
+        # Example: If {concept} is "nature", use adaptive/evolutionary approaches
+        pass
+"""
+    
+    def _generate_analogical_implementation(self, domain: str, context: GenerationContext) -> str:
+        """Generate implementation based on domain analogy"""
+        return f"""
+# {domain.title()} analogy solution for: {context.problem_statement}
+
+# Key {domain} principles to apply:
+# - [Principle 1 from {domain}]
+# - [Principle 2 from {domain}]
+
+class {domain.title()}AnalogyFolution:
+    def __init__(self):
+        # Structure based on {domain} systems
+        pass
+    
+    def apply_{domain}_principles(self, input_data):
+        # Implement using {domain} methodologies
+        pass
+"""
+    
+    def _generate_unconstrained_implementation(self, constraint: str, context: GenerationContext) -> str:
+        """Generate implementation without specific constraint"""
+        return f"""
+# Unconstrained solution (ignoring '{constraint}') for: {context.problem_statement}
+
+# Note: This solution ignores the '{constraint}' constraint
+# to explore optimal approaches that might inspire constrained solutions
+
+class UnconstrainedSolution:
+    def __init__(self):
+        # Optimal structure without {constraint} limitation
+        pass
+    
+    def solve_optimally(self, input_data):
+        # Implement ideal solution
+        # Consider: How to adapt this for real constraints later
+        pass
+"""
+    
+    def _generate_pattern_breaking_implementation(self, assumption: str, context: GenerationContext) -> str:
+        """Generate implementation that breaks traditional assumptions"""
+        return f"""
+# Pattern-breaking solution (challenging '{assumption}') for: {context.problem_statement}
+
+# Revolutionary approach: What if {assumption} wasn't necessary?
+
+class PatternBreakingSolution:
+    def __init__(self):
+        # Architecture that doesn't rely on {assumption}
+        pass
+    
+    def solve_without_{assumption.replace(' ', '_').replace('-', '_')}(self, input_data):
+        # Implement breakthrough approach
+        pass
+"""
+    
+    def _generate_synthesis_implementation(self, solution1: str, solution2: str, context: GenerationContext) -> str:
+        """Generate implementation that combines multiple approaches"""
+        return f"""
+# Synthesis solution combining multiple approaches for: {context.problem_statement}
+
+# Combining: {solution1} + {solution2}
+
+class HybridSolution:
+    def __init__(self):
+        # Component 1: {solution1} strengths
+        # Component 2: {solution2} strengths
+        pass
+    
+    def solve_hybrid(self, input_data):
+        # Phase 1: Apply {solution1} approach
+        # Phase 2: Apply {solution2} approach  
+        # Phase 3: Synthesize results
+        pass
+"""
+    
+    async def _score_solutions(self, solutions: List[Solution], criteria: SolutionCriteria,
+                             context: GenerationContext) -> List[Solution]:
+        """Score solutions based on multiple criteria"""
+        for solution in solutions:
+            # Creativity scoring based on technique and novelty
+            creativity_weights = {
+                CreativityTechnique.BRAINSTORMING: 0.5,
+                CreativityTechnique.LATERAL_THINKING: 0.9,
+                CreativityTechnique.ANALOGICAL_REASONING: 0.7,
+                CreativityTechnique.CONSTRAINT_RELAXATION: 0.8,
+                CreativityTechnique.PATTERN_BREAKING: 0.9,
+                CreativityTechnique.SYNTHESIS: 0.6
+            }
             
-            # Sort by composite score
-            solutions.sort(key=lambda s: s.implementation.get('composite_score', 0), reverse=True)
+            # Adjust creativity score based on technique
+            base_creativity = creativity_weights.get(solution.technique_used, 0.5)
+            solution.creativity_score = base_creativity
             
-            return solutions
+            # Innovation score considers both creativity and uniqueness
+            uniqueness_bonus = 0.2 if solution.solution_type == SolutionType.INNOVATIVE else 0.0
+            solution.innovation_score = min(1.0, solution.creativity_score + uniqueness_bonus)
             
-        except Exception as e:
-            logger.error(f"🩷 Error scoring solutions: {e}")
-            return solutions
-    
-    async def _select_diverse_solutions(self, solutions: List[Solution], 
-                                      count: int) -> List[Solution]:
-        """
-        Select diverse solutions to avoid similar approaches
-        """
-        try:
-            if len(solutions) <= count:
-                return solutions
-            
-            selected = []
-            remaining = solutions.copy()
-            
-            # Always include the highest-scored solution
-            if remaining:
-                selected.append(remaining.pop(0))
-            
-            # Select diverse solutions
-            while len(selected) < count and remaining:
-                best_candidate = None
-                max_diversity = -1
-                
-                for candidate in remaining:
-                    # Calculate diversity score
-                    diversity = self._calculate_diversity(candidate, selected)
-                    
-                    if diversity > max_diversity:
-                        max_diversity = diversity
-                        best_candidate = candidate
-                
-                if best_candidate:
-                    selected.append(best_candidate)
-                    remaining.remove(best_candidate)
-                else:
-                    # Fallback: just take the next best
-                    selected.append(remaining.pop(0))
-            
-            return selected
-            
-        except Exception as e:
-            logger.error(f"🩷 Error selecting diverse solutions: {e}")
-            return solutions[:count]
-    
-    def _calculate_diversity(self, candidate: Solution, selected: List[Solution]) -> float:
-        """
-        Calculate diversity score for solution selection
-        """
-        try:
-            if not selected:
-                return 1.0
-            
-            diversity_factors = []
-            
-            for existing in selected:
-                # Solution type diversity
-                type_diversity = 0.5 if candidate.solution_type != existing.solution_type else 0.0
-                
-                # Approach diversity (simple string comparison)
-                approach_diversity = 0.3 if candidate.approach != existing.approach else 0.0
-                
-                # Score diversity
-                score_diff = abs(candidate.innovation_score - existing.innovation_score)
-                score_diversity = min(0.2, score_diff)
-                
-                total_diversity = type_diversity + approach_diversity + score_diversity
-                diversity_factors.append(total_diversity)
-            
-            # Return minimum diversity (most conservative)
-            return min(diversity_factors) if diversity_factors else 1.0
-            
-        except Exception as e:
-            logger.error(f"🩷 Error calculating diversity: {e}")
-            return 0.5
-    
-    # Helper methods for generating components
-    def _generate_analogical_components(self, analogy: Dict, problem: Problem) -> List[str]:
-        return [f"Component inspired by {analogy['concept']}", "Adaptation layer", "Integration module"]
-    
-    def _generate_relaxed_components(self, constraint: str, problem: Problem) -> List[str]:
-        return [f"Alternative to {constraint}", "Compensation mechanism", "Validation layer"]
-    
-    def _generate_combination_components(self, approach1: str, approach2: str, problem: Problem) -> List[str]:
-        return [f"{approach1} module", f"{approach2} module", "Integration layer", "Coordination service"]
-    
-    def _generate_inversion_details(self, inversion: str, problem: Problem) -> Dict[str, str]:
-        return {"strategy": inversion, "implementation": f"Implement {inversion} for {problem.description}"}
-    
-    def _generate_inversion_components(self, inversion: str, problem: Problem) -> List[str]:
-        return ["Inversion logic", "Adaptation layer", "Validation system"]
-    
-    def _generate_novel_elements(self, stimulus: str, problem: Problem) -> List[str]:
-        return [f"Element from {stimulus}", "Novel adaptation", "Innovation component"]
-    
-    def _generate_stimulated_components(self, stimulus: str, problem: Problem) -> List[str]:
-        return [f"{stimulus} inspired module", "Adaptation interface", "Integration service"]
-    
-    def _generate_breaking_components(self, strategy: str, problem: Problem) -> List[str]:
-        return ["Pattern breaker", "New paradigm implementation", "Transition manager"]
-    
-    def _generate_bio_mechanisms(self, bio_system: Dict, problem: Problem) -> List[str]:
-        return [f"{bio_system['system']} mechanism", "Bio-adaptation layer", "Natural optimization"]
-    
-    def _generate_biomimetic_components(self, bio_system: Dict, problem: Problem) -> List[str]:
-        return [f"{bio_system['system']} simulator", "Bio-interface", "Adaptation engine"]
-    
-    def _generate_lateral_insights(self, technique: str, problem: Problem) -> List[str]:
-        return [f"Insight from {technique}", "Alternative perspective", "Lateral connection"]
-    
-    def _generate_lateral_components(self, technique: str, problem: Problem) -> List[str]:
-        return [f"{technique} processor", "Perspective shifter", "Insight generator"]
-    
-    async def cleanup(self) -> None:
-        """Cleanup solution generator"""
-        try:
-            logger.info("🩷 Creative Engine: Solution Generator cleaned up")
-        except Exception as e:
-            logger.error(f"🩷 Error during cleanup: {e}")
+            # Feasibility score based on estimated effort and constraints
+            effort_penalty = {"low": 0.0, "medium": 0.1, "high": 0.3}.get(solution.estimated_effort, 0.2)
+            solution.feasibility_score = max(0.1, solution.feasibility_score - effort_penalty)
+        
+        return solutions

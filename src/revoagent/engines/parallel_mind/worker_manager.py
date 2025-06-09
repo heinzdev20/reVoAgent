@@ -1,15 +1,19 @@
 """
-Parallel Mind Engine - Worker Manager
-Auto-scaling 4-16 workers based on demand
+⚡ Parallel Mind Worker Manager
+
+Auto-scaling worker management system (4-16 workers) with intelligent load balancing.
+Implements the complete worker management from the implementation guide.
 """
 
 import asyncio
 import time
-import uuid
-from typing import Dict, List, Any, Optional, Callable
+import psutil
+from typing import Dict, List, Optional, Any, Callable
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
 from enum import Enum
+import uuid
+from concurrent.futures import ThreadPoolExecutor
+import multiprocessing as mp
 import logging
 
 logger = logging.getLogger(__name__)
@@ -18,500 +22,379 @@ class WorkerStatus(Enum):
     IDLE = "idle"
     BUSY = "busy"
     ERROR = "error"
-    STARTING = "starting"
     STOPPING = "stopping"
 
 @dataclass
 class WorkerMetrics:
-    """Metrics for individual worker"""
-    worker_id: str
-    status: WorkerStatus
-    tasks_completed: int
-    tasks_failed: int
-    avg_task_time: float
-    memory_usage_mb: float
-    cpu_usage_percent: float
-    last_activity: datetime
-    uptime_seconds: float
+    """Performance metrics for a worker"""
+    tasks_completed: int = 0
+    total_processing_time: float = 0.0
+    avg_processing_time: float = 0.0
+    error_count: int = 0
+    last_task_time: Optional[float] = None
+    memory_usage_mb: float = 0.0
+    cpu_usage_percent: float = 0.0
+
+@dataclass
+class Worker:
+    """Individual worker instance"""
+    id: str
+    status: WorkerStatus = WorkerStatus.IDLE
+    current_task: Optional[str] = None
+    created_at: float = field(default_factory=time.time)
+    last_active: float = field(default_factory=time.time)
+    metrics: WorkerMetrics = field(default_factory=WorkerMetrics)
+    executor: Optional[ThreadPoolExecutor] = None
 
 @dataclass
 class Task:
-    """Task definition for worker execution"""
-    task_id: str
-    task_type: str
-    data: Dict[str, Any]
-    priority: int = 1
-    timeout: float = 30.0
-    retry_count: int = 0
+    """Task to be executed by workers"""
+    id: str
+    function: Callable
+    args: tuple
+    kwargs: dict
+    priority: int = 5  # 1-10, higher = more priority
+    created_at: float = field(default_factory=time.time)
+    timeout: Optional[float] = None
+    retries: int = 0
     max_retries: int = 3
-    created_at: datetime = field(default_factory=datetime.now)
-    started_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
 
 @dataclass
 class TaskResult:
-    """Result of task execution"""
+    """Result from task execution"""
     task_id: str
-    success: bool
-    result: Any
-    error: Optional[str]
-    execution_time: float
     worker_id: str
-    completed_at: datetime
+    result: Any
+    execution_time: float
+    success: bool
+    error: Optional[str] = None
+    completed_at: float = field(default_factory=time.time)
 
-class Worker:
-    """Individual worker for task execution"""
+class WorkerManager:
+    """Manages pool of workers with auto-scaling"""
     
-    def __init__(self, worker_id: str, task_executor: Callable):
-        self.worker_id = worker_id
-        self.status = WorkerStatus.IDLE
-        self.task_executor = task_executor
-        self.current_task: Optional[Task] = None
-        self.metrics = WorkerMetrics(
-            worker_id=worker_id,
-            status=WorkerStatus.IDLE,
-            tasks_completed=0,
-            tasks_failed=0,
-            avg_task_time=0.0,
-            memory_usage_mb=0.0,
-            cpu_usage_percent=0.0,
-            last_activity=datetime.now(),
-            uptime_seconds=0.0
-        )
-        self.start_time = datetime.now()
-        self.task_times: List[float] = []
+    def __init__(self, min_workers: int = 4, max_workers: int = 16):
+        self.min_workers = min_workers
+        self.max_workers = max_workers
+        self.workers: Dict[str, Worker] = {}
+        self.task_queue = asyncio.PriorityQueue()
+        self.result_queue = asyncio.Queue()
+        self.completed_tasks: Dict[str, TaskResult] = {}
+        self.system_load = 0.0
+        self.scaling_threshold = 0.8
         self.is_running = False
         
+        # Performance tracking
+        self.total_tasks_completed = 0
+        self.total_processing_time = 0.0
+        self.avg_queue_wait_time = 0.0
+        
+        logger.info(f"⚡ Worker Manager initialized (min: {min_workers}, max: {max_workers})")
+        
     async def start(self) -> bool:
-        """Start the worker"""
+        """Start the worker manager"""
         try:
-            self.status = WorkerStatus.STARTING
             self.is_running = True
-            self.status = WorkerStatus.IDLE
-            self.metrics.status = WorkerStatus.IDLE
-            logger.debug(f"🟣 Worker {self.worker_id} started")
+            
+            # Create initial workers
+            for i in range(self.min_workers):
+                await self._create_worker()
+            
+            # Start management tasks
+            asyncio.create_task(self._worker_manager_loop())
+            asyncio.create_task(self._auto_scaler_loop())
+            asyncio.create_task(self._metrics_collector_loop())
+            
+            logger.info(f"⚡ WorkerManager started with {len(self.workers)} workers")
             return True
+            
         except Exception as e:
-            logger.error(f"🟣 Error starting worker {self.worker_id}: {e}")
-            self.status = WorkerStatus.ERROR
+            logger.error(f"❌ Failed to start WorkerManager: {e}")
             return False
     
-    async def execute_task(self, task: Task) -> TaskResult:
-        """Execute a task"""
-        if self.status != WorkerStatus.IDLE:
-            raise RuntimeError(f"Worker {self.worker_id} is not idle")
+    async def _create_worker(self) -> Worker:
+        """Create a new worker"""
+        worker_id = f"worker_{uuid.uuid4().hex[:8]}"
+        executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix=worker_id)
         
-        self.status = WorkerStatus.BUSY
-        self.metrics.status = WorkerStatus.BUSY
-        self.current_task = task
-        task.started_at = datetime.now()
+        worker = Worker(
+            id=worker_id,
+            executor=executor
+        )
         
+        self.workers[worker_id] = worker
+        
+        # Start worker task
+        asyncio.create_task(self._worker_loop(worker))
+        
+        logger.info(f"✅ Created worker: {worker_id}")
+        return worker
+    
+    async def _worker_loop(self, worker: Worker):
+        """Main loop for individual worker"""
+        while self.is_running and worker.id in self.workers:
+            try:
+                # Get task from queue
+                priority, task = await asyncio.wait_for(
+                    self.task_queue.get(), timeout=1.0
+                )
+                
+                # Update worker status
+                worker.status = WorkerStatus.BUSY
+                worker.current_task = task.id
+                worker.last_active = time.time()
+                
+                # Execute task
+                result = await self._execute_task(worker, task)
+                
+                # Store result
+                self.completed_tasks[task.id] = result
+                await self.result_queue.put(result)
+                
+                # Update metrics
+                worker.metrics.tasks_completed += 1
+                worker.metrics.total_processing_time += result.execution_time
+                worker.metrics.avg_processing_time = (
+                    worker.metrics.total_processing_time / worker.metrics.tasks_completed
+                )
+                
+                # Update global metrics
+                self.total_tasks_completed += 1
+                self.total_processing_time += result.execution_time
+                
+                # Reset worker status
+                worker.status = WorkerStatus.IDLE
+                worker.current_task = None
+                
+            except asyncio.TimeoutError:
+                # No tasks available, continue
+                continue
+            except Exception as e:
+                worker.status = WorkerStatus.ERROR
+                worker.metrics.error_count += 1
+                logger.error(f"❌ Worker {worker.id} error: {e}")
+                await asyncio.sleep(1)  # Brief pause before retry
+    
+    async def _execute_task(self, worker: Worker, task: Task) -> TaskResult:
+        """Execute a task in the worker"""
         start_time = time.time()
         
         try:
             # Execute task with timeout
-            result = await asyncio.wait_for(
-                self.task_executor(task),
-                timeout=task.timeout
-            )
+            if task.timeout:
+                result = await asyncio.wait_for(
+                    asyncio.get_event_loop().run_in_executor(
+                        worker.executor, task.function, *task.args, **task.kwargs
+                    ),
+                    timeout=task.timeout
+                )
+            else:
+                result = await asyncio.get_event_loop().run_in_executor(
+                    worker.executor, task.function, *task.args, **task.kwargs
+                )
             
             execution_time = time.time() - start_time
-            task.completed_at = datetime.now()
             
-            # Update metrics
-            self.metrics.tasks_completed += 1
-            self.task_times.append(execution_time)
-            if len(self.task_times) > 100:  # Keep last 100 task times
-                self.task_times = self.task_times[-100:]
-            self.metrics.avg_task_time = sum(self.task_times) / len(self.task_times)
-            self.metrics.last_activity = datetime.now()
-            
-            # Create result
-            task_result = TaskResult(
-                task_id=task.task_id,
-                success=True,
+            return TaskResult(
+                task_id=task.id,
+                worker_id=worker.id,
                 result=result,
-                error=None,
                 execution_time=execution_time,
-                worker_id=self.worker_id,
-                completed_at=task.completed_at
+                success=True
             )
-            
-            logger.debug(f"🟣 Worker {self.worker_id} completed task {task.task_id} in {execution_time:.3f}s")
-            
-        except asyncio.TimeoutError:
-            execution_time = time.time() - start_time
-            self.metrics.tasks_failed += 1
-            
-            task_result = TaskResult(
-                task_id=task.task_id,
-                success=False,
-                result=None,
-                error=f"Task timeout after {task.timeout}s",
-                execution_time=execution_time,
-                worker_id=self.worker_id,
-                completed_at=datetime.now()
-            )
-            
-            logger.warning(f"🟣 Worker {self.worker_id} task {task.task_id} timed out")
             
         except Exception as e:
             execution_time = time.time() - start_time
-            self.metrics.tasks_failed += 1
             
-            task_result = TaskResult(
-                task_id=task.task_id,
-                success=False,
+            return TaskResult(
+                task_id=task.id,
+                worker_id=worker.id,
                 result=None,
-                error=str(e),
                 execution_time=execution_time,
-                worker_id=self.worker_id,
-                completed_at=datetime.now()
+                success=False,
+                error=str(e)
             )
-            
-            logger.error(f"🟣 Worker {self.worker_id} task {task.task_id} failed: {e}")
-        
-        finally:
-            self.status = WorkerStatus.IDLE
-            self.metrics.status = WorkerStatus.IDLE
-            self.current_task = None
-            self.metrics.uptime_seconds = (datetime.now() - self.start_time).total_seconds()
-        
-        return task_result
     
-    async def stop(self) -> bool:
-        """Stop the worker"""
-        try:
-            self.status = WorkerStatus.STOPPING
-            self.is_running = False
-            
-            # Wait for current task to complete if any
-            if self.current_task:
-                logger.info(f"🟣 Worker {self.worker_id} waiting for current task to complete")
-                # Give some time for task to complete gracefully
-                await asyncio.sleep(1.0)
-            
-            self.status = WorkerStatus.IDLE
-            logger.debug(f"🟣 Worker {self.worker_id} stopped")
-            return True
-            
-        except Exception as e:
-            logger.error(f"🟣 Error stopping worker {self.worker_id}: {e}")
-            return False
-    
-    def get_metrics(self) -> WorkerMetrics:
-        """Get current worker metrics"""
-        self.metrics.uptime_seconds = (datetime.now() - self.start_time).total_seconds()
-        return self.metrics
-
-class WorkerManager:
-    """
-    Auto-scaling worker pool management (4-16 workers)
-    Intelligent load balancing and resource allocation
-    """
-    
-    def __init__(self, task_executor: Callable, min_workers: int = 4, max_workers: int = 16):
-        self.task_executor = task_executor
-        self.min_workers = min_workers
-        self.max_workers = max_workers
-        self.workers: Dict[str, Worker] = {}
-        self.task_queue: asyncio.Queue = asyncio.Queue()
-        self.results: Dict[str, TaskResult] = {}
-        self.scaling_threshold = 0.8  # Scale up when 80% of workers are busy
-        self.scale_down_threshold = 0.3  # Scale down when 30% of workers are busy
-        self.last_scale_time = datetime.now()
-        self.scale_cooldown = timedelta(seconds=30)  # Minimum time between scaling operations
-        self.is_running = False
-        self.worker_tasks: Dict[str, asyncio.Task] = {}
-        
-    async def initialize(self) -> bool:
-        """Initialize worker manager with minimum workers"""
-        try:
-            # Start minimum workers
-            for i in range(self.min_workers):
-                worker_id = f"worker_{i:03d}"
-                await self._create_worker(worker_id)
-            
-            self.is_running = True
-            
-            # Start background tasks
-            asyncio.create_task(self._worker_monitor())
-            asyncio.create_task(self._auto_scaler())
-            
-            logger.info(f"🟣 Worker Manager initialized with {len(self.workers)} workers")
-            return True
-            
-        except Exception as e:
-            logger.error(f"🟣 Failed to initialize Worker Manager: {e}")
-            return False
-    
-    async def submit_task(self, task: Task) -> str:
+    async def submit_task(self, function: Callable, *args, priority: int = 5, 
+                         timeout: Optional[float] = None, **kwargs) -> str:
         """Submit a task for execution"""
-        if not self.is_running:
-            raise RuntimeError("Worker Manager not running")
+        task_id = str(uuid.uuid4())
+        task = Task(
+            id=task_id,
+            function=function,
+            args=args,
+            kwargs=kwargs,
+            priority=priority,
+            timeout=timeout
+        )
         
-        await self.task_queue.put(task)
-        logger.debug(f"🟣 Task {task.task_id} submitted to queue")
-        return task.task_id
+        # Add to priority queue (negative priority for max-heap behavior)
+        await self.task_queue.put((-priority, task))
+        
+        return task_id
     
-    async def get_result(self, task_id: str, timeout: float = 30.0) -> Optional[TaskResult]:
-        """Get result for a task"""
-        start_time = time.time()
+    async def get_task_result(self, task_id: str, timeout: Optional[float] = None) -> TaskResult:
+        """Get result for a specific task"""
+        # Check if result is already available
+        if task_id in self.completed_tasks:
+            return self.completed_tasks[task_id]
         
-        while time.time() - start_time < timeout:
-            if task_id in self.results:
-                result = self.results.pop(task_id)
-                return result
+        # Wait for result
+        start_time = time.time()
+        while timeout is None or (time.time() - start_time) < timeout:
+            if task_id in self.completed_tasks:
+                return self.completed_tasks[task_id]
             await asyncio.sleep(0.1)
         
-        return None
+        raise TimeoutError(f"Task {task_id} did not complete within {timeout} seconds")
     
-    async def execute_task_sync(self, task: Task) -> TaskResult:
-        """Execute a task synchronously and return result"""
-        task_id = await self.submit_task(task)
-        result = await self.get_result(task_id, task.timeout + 5.0)
-        
-        if result is None:
-            return TaskResult(
-                task_id=task_id,
-                success=False,
-                result=None,
-                error="Task execution timeout",
-                execution_time=task.timeout,
-                worker_id="unknown",
-                completed_at=datetime.now()
-            )
-        
-        return result
-    
-    async def get_worker_metrics(self) -> List[WorkerMetrics]:
-        """Get metrics for all workers"""
-        return [worker.get_metrics() for worker in self.workers.values()]
-    
-    async def get_manager_stats(self) -> Dict[str, Any]:
-        """Get comprehensive manager statistics"""
-        try:
-            worker_metrics = await self.get_worker_metrics()
-            
-            total_tasks = sum(m.tasks_completed + m.tasks_failed for m in worker_metrics)
-            total_completed = sum(m.tasks_completed for m in worker_metrics)
-            total_failed = sum(m.tasks_failed for m in worker_metrics)
-            
-            busy_workers = len([m for m in worker_metrics if m.status == WorkerStatus.BUSY])
-            idle_workers = len([m for m in worker_metrics if m.status == WorkerStatus.IDLE])
-            
-            avg_task_time = 0.0
-            if worker_metrics:
-                task_times = [m.avg_task_time for m in worker_metrics if m.avg_task_time > 0]
-                if task_times:
-                    avg_task_time = sum(task_times) / len(task_times)
-            
-            stats = {
-                'total_workers': len(self.workers),
-                'busy_workers': busy_workers,
-                'idle_workers': idle_workers,
-                'queue_size': self.task_queue.qsize(),
-                'total_tasks_processed': total_tasks,
-                'tasks_completed': total_completed,
-                'tasks_failed': total_failed,
-                'success_rate': (total_completed / total_tasks * 100) if total_tasks > 0 else 0,
-                'avg_task_time': avg_task_time,
-                'worker_utilization': (busy_workers / len(self.workers) * 100) if self.workers else 0,
-                'scaling_threshold': self.scaling_threshold,
-                'last_scale_time': self.last_scale_time.isoformat()
-            }
-            
-            return stats
-            
-        except Exception as e:
-            logger.error(f"🟣 Error getting manager stats: {e}")
-            return {}
-    
-    async def scale_workers(self, target_count: int) -> bool:
-        """Scale workers to target count"""
-        try:
-            current_count = len(self.workers)
-            
-            if target_count < self.min_workers:
-                target_count = self.min_workers
-            elif target_count > self.max_workers:
-                target_count = self.max_workers
-            
-            if target_count == current_count:
-                return True
-            
-            if target_count > current_count:
-                # Scale up
-                for i in range(target_count - current_count):
-                    worker_id = f"worker_{len(self.workers):03d}"
-                    await self._create_worker(worker_id)
+    async def _worker_manager_loop(self):
+        """Main management loop"""
+        while self.is_running:
+            try:
+                # Clean up completed tasks (keep only recent ones)
+                current_time = time.time()
+                cutoff_time = current_time - 3600  # 1 hour
                 
-                logger.info(f"🟣 Scaled up to {len(self.workers)} workers")
-                
-            else:
-                # Scale down
-                workers_to_remove = current_count - target_count
-                idle_workers = [
-                    worker_id for worker_id, worker in self.workers.items()
-                    if worker.status == WorkerStatus.IDLE
+                tasks_to_remove = [
+                    task_id for task_id, result in self.completed_tasks.items()
+                    if result.completed_at < cutoff_time
                 ]
                 
-                for i in range(min(workers_to_remove, len(idle_workers))):
-                    worker_id = idle_workers[i]
-                    await self._remove_worker(worker_id)
+                for task_id in tasks_to_remove:
+                    del self.completed_tasks[task_id]
                 
-                logger.info(f"🟣 Scaled down to {len(self.workers)} workers")
-            
-            self.last_scale_time = datetime.now()
-            return True
-            
-        except Exception as e:
-            logger.error(f"🟣 Error scaling workers: {e}")
-            return False
-    
-    async def _create_worker(self, worker_id: str) -> bool:
-        """Create and start a new worker"""
-        try:
-            worker = Worker(worker_id, self.task_executor)
-            success = await worker.start()
-            
-            if success:
-                self.workers[worker_id] = worker
-                # Start worker task processing
-                self.worker_tasks[worker_id] = asyncio.create_task(
-                    self._worker_loop(worker)
-                )
-                logger.debug(f"🟣 Created worker {worker_id}")
-                return True
-            else:
-                logger.error(f"🟣 Failed to start worker {worker_id}")
-                return False
-                
-        except Exception as e:
-            logger.error(f"🟣 Error creating worker {worker_id}: {e}")
-            return False
-    
-    async def _remove_worker(self, worker_id: str) -> bool:
-        """Remove a worker"""
-        try:
-            if worker_id not in self.workers:
-                return False
-            
-            worker = self.workers[worker_id]
-            
-            # Stop worker
-            await worker.stop()
-            
-            # Cancel worker task
-            if worker_id in self.worker_tasks:
-                self.worker_tasks[worker_id].cancel()
-                del self.worker_tasks[worker_id]
-            
-            # Remove from workers
-            del self.workers[worker_id]
-            
-            logger.debug(f"🟣 Removed worker {worker_id}")
-            return True
-            
-        except Exception as e:
-            logger.error(f"🟣 Error removing worker {worker_id}: {e}")
-            return False
-    
-    async def _worker_loop(self, worker: Worker) -> None:
-        """Main loop for worker task processing"""
-        while worker.is_running and self.is_running:
-            try:
-                # Get task from queue with timeout
-                task = await asyncio.wait_for(self.task_queue.get(), timeout=1.0)
-                
-                # Execute task
-                result = await worker.execute_task(task)
-                
-                # Store result
-                self.results[task.task_id] = result
-                
-                # Mark task as done
-                self.task_queue.task_done()
-                
-            except asyncio.TimeoutError:
-                # No task available, continue
-                continue
-            except Exception as e:
-                logger.error(f"🟣 Error in worker loop for {worker.worker_id}: {e}")
-                await asyncio.sleep(1.0)
-    
-    async def _worker_monitor(self) -> None:
-        """Monitor worker health and performance"""
-        while self.is_running:
-            try:
                 # Check worker health
-                for worker_id, worker in list(self.workers.items()):
+                for worker in list(self.workers.values()):
                     if worker.status == WorkerStatus.ERROR:
-                        logger.warning(f"🟣 Worker {worker_id} in error state, restarting")
-                        await self._remove_worker(worker_id)
-                        await self._create_worker(worker_id)
+                        if worker.metrics.error_count > 5:
+                            await self._remove_worker(worker.id)
+                    elif current_time - worker.last_active > 300:  # 5 minutes idle
+                        if len(self.workers) > self.min_workers:
+                            await self._remove_worker(worker.id)
                 
-                await asyncio.sleep(10.0)  # Check every 10 seconds
+                await asyncio.sleep(30)  # Check every 30 seconds
                 
             except Exception as e:
-                logger.error(f"🟣 Error in worker monitor: {e}")
-                await asyncio.sleep(10.0)
+                logger.error(f"❌ Worker manager loop error: {e}")
+                await asyncio.sleep(10)
     
-    async def _auto_scaler(self) -> None:
-        """Automatic scaling based on load"""
+    async def _auto_scaler_loop(self):
+        """Auto-scaling based on queue size and system load"""
         while self.is_running:
             try:
-                # Check if enough time has passed since last scaling
-                if datetime.now() - self.last_scale_time < self.scale_cooldown:
-                    await asyncio.sleep(5.0)
-                    continue
-                
-                # Calculate current utilization
-                worker_metrics = await self.get_worker_metrics()
-                if not worker_metrics:
-                    await asyncio.sleep(5.0)
-                    continue
-                
-                busy_workers = len([m for m in worker_metrics if m.status == WorkerStatus.BUSY])
-                total_workers = len(worker_metrics)
-                utilization = busy_workers / total_workers if total_workers > 0 else 0
-                
                 queue_size = self.task_queue.qsize()
+                worker_count = len(self.workers)
+                busy_workers = sum(1 for w in self.workers.values() 
+                                 if w.status == WorkerStatus.BUSY)
                 
-                # Scaling decisions
-                if utilization > self.scaling_threshold or queue_size > total_workers:
-                    # Scale up
-                    target_workers = min(self.max_workers, total_workers + 2)
-                    if target_workers > total_workers:
-                        await self.scale_workers(target_workers)
-                        logger.info(f"🟣 Auto-scaled up: utilization={utilization:.2f}, queue={queue_size}")
+                # Calculate load
+                worker_load = busy_workers / worker_count if worker_count > 0 else 0
+                queue_load = min(queue_size / (worker_count * 2), 1.0) if worker_count > 0 else 1.0
+                self.system_load = max(worker_load, queue_load)
                 
-                elif utilization < self.scale_down_threshold and queue_size == 0:
-                    # Scale down
-                    target_workers = max(self.min_workers, total_workers - 1)
-                    if target_workers < total_workers:
-                        await self.scale_workers(target_workers)
-                        logger.info(f"🟣 Auto-scaled down: utilization={utilization:.2f}, queue={queue_size}")
+                # Scale up if needed
+                if (self.system_load > self.scaling_threshold and 
+                    worker_count < self.max_workers):
+                    await self._create_worker()
+                    logger.info(f"📈 Scaled up to {len(self.workers)} workers (load: {self.system_load:.2f})")
                 
-                await asyncio.sleep(15.0)  # Check every 15 seconds
+                # Scale down if possible
+                elif (self.system_load < 0.3 and 
+                      worker_count > self.min_workers and 
+                      queue_size == 0):
+                    idle_workers = [w for w in self.workers.values() 
+                                  if w.status == WorkerStatus.IDLE]
+                    if idle_workers:
+                        await self._remove_worker(idle_workers[0].id)
+                        logger.info(f"📉 Scaled down to {len(self.workers)} workers")
+                
+                await asyncio.sleep(10)  # Check every 10 seconds
                 
             except Exception as e:
-                logger.error(f"🟣 Error in auto-scaler: {e}")
-                await asyncio.sleep(15.0)
+                logger.error(f"❌ Auto-scaler error: {e}")
+                await asyncio.sleep(30)
     
-    async def cleanup(self) -> None:
-        """Cleanup worker manager"""
-        try:
-            self.is_running = False
-            
-            # Stop all workers
-            for worker_id in list(self.workers.keys()):
-                await self._remove_worker(worker_id)
-            
-            # Clear results
-            self.results.clear()
-            
-            logger.info("🟣 Worker Manager cleanup completed")
-            
-        except Exception as e:
-            logger.error(f"🟣 Error during cleanup: {e}")
+    async def _metrics_collector_loop(self):
+        """Collect system and worker metrics"""
+        while self.is_running:
+            try:
+                # Update worker metrics
+                for worker in self.workers.values():
+                    if worker.executor:
+                        # Simplified metrics (in production, use proper monitoring)
+                        try:
+                            worker.metrics.memory_usage_mb = psutil.virtual_memory().used / 1024 / 1024
+                            worker.metrics.cpu_usage_percent = psutil.cpu_percent()
+                        except:
+                            pass  # Ignore psutil errors
+                
+                await asyncio.sleep(60)  # Collect every minute
+                
+            except Exception as e:
+                logger.error(f"❌ Metrics collector error: {e}")
+                await asyncio.sleep(60)
+    
+    async def _remove_worker(self, worker_id: str):
+        """Remove a worker"""
+        if worker_id not in self.workers:
+            return
+        
+        worker = self.workers[worker_id]
+        worker.status = WorkerStatus.STOPPING
+        
+        # Shutdown executor
+        if worker.executor:
+            worker.executor.shutdown(wait=False)
+        
+        # Remove from workers dict
+        del self.workers[worker_id]
+        logger.info(f"🗑️ Removed worker: {worker_id}")
+    
+    async def get_status(self) -> Dict[str, Any]:
+        """Get comprehensive status"""
+        busy_count = sum(1 for w in self.workers.values() if w.status == WorkerStatus.BUSY)
+        idle_count = sum(1 for w in self.workers.values() if w.status == WorkerStatus.IDLE)
+        error_count = sum(1 for w in self.workers.values() if w.status == WorkerStatus.ERROR)
+        
+        avg_processing_time = (
+            self.total_processing_time / self.total_tasks_completed 
+            if self.total_tasks_completed > 0 else 0
+        )
+        
+        return {
+            'total_workers': len(self.workers),
+            'busy_workers': busy_count,
+            'idle_workers': idle_count,
+            'error_workers': error_count,
+            'queue_size': self.task_queue.qsize(),
+            'system_load': self.system_load,
+            'total_tasks_completed': self.total_tasks_completed,
+            'avg_processing_time': avg_processing_time,
+            'scaling_config': {
+                'min_workers': self.min_workers,
+                'max_workers': self.max_workers,
+                'scaling_threshold': self.scaling_threshold
+            },
+            'performance_metrics': {
+                'tasks_per_minute': self._calculate_tasks_per_minute(),
+                'worker_utilization': busy_count / len(self.workers) * 100 if self.workers else 0,
+                'avg_queue_wait_time': self.avg_queue_wait_time
+            }
+        }
+    
+    def _calculate_tasks_per_minute(self) -> float:
+        """Calculate tasks per minute"""
+        # Simple calculation based on recent performance
+        if self.total_tasks_completed > 0 and self.total_processing_time > 0:
+            return min(60.0 / (self.total_processing_time / self.total_tasks_completed), 60.0)
+        return 0.0
+    
+    async def shutdown(self):
+        """Shutdown all workers"""
+        self.is_running = False
+        
+        for worker_id in list(self.workers.keys()):
+            await self._remove_worker(worker_id)
+        
+        logger.info("🛑 WorkerManager shutdown complete")
