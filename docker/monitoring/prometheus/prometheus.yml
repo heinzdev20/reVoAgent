@@ -1,0 +1,83 @@
+# 📊 Prometheus Configuration for Three-Engine Architecture
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - "rules/*.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+scrape_configs:
+  # 🧠 Perfect Recall Engine Metrics
+  - job_name: 'perfect-recall-engine'
+    static_configs:
+      - targets: ['perfect-recall-cluster:9090']
+    metrics_path: /metrics
+    scrape_interval: 5s
+    scrape_timeout: 3s
+    params:
+      format: ['prometheus']
+
+  # ⚡ Parallel Mind Engine Metrics
+  - job_name: 'parallel-mind-engine'
+    static_configs:
+      - targets: ['parallel-mind-cluster:9091']
+    metrics_path: /metrics
+    scrape_interval: 5s
+    scrape_timeout: 3s
+
+  # 🎨 Creative Engine Metrics
+  - job_name: 'creative-engine'
+    static_configs:
+      - targets: ['creative-engine-cluster:9092']
+    metrics_path: /metrics
+    scrape_interval: 5s
+    scrape_timeout: 3s
+
+  # 🔄 Engine Coordinator Metrics
+  - job_name: 'engine-coordinator'
+    static_configs:
+      - targets: ['engine-coordinator:9093']
+    metrics_path: /metrics
+    scrape_interval: 5s
+    scrape_timeout: 3s
+
+  # Infrastructure Metrics
+  - job_name: 'redis-cluster'
+    static_configs:
+      - targets: 
+        - 'redis-cluster-1:6379'
+        - 'redis-cluster-2:6379'
+        - 'redis-cluster-3:6379'
+    metrics_path: /metrics
+    scrape_interval: 10s
+
+  - job_name: 'chromadb'
+    static_configs:
+      - targets: ['chromadb-cluster:8000']
+    metrics_path: /api/v1/metrics
+    scrape_interval: 10s
+
+  # Load Balancer Metrics
+  - job_name: 'traefik'
+    static_configs:
+      - targets: ['traefik:8080']
+    metrics_path: /metrics
+    scrape_interval: 10s
+
+  # System Metrics (Node Exporter)
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 15s
+
+  # Prometheus Self-Monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 15s

@@ -1,0 +1,496 @@
+# 🚀 Kubernetes Deployment for Three-Engine Architecture
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: revoagent
+  labels:
+    name: revoagent
+    environment: production
+
+---
+# 🧠 Perfect Recall Engine Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: perfect-recall-engine
+  namespace: revoagent
+  labels:
+    app: revoagent
+    component: perfect-recall
+    tier: engine
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: revoagent
+      component: perfect-recall
+  template:
+    metadata:
+      labels:
+        app: revoagent
+        component: perfect-recall
+        tier: engine
+    spec:
+      containers:
+      - name: perfect-recall
+        image: revoagent/perfect-recall:latest
+        ports:
+        - containerPort: 8001
+          name: http
+        - containerPort: 9090
+          name: metrics
+        env:
+        - name: ENGINE_MODE
+          value: "production"
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: engine-secrets
+              key: redis-url
+        - name: CHROMADB_HOST
+          value: "chromadb-service"
+        - name: LOG_LEVEL
+          value: "INFO"
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1000m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8001
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8001
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 2
+        volumeMounts:
+        - name: config
+          mountPath: /app/config
+          readOnly: true
+      volumes:
+      - name: config
+        configMap:
+          name: engine-config
+
+---
+# ⚡ Parallel Mind Engine Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: parallel-mind-engine
+  namespace: revoagent
+  labels:
+    app: revoagent
+    component: parallel-mind
+    tier: engine
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: revoagent
+      component: parallel-mind
+  template:
+    metadata:
+      labels:
+        app: revoagent
+        component: parallel-mind
+        tier: engine
+    spec:
+      containers:
+      - name: parallel-mind
+        image: revoagent/parallel-mind:latest
+        ports:
+        - containerPort: 8002
+          name: http
+        - containerPort: 9091
+          name: metrics
+        env:
+        - name: ENGINE_MODE
+          value: "production"
+        - name: MIN_WORKERS
+          value: "4"
+        - name: MAX_WORKERS
+          value: "32"
+        - name: SCALING_THRESHOLD
+          value: "0.8"
+        - name: LOG_LEVEL
+          value: "INFO"
+        resources:
+          requests:
+            memory: "4Gi"
+            cpu: "2000m"
+          limits:
+            memory: "8Gi"
+            cpu: "4000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8002
+          initialDelaySeconds: 30
+          periodSeconds: 15
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8002
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 5
+          failureThreshold: 2
+
+---
+# 🎨 Creative Engine Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: creative-engine
+  namespace: revoagent
+  labels:
+    app: revoagent
+    component: creative-engine
+    tier: engine
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: revoagent
+      component: creative-engine
+  template:
+    metadata:
+      labels:
+        app: revoagent
+        component: creative-engine
+        tier: engine
+    spec:
+      containers:
+      - name: creative-engine
+        image: revoagent/creative-engine:latest
+        ports:
+        - containerPort: 8003
+          name: http
+        - containerPort: 9092
+          name: metrics
+        env:
+        - name: ENGINE_MODE
+          value: "production"
+        - name: SOLUTION_COUNT
+          value: "5"
+        - name: CREATIVITY_LEVEL
+          value: "0.9"
+        - name: INNOVATION_BIAS
+          value: "0.8"
+        - name: LOG_LEVEL
+          value: "INFO"
+        resources:
+          requests:
+            memory: "3Gi"
+            cpu: "1500m"
+          limits:
+            memory: "6Gi"
+            cpu: "3000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8003
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8003
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 2
+
+---
+# 🔄 Engine Coordinator Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: engine-coordinator
+  namespace: revoagent
+  labels:
+    app: revoagent
+    component: coordinator
+    tier: orchestration
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: revoagent
+      component: coordinator
+  template:
+    metadata:
+      labels:
+        app: revoagent
+        component: coordinator
+        tier: orchestration
+    spec:
+      containers:
+      - name: coordinator
+        image: revoagent/coordinator:latest
+        ports:
+        - containerPort: 8000
+          name: http
+        - containerPort: 9093
+          name: metrics
+        env:
+        - name: ENGINE_MODE
+          value: "production"
+        - name: PERFECT_RECALL_URL
+          value: "http://perfect-recall-service:8001"
+        - name: PARALLEL_MIND_URL
+          value: "http://parallel-mind-service:8002"
+        - name: CREATIVE_ENGINE_URL
+          value: "http://creative-engine-service:8003"
+        - name: LOG_LEVEL
+          value: "INFO"
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1000m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 2
+
+---
+# Services for Engine Communication
+apiVersion: v1
+kind: Service
+metadata:
+  name: perfect-recall-service
+  namespace: revoagent
+  labels:
+    app: revoagent
+    component: perfect-recall
+spec:
+  selector:
+    app: revoagent
+    component: perfect-recall
+  ports:
+  - name: http
+    port: 8001
+    targetPort: 8001
+  - name: metrics
+    port: 9090
+    targetPort: 9090
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: parallel-mind-service
+  namespace: revoagent
+  labels:
+    app: revoagent
+    component: parallel-mind
+spec:
+  selector:
+    app: revoagent
+    component: parallel-mind
+  ports:
+  - name: http
+    port: 8002
+    targetPort: 8002
+  - name: metrics
+    port: 9091
+    targetPort: 9091
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: creative-engine-service
+  namespace: revoagent
+  labels:
+    app: revoagent
+    component: creative-engine
+spec:
+  selector:
+    app: revoagent
+    component: creative-engine
+  ports:
+  - name: http
+    port: 8003
+    targetPort: 8003
+  - name: metrics
+    port: 9092
+    targetPort: 9092
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: coordinator-service
+  namespace: revoagent
+  labels:
+    app: revoagent
+    component: coordinator
+spec:
+  selector:
+    app: revoagent
+    component: coordinator
+  ports:
+  - name: http
+    port: 8000
+    targetPort: 8000
+  - name: metrics
+    port: 9093
+    targetPort: 9093
+  type: LoadBalancer
+
+---
+# Horizontal Pod Autoscaler for Auto-scaling
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: perfect-recall-hpa
+  namespace: revoagent
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: perfect-recall-engine
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: parallel-mind-hpa
+  namespace: revoagent
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: parallel-mind-engine
+  minReplicas: 2
+  maxReplicas: 8
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 75
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 85
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: creative-engine-hpa
+  namespace: revoagent
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: creative-engine
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+
+---
+# ConfigMap for Engine Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: engine-config
+  namespace: revoagent
+data:
+  engine.yaml: |
+    perfect_recall:
+      memory_limit: "3G"
+      retrieval_timeout: "50ms"
+      cache_ttl: 3600
+    parallel_mind:
+      min_workers: 4
+      max_workers: 32
+      scaling_threshold: 0.8
+      worker_memory_limit: "512M"
+    creative_engine:
+      solution_count: 5
+      creativity_level: 0.9
+      innovation_bias: 0.8
+      generation_timeout: "30s"
+    coordinator:
+      coordination_timeout: "60s"
+      retry_attempts: 3
+      circuit_breaker_threshold: 5
+
+---
+# Secret for Sensitive Configuration
+apiVersion: v1
+kind: Secret
+metadata:
+  name: engine-secrets
+  namespace: revoagent
+type: Opaque
+data:
+  redis-url: cmVkaXM6Ly9yZWRpcy1jbHVzdGVyOjYzNzk=  # base64 encoded redis://redis-cluster:6379
+  chromadb-url: aHR0cDovL2Nocm9tYWRiLXNlcnZpY2U6ODAwMA==  # base64 encoded http://chromadb-service:8000
