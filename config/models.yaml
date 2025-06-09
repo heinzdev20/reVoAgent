@@ -1,0 +1,264 @@
+# AI Model Configuration for Three-Engine Architecture
+# reVoAgent Model Management
+
+# Primary Model Configuration
+models:
+  # Primary Model - DeepSeek R1
+  primary:
+    name: "deepseek-r1"
+    version: "0528"
+    type: "local"
+    
+    # Model Files
+    files:
+      transformers: "models/deepseek-r1-transformers/"
+      gguf: "models/deepseek-r1.gguf"
+      tokenizer: "models/deepseek-r1-tokenizer/"
+    
+    # Performance Configuration
+    performance:
+      context_length: 32768
+      max_tokens: 4096
+      temperature: 0.7
+      top_p: 0.9
+      top_k: 50
+    
+    # Engine Assignment
+    engines:
+      perfect_recall: true
+      parallel_mind: true
+      creative_engine: true
+
+  # Fallback Model - Llama 3.2
+  fallback:
+    name: "llama-3.2"
+    version: "3b"
+    type: "local"
+    
+    # Model Files
+    files:
+      transformers: "models/llama-3.2-transformers/"
+      gguf: "models/llama-3.2-3b.gguf"
+      tokenizer: "models/llama-3.2-tokenizer/"
+    
+    # Performance Configuration
+    performance:
+      context_length: 8192
+      max_tokens: 2048
+      temperature: 0.6
+      top_p: 0.85
+      top_k: 40
+    
+    # Engine Assignment
+    engines:
+      perfect_recall: true
+      parallel_mind: true
+      creative_engine: false
+
+  # API Backup - OpenAI GPT-4
+  api_backup:
+    name: "openai-gpt-4"
+    version: "turbo"
+    type: "api"
+    
+    # API Configuration
+    api:
+      endpoint: "https://api.openai.com/v1/chat/completions"
+      model_name: "gpt-4-turbo"
+      api_key_env: "OPENAI_API_KEY"
+      timeout: 30
+    
+    # Performance Configuration
+    performance:
+      context_length: 128000
+      max_tokens: 4096
+      temperature: 0.7
+      top_p: 0.9
+    
+    # Engine Assignment
+    engines:
+      perfect_recall: true
+      parallel_mind: false
+      creative_engine: true
+
+# Execution Configuration
+execution:
+  # Local Execution Settings
+  local:
+    enabled: true
+    
+    # Hardware Detection
+    hardware:
+      gpu_acceleration: "auto"  # auto, force, disable
+      cpu_threads: "auto"
+      memory_limit: "auto"
+      device_map: "auto"
+    
+    # Optimization Settings
+    optimization:
+      quantization: true
+      quantization_bits: 4
+      memory_optimization: true
+      attention_optimization: true
+      flash_attention: true
+    
+    # Model Loading
+    loading:
+      lazy_loading: true
+      model_caching: true
+      preload_models: ["primary"]
+      unload_timeout: "30m"
+
+  # API Execution Settings
+  api:
+    enabled: true
+    
+    # Rate Limiting
+    rate_limiting:
+      requests_per_minute: 60
+      tokens_per_minute: 100000
+      concurrent_requests: 5
+    
+    # Retry Configuration
+    retry:
+      max_attempts: 3
+      backoff_factor: 2
+      timeout: 30
+    
+    # Cost Management
+    cost_management:
+      daily_limit: 10.0  # USD
+      monthly_limit: 100.0  # USD
+      alert_threshold: 0.8
+
+# Model Selection Strategy
+selection:
+  # Automatic Selection
+  auto_selection:
+    enabled: true
+    
+    # Selection Criteria
+    criteria:
+      - performance_requirements
+      - resource_availability
+      - cost_constraints
+      - latency_requirements
+    
+    # Fallback Chain
+    fallback_chain:
+      - "primary"
+      - "fallback"
+      - "api_backup"
+  
+  # Engine-Specific Selection
+  engine_specific:
+    perfect_recall:
+      preferred: "primary"
+      fallback: "fallback"
+      requirements:
+        context_length: 16384
+        response_time: "2s"
+    
+    parallel_mind:
+      preferred: "primary"
+      fallback: "fallback"
+      requirements:
+        concurrent_requests: 4
+        response_time: "3s"
+    
+    creative_engine:
+      preferred: "primary"
+      fallback: "api_backup"
+      requirements:
+        creativity_support: true
+        response_time: "5s"
+
+# Model Management
+management:
+  # Download and Updates
+  downloads:
+    auto_download: false
+    download_path: "./models"
+    verify_checksums: true
+    resume_downloads: true
+  
+  # Model Registry
+  registry:
+    local_registry: true
+    remote_registry: "huggingface"
+    cache_models: true
+    cleanup_old_versions: true
+  
+  # Health Monitoring
+  health:
+    enabled: true
+    check_interval: "5m"
+    performance_monitoring: true
+    resource_monitoring: true
+  
+  # Model Switching
+  switching:
+    hot_swapping: true
+    graceful_degradation: true
+    switch_timeout: "30s"
+    rollback_on_failure: true
+
+# Performance Monitoring
+monitoring:
+  # Metrics Collection
+  metrics:
+    enabled: true
+    
+    # Performance Metrics
+    performance:
+      - response_time
+      - tokens_per_second
+      - memory_usage
+      - gpu_utilization
+      - cpu_utilization
+    
+    # Quality Metrics
+    quality:
+      - output_coherence
+      - task_completion_rate
+      - error_rate
+      - user_satisfaction
+  
+  # Benchmarking
+  benchmarking:
+    enabled: true
+    benchmark_suite: "custom"
+    run_interval: "daily"
+    store_results: true
+  
+  # Alerting
+  alerting:
+    enabled: true
+    thresholds:
+      response_time: "5s"
+      error_rate: "5%"
+      memory_usage: "90%"
+      gpu_memory: "95%"
+
+# Security Configuration
+security:
+  # Model Security
+  model_security:
+    verify_signatures: true
+    scan_for_malware: true
+    sandboxed_execution: true
+    input_validation: true
+  
+  # API Security
+  api_security:
+    encrypt_api_keys: true
+    rotate_keys: true
+    audit_api_calls: true
+    rate_limit_by_user: true
+  
+  # Data Protection
+  data_protection:
+    encrypt_model_cache: true
+    secure_model_storage: true
+    anonymize_logs: true
+    gdpr_compliance: true
