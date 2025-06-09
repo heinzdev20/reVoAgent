@@ -17,6 +17,11 @@ from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass, asdict
 from pathlib import Path
 
+try:
+    from .base_engine import BaseEngine
+except ImportError:
+    from base_engine import BaseEngine
+
 logger = logging.getLogger(__name__)
 
 @dataclass

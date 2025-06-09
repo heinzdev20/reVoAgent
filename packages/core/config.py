@@ -35,6 +35,14 @@ class ConfigLoader:
                 return yaml.safe_load(f)
         return {}
     
+    def load_agent_config(self) -> Dict[str, Any]:
+        """Load agent configuration (alias for load_agents_config)"""
+        return self.load_agents_config()
+    
+    def load_engine_config(self) -> Dict[str, Any]:
+        """Load engine configuration (alias for load_engines_config)"""
+        return self.load_engines_config()
+    
     def load_all_config(self) -> Dict[str, Any]:
         """Load all configuration"""
         return {

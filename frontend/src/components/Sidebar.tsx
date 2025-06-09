@@ -15,7 +15,11 @@ import {
   Activity,
   HardDrive,
   CheckCircle,
-  Circle
+  Circle,
+  Brain,
+  Store,
+  Building2,
+  Cog
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import type { TabId } from '@/types';
@@ -50,9 +54,10 @@ const sidebarSections: SidebarSection[] = [
     ],
   },
   {
-    title: 'AI AGENTS',
+    title: 'AI ENGINES',
     items: [
-      { id: 'code-generator', label: 'Enhanced Code Generator', icon: <Code2 className="w-4 h-4" />, status: 'active' },
+      { id: 'engine-orchestrator', label: 'Engine Orchestrator', icon: <Brain className="w-4 h-4" />, status: 'active' },
+      { id: 'code-generator', label: 'Code Generator', icon: <Code2 className="w-4 h-4" />, status: 'active' },
       { id: 'debug-agent', label: 'Debug Agent', icon: <Bug className="w-4 h-4" /> },
       { id: 'testing-agent', label: 'Testing Agent', icon: <TestTube className="w-4 h-4" /> },
       { id: 'deploy-agent', label: 'Deploy Agent', icon: <Rocket className="w-4 h-4" /> },
@@ -60,13 +65,21 @@ const sidebarSections: SidebarSection[] = [
     ],
   },
   {
-    title: 'TOOLS & CONFIG',
+    title: 'ENTERPRISE',
+    items: [
+      { id: 'enterprise-console', label: 'Enterprise Console', icon: <Building2 className="w-4 h-4" />, badge: 'NEW' },
+      { id: 'mcp-marketplace', label: 'MCP Marketplace', icon: <Store className="w-4 h-4" />, badge: '100+' },
+      { id: 'configuration', label: 'Configuration', icon: <Cog className="w-4 h-4" /> },
+      { id: 'security', label: 'Security', icon: <Shield className="w-4 h-4" /> },
+    ],
+  },
+  {
+    title: 'SYSTEM',
     items: [
       { id: 'model-registry', label: 'Model Registry', icon: <Database className="w-4 h-4" /> },
-      { id: 'settings', label: 'Settings', icon: <Settings className="w-4 h-4" /> },
-      { id: 'security', label: 'Security', icon: <Shield className="w-4 h-4" /> },
       { id: 'monitoring', label: 'Monitoring', icon: <Activity className="w-4 h-4" /> },
       { id: 'resource-mgmt', label: 'Resource Mgmt', icon: <HardDrive className="w-4 h-4" /> },
+      { id: 'settings', label: 'Settings', icon: <Settings className="w-4 h-4" /> },
     ],
   },
 ];

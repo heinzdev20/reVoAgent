@@ -17,6 +17,13 @@ import Settings from './components/Settings';
 import Security from './components/Security';
 import Monitoring from './components/Monitoring';
 import ResourceManagement from './components/ResourceManagement';
+
+// New comprehensive components
+import { EngineOrchestrator } from './components/engines/EngineOrchestrator';
+import { MCPMarketplace } from './components/mcp/MCPMarketplace';
+import { EnterpriseConsole } from './components/enterprise/EnterpriseConsole';
+import { ConfigurationManager } from './components/config/ConfigurationManager';
+
 import { useWebSocket } from './hooks/useWebSocket';
 import type { TabId } from './types';
 import { 
@@ -31,7 +38,11 @@ import {
   Database,
   Shield,
   Activity,
-  HardDrive
+  HardDrive,
+  Brain,
+  Store,
+  Building2,
+  Settings as SettingsIcon
 } from 'lucide-react';
 
 function App() {
@@ -83,6 +94,19 @@ function App() {
       
       case 'resource-mgmt':
         return <ResourceManagement />;
+
+      // New comprehensive features
+      case 'engine-orchestrator':
+        return <EngineOrchestrator />;
+      
+      case 'mcp-marketplace':
+        return <MCPMarketplace />;
+      
+      case 'enterprise-console':
+        return <EnterpriseConsole />;
+      
+      case 'configuration':
+        return <ConfigurationManager />;
       
       default:
         return <Dashboard />;

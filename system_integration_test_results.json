@@ -1,0 +1,111 @@
+{
+  "backend_api": {
+    "success": true,
+    "health_check": {
+      "status": "healthy",
+      "version": "2.0.0",
+      "uptime": "99.97%",
+      "timestamp": "2025-06-09T19:37:15.619484"
+    },
+    "api_status": {
+      "status": "operational",
+      "architecture": "enterprise-ready",
+      "environment": "development",
+      "features": {
+        "three_engines": "operational",
+        "mcp_integration": "active",
+        "enterprise_console": "available",
+        "configuration_manager": "loaded"
+      },
+      "packages": {
+        "core": "loaded",
+        "engines": "operational",
+        "agents": "active",
+        "ai": "connected",
+        "integrations": "loaded"
+      },
+      "metrics": {
+        "response_time": "142ms",
+        "active_connections": 23,
+        "memory_usage": "67%"
+      }
+    },
+    "root_response": {
+      "message": "reVoAgent Enterprise API v2.0",
+      "description": "Enterprise-Ready AI Development Platform",
+      "features": [
+        "Three-Engine Architecture",
+        "MCP Integration",
+        "Multi-tenant Enterprise Console",
+        "Advanced Configuration Management",
+        "Real-time Monitoring"
+      ]
+    },
+    "message": "Backend API working correctly"
+  },
+  "package_imports": {
+    "success": false,
+    "import_results": {
+      "core": "error: cannot import name 'Config' from 'core.config' (/workspace/reVoagent/packages/core/config.py)",
+      "engines": "error: No module named 'engines.perfect_recall'",
+      "agents": "error: attempted relative import beyond top-level package",
+      "ai": "error: No module named 'torch'",
+      "mcp": "success"
+    },
+    "message": "Some package imports failed"
+  },
+  "three_engines": {
+    "success": false,
+    "error": "No module named 'engines.perfect_recall'",
+    "message": "Three-Engine Architecture test failed"
+  },
+  "agent_framework": {
+    "success": false,
+    "error": "attempted relative import beyond top-level package",
+    "message": "Agent Framework test failed"
+  },
+  "mcp_integration": {
+    "success": true,
+    "mcp_components": {
+      "client": "operational",
+      "registry": "operational",
+      "security": "operational"
+    },
+    "discovered_servers": 0,
+    "security_summary": {
+      "tenant_id": "test_tenant",
+      "policies_count": 4,
+      "servers_accessible": [
+        "filesystem",
+        "sqlite",
+        "github",
+        "puppeteer"
+      ],
+      "audit_entries": 0,
+      "security_level": "enterprise",
+      "last_activity": "2025-06-09T19:37:15.968949"
+    },
+    "message": "MCP Integration working correctly"
+  },
+  "configuration": {
+    "success": true,
+    "configurations": {
+      "environment": "loaded",
+      "agents": "loaded",
+      "engines": "loaded"
+    },
+    "config_details": {
+      "environment": "development",
+      "agent_count": 3,
+      "engine_count": 3
+    },
+    "message": "Configuration System working correctly"
+  },
+  "frontend_build": {
+    "success": false,
+    "build_output": "TS7006: Parameter 'e' implicitly has an 'any' type.\nsrc/components/engines/TaskExecutionPanel.tsx(369,24): error TS7006: Parameter 'e' implicitly has an 'any' type.\nsrc/components/mcp/MCPMarketplace.tsx(273,71): error TS2322: Type '{ className: string; title: string; }' is not assignable to type 'IntrinsicAttributes & LucideProps'.\n  Property 'title' does not exist on type 'IntrinsicAttributes & LucideProps'.\nsrc/hooks/useEngineWebSocket.ts(121,38): error TS2503: Cannot find namespace 'NodeJS'.\n",
+    "build_errors": "",
+    "dist_created": false,
+    "message": "Frontend build failed"
+  }
+}

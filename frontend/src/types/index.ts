@@ -81,7 +81,11 @@ export type TabId =
   | 'settings'
   | 'security'
   | 'monitoring'
-  | 'resource-mgmt';
+  | 'resource-mgmt'
+  | 'engine-orchestrator'
+  | 'mcp-marketplace'
+  | 'enterprise-console'
+  | 'configuration';
 
 export interface WebSocketMessage {
   type: string;
