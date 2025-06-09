@@ -17,7 +17,7 @@ import time
 from pathlib import Path
 
 # Phase 4 Imports
-from src.revoagent.core.framework import ThreeEngineArchitecture
+from packages.core.framework import ThreeEngineArchitecture
 from src.revoagent.specialized_agents import (
     # Base Classes
     IntelligentAgent, Problem, ProblemComplexity, AgentCapability,
