@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
 import { Dashboard } from './components/Dashboard';
+import RealTimeDashboard from './components/RealTimeDashboard';
 import { PlaceholderView } from './components/PlaceholderView';
 import { EnhancedCodeGenerator } from './components/agents/EnhancedCodeGenerator';
 import { DebugAgent } from './components/agents/DebugAgent';
@@ -42,7 +43,7 @@ function App() {
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard':
-        return <Dashboard />;
+        return <RealTimeDashboard />;
       
       case 'projects':
         return <Projects />;
