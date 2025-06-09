@@ -1,0 +1,337 @@
+version: '3.8'
+
+services:
+  # 🧠 Perfect Recall Engine Cluster
+  perfect-recall-cluster:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.perfect-recall
+    image: revoagent/perfect-recall:latest
+    deploy:
+      replicas: 3
+      resources:
+        limits:
+          memory: 4G
+          cpus: '2.0'
+        reservations:
+          memory: 2G
+          cpus: '1.0'
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+    environment:
+      - ENGINE_MODE=production
+      - REDIS_CLUSTER_NODES=redis-cluster-1:7000,redis-cluster-2:7000,redis-cluster-3:7000
+      - CHROMADB_HOST=chromadb-cluster
+      - MEMORY_LIMIT=3G
+      - RETRIEVAL_TIMEOUT=50ms
+      - LOG_LEVEL=INFO
+      - METRICS_PORT=9090
+    ports:
+      - "8001:8001"
+      - "9090:9090"  # Metrics port
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    depends_on:
+      - redis-cluster-1
+      - redis-cluster-2
+      - redis-cluster-3
+      - chromadb-cluster
+    networks:
+      - revoagent-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.perfect-recall.rule=PathPrefix(`/api/v1/recall`)"
+      - "traefik.http.services.perfect-recall.loadbalancer.server.port=8001"
+
+  # ⚡ Parallel Mind Engine Auto-Scaler
+  parallel-mind-cluster:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.parallel-mind
+    image: revoagent/parallel-mind:latest
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          memory: 8G
+          cpus: '4.0'
+        reservations:
+          memory: 4G
+          cpus: '2.0'
+    environment:
+      - ENGINE_MODE=production
+      - MIN_WORKERS=4
+      - MAX_WORKERS=32
+      - SCALING_THRESHOLD=0.8
+      - WORKER_MEMORY_LIMIT=512M
+      - AUTO_SCALE_INTERVAL=10s
+      - LOG_LEVEL=INFO
+      - METRICS_PORT=9091
+    ports:
+      - "8002:8002"
+      - "9091:9091"  # Metrics port
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 3
+    networks:
+      - revoagent-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.parallel-mind.rule=PathPrefix(`/api/v1/parallel`)"
+      - "traefik.http.services.parallel-mind.loadbalancer.server.port=8002"
+
+  # 🎨 Creative Engine Farm
+  creative-engine-cluster:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.creative-engine
+    image: revoagent/creative-engine:latest
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          memory: 6G
+          cpus: '3.0'
+        reservations:
+          memory: 3G
+          cpus: '1.5'
+    environment:
+      - ENGINE_MODE=production
+      - SOLUTION_COUNT=5
+      - CREATIVITY_LEVEL=0.9
+      - INNOVATION_BIAS=0.8
+      - MODEL_CACHE_SIZE=2G
+      - GENERATION_TIMEOUT=30s
+      - LOG_LEVEL=INFO
+      - METRICS_PORT=9092
+    ports:
+      - "8003:8003"
+      - "9092:9092"  # Metrics port
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - revoagent-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.creative-engine.rule=PathPrefix(`/api/v1/creative`)"
+      - "traefik.http.services.creative-engine.loadbalancer.server.port=8003"
+
+  # 🔄 Engine Coordinator
+  engine-coordinator:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.coordinator
+    image: revoagent/coordinator:latest
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          memory: 4G
+          cpus: '2.0'
+    environment:
+      - ENGINE_MODE=production
+      - PERFECT_RECALL_URL=http://perfect-recall-cluster:8001
+      - PARALLEL_MIND_URL=http://parallel-mind-cluster:8002
+      - CREATIVE_ENGINE_URL=http://creative-engine-cluster:8003
+      - COORDINATION_TIMEOUT=60s
+      - LOG_LEVEL=INFO
+      - METRICS_PORT=9093
+    ports:
+      - "8000:8000"
+      - "9093:9093"  # Metrics port
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      - perfect-recall-cluster
+      - parallel-mind-cluster
+      - creative-engine-cluster
+    networks:
+      - revoagent-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.coordinator.rule=PathPrefix(`/api/v1`)"
+      - "traefik.http.services.coordinator.loadbalancer.server.port=8000"
+
+  # Redis Cluster for Perfect Recall
+  redis-cluster-1:
+    image: redis/redis-stack-server:7.2.0-v6
+    command: >
+      redis-server 
+      --cluster-enabled yes 
+      --cluster-config-file nodes.conf 
+      --cluster-node-timeout 5000 
+      --appendonly yes
+      --maxmemory 2gb
+      --maxmemory-policy allkeys-lru
+    ports:
+      - "7000:6379"
+    volumes:
+      - redis-data-1:/data
+    networks:
+      - revoagent-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  redis-cluster-2:
+    image: redis/redis-stack-server:7.2.0-v6
+    command: >
+      redis-server 
+      --cluster-enabled yes 
+      --cluster-config-file nodes.conf 
+      --cluster-node-timeout 5000 
+      --appendonly yes
+      --maxmemory 2gb
+      --maxmemory-policy allkeys-lru
+    ports:
+      - "7001:6379"
+    volumes:
+      - redis-data-2:/data
+    networks:
+      - revoagent-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  redis-cluster-3:
+    image: redis/redis-stack-server:7.2.0-v6
+    command: >
+      redis-server 
+      --cluster-enabled yes 
+      --cluster-config-file nodes.conf 
+      --cluster-node-timeout 5000 
+      --appendonly yes
+      --maxmemory 2gb
+      --maxmemory-policy allkeys-lru
+    ports:
+      - "7002:6379"
+    volumes:
+      - redis-data-3:/data
+    networks:
+      - revoagent-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ChromaDB Cluster for Vector Storage
+  chromadb-cluster:
+    image: chromadb/chroma:0.4.22
+    environment:
+      - CHROMA_SERVER_HOST=0.0.0.0
+      - CHROMA_SERVER_HTTP_PORT=8000
+      - CHROMA_DB_IMPL=clickhouse
+    ports:
+      - "8004:8000"
+    volumes:
+      - chromadb-data:/chroma/chroma
+    networks:
+      - revoagent-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Load Balancer & API Gateway
+  traefik:
+    image: traefik:v3.0
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.letsencrypt.acme.email=admin@revoagent.com"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      - "--metrics.prometheus=true"
+      - "--metrics.prometheus.addEntryPointsLabels=true"
+      - "--metrics.prometheus.addServicesLabels=true"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"  # Traefik dashboard
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik-letsencrypt:/letsencrypt
+    networks:
+      - revoagent-network
+    labels:
+      - "traefik.enable=true"
+
+  # 📊 Monitoring Stack
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.enable-lifecycle'
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/prometheus/rules:/etc/prometheus/rules
+      - prometheus-data:/prometheus
+    networks:
+      - revoagent-network
+    depends_on:
+      - perfect-recall-cluster
+      - parallel-mind-cluster
+      - creative-engine-cluster
+
+  grafana:
+    image: grafana/grafana:10.0.0
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=revoagent_admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - grafana-data:/var/lib/grafana
+    networks:
+      - revoagent-network
+    depends_on:
+      - prometheus
+
+volumes:
+  redis-data-1:
+  redis-data-2:
+  redis-data-3:
+  chromadb-data:
+  prometheus-data:
+  grafana-data:
+  traefik-letsencrypt:
+
+networks:
+  revoagent-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

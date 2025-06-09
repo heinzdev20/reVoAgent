@@ -1,0 +1,172 @@
+# 🚨 Three-Engine Architecture Alert Rules
+groups:
+- name: perfect-recall-alerts
+  rules:
+  - alert: PerfectRecallSlowRetrieval
+    expr: histogram_quantile(0.95, perfect_recall_request_duration_seconds_bucket) > 0.1
+    for: 2m
+    labels:
+      severity: warning
+      engine: perfect-recall
+      team: revoagent
+    annotations:
+      summary: "Perfect Recall Engine retrieval time above 100ms target"
+      description: "95th percentile retrieval time is {{ $value }}s, exceeding 100ms target for {{ $labels.instance }}"
+      runbook_url: "https://docs.revoagent.com/runbooks/perfect-recall-slow"
+
+  - alert: PerfectRecallHighMemoryUsage
+    expr: perfect_recall_memory_usage_bytes / (1024*1024*1024) > 3.5
+    for: 5m
+    labels:
+      severity: warning
+      engine: perfect-recall
+    annotations:
+      summary: "Perfect Recall Engine high memory usage"
+      description: "Memory usage is {{ $value }}GB, approaching 4GB limit"
+
+  - alert: PerfectRecallEngineDown
+    expr: up{job="perfect-recall-engine"} == 0
+    for: 1m
+    labels:
+      severity: critical
+      engine: perfect-recall
+    annotations:
+      summary: "Perfect Recall Engine is down"
+      description: "Perfect Recall Engine instance {{ $labels.instance }} is down"
+
+- name: parallel-mind-alerts
+  rules:
+  - alert: ParallelMindWorkerStarvation
+    expr: parallel_mind_queue_depth > 50 and parallel_mind_active_workers < 8
+    for: 1m
+    labels:
+      severity: critical
+      engine: parallel-mind
+    annotations:
+      summary: "Parallel Mind Engine needs more workers"
+      description: "Queue depth is {{ $value }} but only {{ $labels.workers }} workers active on {{ $labels.instance }}"
+
+  - alert: ParallelMindHighCPUUsage
+    expr: rate(process_cpu_seconds_total{job="parallel-mind-engine"}[5m]) * 100 > 90
+    for: 3m
+    labels:
+      severity: warning
+      engine: parallel-mind
+    annotations:
+      summary: "Parallel Mind Engine high CPU usage"
+      description: "CPU usage is {{ $value }}% on {{ $labels.instance }}"
+
+  - alert: ParallelMindScalingFailure
+    expr: increase(parallel_mind_scaling_failures_total[5m]) > 3
+    for: 2m
+    labels:
+      severity: warning
+      engine: parallel-mind
+    annotations:
+      summary: "Parallel Mind Engine scaling failures"
+      description: "{{ $value }} scaling failures in the last 5 minutes on {{ $labels.instance }}"
+
+- name: creative-engine-alerts
+  rules:
+  - alert: CreativeEngineInnovationDrop
+    expr: histogram_quantile(0.50, creative_engine_innovation_score_bucket) < 0.6
+    for: 5m
+    labels:
+      severity: warning
+      engine: creative
+    annotations:
+      summary: "Creative Engine innovation score dropping"
+      description: "Median innovation score is {{ $value }}, below 0.6 target on {{ $labels.instance }}"
+
+  - alert: CreativeEngineSlowGeneration
+    expr: histogram_quantile(0.95, creative_engine_generation_duration_seconds_bucket) > 30
+    for: 3m
+    labels:
+      severity: warning
+      engine: creative
+    annotations:
+      summary: "Creative Engine slow solution generation"
+      description: "95th percentile generation time is {{ $value }}s, exceeding 30s target"
+
+  - alert: CreativeEngineLowSolutionCount
+    expr: rate(creative_engine_solutions_generated_total[5m]) < 0.1
+    for: 5m
+    labels:
+      severity: warning
+      engine: creative
+    annotations:
+      summary: "Creative Engine low solution generation rate"
+      description: "Solution generation rate is {{ $value }} solutions/sec, below expected rate"
+
+- name: coordination-alerts
+  rules:
+  - alert: EngineCoordinationHighLatency
+    expr: histogram_quantile(0.95, engine_coordination_latency_seconds_bucket) > 5
+    for: 2m
+    labels:
+      severity: warning
+      engine: coordinator
+    annotations:
+      summary: "High inter-engine coordination latency"
+      description: "95th percentile coordination latency is {{ $value }}s on {{ $labels.instance }}"
+
+  - alert: EngineHealthCheckFailure
+    expr: engine_health_status == 0
+    for: 30s
+    labels:
+      severity: critical
+    annotations:
+      summary: "Engine {{ $labels.engine_id }} is unhealthy"
+      description: "Engine {{ $labels.engine_id }} of type {{ $labels.engine_type }} failed health check"
+
+  - alert: CoordinationStrategyFailures
+    expr: rate(coordination_strategy_failures_total[5m]) > 0.1
+    for: 3m
+    labels:
+      severity: warning
+      engine: coordinator
+    annotations:
+      summary: "High coordination strategy failure rate"
+      description: "Coordination strategy {{ $labels.strategy }} failing at {{ $value }} failures/sec"
+
+- name: infrastructure-alerts
+  rules:
+  - alert: RedisClusterDown
+    expr: up{job="redis-cluster"} == 0
+    for: 1m
+    labels:
+      severity: critical
+      component: redis
+    annotations:
+      summary: "Redis cluster node is down"
+      description: "Redis cluster node {{ $labels.instance }} is down"
+
+  - alert: ChromaDBDown
+    expr: up{job="chromadb"} == 0
+    for: 1m
+    labels:
+      severity: critical
+      component: chromadb
+    annotations:
+      summary: "ChromaDB is down"
+      description: "ChromaDB instance {{ $labels.instance }} is down"
+
+  - alert: HighDiskUsage
+    expr: (node_filesystem_size_bytes - node_filesystem_free_bytes) / node_filesystem_size_bytes * 100 > 85
+    for: 5m
+    labels:
+      severity: warning
+      component: storage
+    annotations:
+      summary: "High disk usage"
+      description: "Disk usage is {{ $value }}% on {{ $labels.instance }}"
+
+  - alert: HighMemoryUsage
+    expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 90
+    for: 5m
+    labels:
+      severity: critical
+      component: memory
+    annotations:
+      summary: "High memory usage"
+      description: "Memory usage is {{ $value }}% on {{ $labels.instance }}"
