@@ -340,6 +340,20 @@ export function AgentManagement() {
       description: 'AI-powered documentation creation and management',
       icon: <FileText className="w-6 h-6 text-white" />,
       color: 'bg-indigo-500'
+    },
+    {
+      type: AGENT_TYPES.PERFORMANCE_OPTIMIZER,
+      name: 'Performance Optimizer',
+      description: 'System performance analysis and optimization',
+      icon: <TrendingUp className="w-6 h-6 text-white" />,
+      color: 'bg-yellow-500'
+    },
+    {
+      type: AGENT_TYPES.ARCHITECTURE_ADVISOR,
+      name: 'Architecture Advisor',
+      description: 'System architecture analysis and recommendations',
+      icon: <Users className="w-6 h-6 text-white" />,
+      color: 'bg-teal-500'
     }
   ];
 

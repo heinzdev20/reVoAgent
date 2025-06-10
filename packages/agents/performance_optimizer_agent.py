@@ -16,7 +16,7 @@ from .base_intelligent_agent import (
     IntelligentAgent, Problem, AnalysisResult, Solution, ExecutionResult,
     ProblemComplexity, AgentCapability
 )
-from ..core.framework import ThreeEngineArchitecture
+from ..engines.enhanced_architecture import EnhancedArchitecture
 
 
 class PerformanceMetric(Enum):
@@ -128,7 +128,7 @@ class PerformanceOptimizerAgent(IntelligentAgent):
     - Performance regression detection
     """
     
-    def __init__(self, engines: ThreeEngineArchitecture):
+    def __init__(self, engines: EnhancedArchitecture):
         super().__init__(engines, "performance_optimizer_agent")
         self.profiling_tools = {}
         self.optimization_patterns = {}

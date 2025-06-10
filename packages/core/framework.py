@@ -11,7 +11,7 @@ from .memory import MemoryManager
 from .state import StateManager, AgentState
 from .communication import CommunicationManager
 from ..agents.base import BaseAgent
-from ..model_layer.local_models import LocalModelManager as ModelManager
+from ..ai.local_models import LocalModelManager as ModelManager
 from ..tools.manager import ToolManager
 
 

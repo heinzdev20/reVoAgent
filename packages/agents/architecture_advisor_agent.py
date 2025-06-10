@@ -16,7 +16,7 @@ from .base_intelligent_agent import (
     IntelligentAgent, Problem, AnalysisResult, Solution, ExecutionResult,
     ProblemComplexity, AgentCapability
 )
-from ..core.framework import ThreeEngineArchitecture
+from ..engines.enhanced_architecture import EnhancedArchitecture
 
 
 class ArchitecturalPattern(Enum):
@@ -122,7 +122,7 @@ class ArchitectureAdvisorAgent(IntelligentAgent):
     - Scalability analysis
     """
     
-    def __init__(self, engines: ThreeEngineArchitecture):
+    def __init__(self, engines: EnhancedArchitecture):
         super().__init__(engines, "architecture_advisor_agent")
         self.pattern_library = {}
         self.quality_metrics = {}

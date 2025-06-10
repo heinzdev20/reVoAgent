@@ -15,7 +15,7 @@ from enum import Enum
 from ..engines.perfect_recall_engine import PerfectRecallEngine
 from ..engines.parallel_mind_engine import ParallelMindEngine  
 from ..engines.creative_engine import CreativeEngine
-from ..core.framework import ThreeEngineArchitecture
+from ..engines.enhanced_architecture import EnhancedArchitecture
 
 
 class ProblemComplexity(Enum):
@@ -90,7 +90,7 @@ class IntelligentAgent(ABC):
     functionality for advanced problem-solving workflows.
     """
     
-    def __init__(self, engines: ThreeEngineArchitecture, agent_id: str):
+    def __init__(self, engines: EnhancedArchitecture, agent_id: str):
         self.engines = engines
         self.agent_id = agent_id
         self.logger = logging.getLogger(f"agent.{agent_id}")
