@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
 import { Dashboard } from './components/Dashboard';
 import RealTimeDashboard from './components/RealTimeDashboard';
 import { PlaceholderView } from './components/PlaceholderView';
-import { FixedCodeGenerator } from './components/agents/FixedCodeGenerator';
+import { EnhancedCodeGenerator } from './components/agents/EnhancedCodeGenerator';
 import { DebugAgent } from './components/agents/DebugAgent';
 import TestingAgent from './components/agents/TestingAgent';
 import DeployAgent from './components/agents/DeployAgent';
@@ -21,6 +22,11 @@ import Security from './components/Security';
 import Monitoring from './components/Monitoring';
 import ResourceManagement from './components/ResourceManagement';
 
+// Authentication components
+import { LoginForm } from './components/auth/LoginForm';
+import { RegisterForm } from './components/auth/RegisterForm';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
+
 // New comprehensive components
 import { EngineOrchestrator } from './components/engines/EngineOrchestrator';
 import { MCPMarketplace } from './components/mcp/MCPMarketplace';
@@ -29,6 +35,7 @@ import { ConfigurationManager } from './components/config/ConfigurationManager';
 
 import { useWebSocket } from './hooks/useWebSocket';
 import { webSocketService } from './services/websocketService';
+import { useAuthStore } from './stores/authStore';
 import type { TabId } from './types';
 import { 
   FolderOpen, 
@@ -49,7 +56,8 @@ import {
   Settings as SettingsIcon
 } from 'lucide-react';
 
-function App() {
+// Main Dashboard Component
+const MainDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabId>('dashboard');
   
   // Initialize WebSocket connection
@@ -81,7 +89,7 @@ function App() {
         return <Analytics />;
       
       case 'code-generator':
-        return <FixedCodeGenerator />;
+        return <EnhancedCodeGenerator />;
       
       case 'debug-agent':
         return <DebugAgent />;
@@ -150,6 +158,56 @@ function App() {
         </main>
       </div>
     </div>
+  );
+};
+
+function App() {
+  const { isAuthenticated } = useAuthStore();
+
+  return (
+    <Router>
+      <Routes>
+        {/* Public routes */}
+        <Route 
+          path="/login" 
+          element={
+            isAuthenticated ? <Navigate to="/dashboard" replace /> : <LoginForm />
+          } 
+        />
+        <Route 
+          path="/register" 
+          element={
+            isAuthenticated ? <Navigate to="/dashboard" replace /> : <RegisterForm />
+          } 
+        />
+        
+        {/* Protected routes */}
+        <Route 
+          path="/dashboard/*" 
+          element={
+            <ProtectedRoute>
+              <MainDashboard />
+            </ProtectedRoute>
+          } 
+        />
+        
+        {/* Default redirect */}
+        <Route 
+          path="/" 
+          element={
+            <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />
+          } 
+        />
+        
+        {/* Catch all route */}
+        <Route 
+          path="*" 
+          element={
+            <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />
+          } 
+        />
+      </Routes>
+    </Router>
   );
 }
 
