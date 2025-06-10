@@ -17,11 +17,11 @@ export default defineConfig({
     allowedHosts: ['work-2-lzknunbbrnlcrlvi.prod-runtime.all-hands.dev', 'localhost', '127.0.0.1'],
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        target: 'http://localhost:12001',
         changeOrigin: true,
       },
       '/ws': {
-        target: 'ws://localhost:8000',
+        target: 'ws://localhost:12001',
         ws: true,
         changeOrigin: true,
       },
