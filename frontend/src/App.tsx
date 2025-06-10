@@ -4,7 +4,7 @@ import { Sidebar } from './components/Sidebar';
 import { Dashboard } from './components/Dashboard';
 import RealTimeDashboard from './components/RealTimeDashboard';
 import { PlaceholderView } from './components/PlaceholderView';
-import { EnhancedCodeGenerator } from './components/agents/EnhancedCodeGenerator';
+import { FixedCodeGenerator } from './components/agents/FixedCodeGenerator';
 import { DebugAgent } from './components/agents/DebugAgent';
 import TestingAgent from './components/agents/TestingAgent';
 import DeployAgent from './components/agents/DeployAgent';
@@ -81,7 +81,7 @@ function App() {
         return <Analytics />;
       
       case 'code-generator':
-        return <EnhancedCodeGenerator />;
+        return <FixedCodeGenerator />;
       
       case 'debug-agent':
         return <DebugAgent />;

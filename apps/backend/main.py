@@ -29,16 +29,221 @@ from packages.core.memory import MemoryManager
 import uuid
 from typing import Dict, Any
 
-# Simple mock managers for now
+# Enhanced mock managers for realistic agent behavior
 class MockModelManager:
-    """Mock model manager for testing."""
-    async def generate_response(self, prompt: str, **kwargs):
-        return f"Mock response for: {prompt[:50]}..."
+    """Enhanced mock model manager for realistic testing."""
+    
+    async def generate_response(self, prompt: str, model_name: str = None, **kwargs):
+        """Generate realistic responses based on prompt content."""
+        import asyncio
+        await asyncio.sleep(0.2)  # Simulate API call delay
+        
+        prompt_lower = prompt.lower()
+        
+        # Code generation responses
+        if "generate" in prompt_lower and "code" in prompt_lower:
+            if "function" in prompt_lower:
+                return '''def calculate_fibonacci(n):
+    """Calculate the nth Fibonacci number."""
+    if n <= 1:
+        return n
+    return calculate_fibonacci(n-1) + calculate_fibonacci(n-2)
+
+# Example usage
+result = calculate_fibonacci(10)
+print(f"The 10th Fibonacci number is: {result}")'''
+            elif "class" in prompt_lower:
+                return '''class DataProcessor:
+    """A class for processing data efficiently."""
+    
+    def __init__(self, data_source):
+        self.data_source = data_source
+        self.processed_data = []
+    
+    def process(self):
+        """Process the data from the source."""
+        for item in self.data_source:
+            processed_item = self._transform_item(item)
+            self.processed_data.append(processed_item)
+        return self.processed_data
+    
+    def _transform_item(self, item):
+        """Transform a single data item."""
+        return item.strip().lower() if isinstance(item, str) else item'''
+            elif "test" in prompt_lower:
+                return '''import pytest
+from unittest.mock import Mock, patch
+
+def test_calculate_fibonacci():
+    """Test the Fibonacci calculation function."""
+    assert calculate_fibonacci(0) == 0
+    assert calculate_fibonacci(1) == 1
+    assert calculate_fibonacci(5) == 5
+    assert calculate_fibonacci(10) == 55
+
+def test_fibonacci_negative():
+    """Test Fibonacci with negative input."""
+    assert calculate_fibonacci(-1) == -1
+
+@pytest.mark.parametrize("n,expected", [
+    (0, 0), (1, 1), (2, 1), (3, 2), (4, 3), (5, 5)
+])
+def test_fibonacci_parametrized(n, expected):
+    """Parametrized test for Fibonacci function."""
+    assert calculate_fibonacci(n) == expected'''
+            else:
+                return '''# Generated Python code
+def main():
+    """Main function to demonstrate the solution."""
+    print("Hello, World!")
+    return "Success"
+
+if __name__ == "__main__":
+    main()'''
+        
+        # Debugging responses
+        elif "debug" in prompt_lower or "error" in prompt_lower:
+            return '''**Root Cause Analysis:**
+The error appears to be caused by a null pointer exception in the data processing module.
+
+**Debugging Steps:**
+1. Check input validation - ensure all required parameters are provided
+2. Verify data types match expected formats
+3. Add null checks before accessing object properties
+4. Implement proper error handling with try-catch blocks
+
+**Recommended Fix:**
+```python
+def safe_process_data(data):
+    if data is None:
+        raise ValueError("Data cannot be None")
+    
+    try:
+        result = process_data_internal(data)
+        return result
+    except Exception as e:
+        logger.error(f"Data processing failed: {e}")
+        raise
+```
+
+**Prevention Strategies:**
+- Add comprehensive input validation
+- Implement unit tests for edge cases
+- Use type hints for better code clarity
+- Add logging for debugging purposes'''
+        
+        # Testing responses
+        elif "test" in prompt_lower and "analyze" in prompt_lower:
+            return '''**Test Analysis Results:**
+
+**Test Coverage:** 85%
+- Unit tests: 12 passed, 0 failed
+- Integration tests: 8 passed, 1 failed
+- Performance tests: 3 passed, 0 failed
+
+**Issues Found:**
+1. Missing edge case tests for empty input
+2. Integration test failure in database connection module
+3. Performance bottleneck in data processing loop
+
+**Recommendations:**
+1. Add tests for null/empty inputs
+2. Mock database connections in integration tests
+3. Optimize data processing with batch operations
+4. Increase test coverage to 95%
+
+**Next Steps:**
+- Fix failing integration test
+- Add missing edge case tests
+- Implement performance optimizations
+- Set up continuous integration pipeline'''
+        
+        # General analysis responses
+        elif "analyze" in prompt_lower:
+            return '''**Analysis Results:**
+
+**Summary:** The code/system shows good overall structure with some areas for improvement.
+
+**Strengths:**
+- Clean, readable code structure
+- Good separation of concerns
+- Proper error handling in most areas
+
+**Areas for Improvement:**
+1. Add more comprehensive documentation
+2. Implement additional error handling
+3. Optimize performance in critical sections
+4. Add more unit tests for edge cases
+
+**Recommendations:**
+1. Refactor complex functions into smaller, more manageable pieces
+2. Add type hints for better code clarity
+3. Implement logging for better debugging
+4. Consider using design patterns for better maintainability'''
+        
+        # Default response
+        else:
+            return f"Based on your request: {prompt[:100]}...\n\nI've analyzed the requirements and here's my response with detailed recommendations and implementation suggestions."
 
 class MockToolManager:
-    """Mock tool manager for testing."""
-    async def execute_tool(self, tool_name: str, *args, **kwargs):
-        return f"Mock tool execution: {tool_name} with args: {args} kwargs: {kwargs}"
+    """Enhanced mock tool manager for realistic testing."""
+    
+    async def execute_tool(self, tool_name: str, parameters: Dict[str, Any] = None, **kwargs):
+        """Execute tools with realistic responses."""
+        import asyncio
+        await asyncio.sleep(0.1)  # Simulate tool execution delay
+        
+        if parameters is None:
+            parameters = {}
+        
+        if tool_name == "terminal":
+            command = parameters.get("command", "echo 'Hello World'")
+            if "ps aux" in command:
+                return "USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND\nroot         1  0.0  0.1  20000  4000 ?        Ss   10:00   0:01 /sbin/init"
+            elif "top" in command:
+                return "Tasks: 150 total,   1 running, 149 sleeping,   0 stopped,   0 zombie\n%Cpu(s):  2.3 us,  1.1 sy,  0.0 ni, 96.6 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st"
+            else:
+                return f"Command executed: {command}\nOutput: Success"
+        
+        elif tool_name == "profiler":
+            return {
+                "execution_time": "0.245s",
+                "memory_usage": "45.2MB",
+                "cpu_usage": "12.5%",
+                "bottlenecks": ["data_processing_loop", "database_query"],
+                "recommendations": ["Use batch processing", "Add database indexing"]
+            }
+        
+        elif tool_name == "log_analyzer":
+            return {
+                "total_entries": 1247,
+                "error_count": 3,
+                "warning_count": 15,
+                "patterns": ["Database timeout", "Memory usage spike"],
+                "recommendations": ["Increase connection pool", "Optimize memory usage"]
+            }
+        
+        elif tool_name == "pytest":
+            return {
+                "tests_run": 25,
+                "passed": 23,
+                "failed": 2,
+                "coverage": "87%",
+                "execution_time": "2.3s",
+                "failed_tests": ["test_edge_case_empty_input", "test_database_connection"]
+            }
+        
+        elif tool_name == "coverage":
+            return {
+                "total_coverage": "85%",
+                "lines_covered": 340,
+                "lines_total": 400,
+                "missing_coverage": ["error_handlers.py", "utils.py"],
+                "recommendations": ["Add tests for error handling", "Test utility functions"]
+            }
+        
+        else:
+            return f"Tool {tool_name} executed successfully with parameters: {parameters}"
 
 class SecurityAgentWrapper:
     """Simple security agent implementation."""
@@ -673,25 +878,7 @@ async def get_agent_history(agent_type: str, limit: int = 10):
 
 def get_agent_instance(agent_type: str):
     """Get agent instance by type"""
-    try:
-        if agent_type == "code_generator":
-            return code_generator_agent
-        elif agent_type == "debug_agent":
-            return debug_agent
-        elif agent_type == "testing_agent":
-            return testing_agent
-        elif agent_type == "deploy_agent":
-            return deploy_agent
-        elif agent_type == "browser_agent":
-            return browser_agent
-        elif agent_type == "security_agent":
-            return security_agent
-        elif agent_type == "documentation_agent":
-            return agent_instances.get("documentation_agent")
-        else:
-            return None
-    except:
-        return None
+    return agent_instances.get(agent_type)
 
 # Real-time Dashboard API
 @app.get("/api/dashboard/stats")
@@ -834,19 +1021,22 @@ def initialize_agents():
         )
     }
     
+    # Register WebSocket callbacks for real-time updates
+    async def websocket_callback(update):
+        """Callback to broadcast agent updates via WebSocket"""
+        await manager.broadcast(json.dumps(update))
+    
+    # Register callbacks for agents that support real-time updates
+    for agent_name, agent in agent_instances.items():
+        if hasattr(agent, 'register_websocket_callback'):
+            agent.register_websocket_callback(websocket_callback)
+    
     print("✅ Real agent instances initialized successfully")
 
 # Initialize agents on startup
 initialize_agents()
 
-@app.get("/api/agents")
-async def get_all_agents():
-    """Get status of all agents"""
-    return {
-        "agents": agent_state["agents"],
-        "active_tasks": len(agent_state["active_tasks"]),
-        "total_agents": len(agent_state["agents"])
-    }
+# Removed duplicate endpoint - using the one above that queries real agent instances
 
 @app.get("/api/agents/{agent_type}/status")
 async def get_agent_status(agent_type: str):
@@ -879,7 +1069,7 @@ code_generator_state = {
     }
 }
 
-@app.post("/api/agents/code-generator/execute")
+@app.post("/api/agents/code_generator/execute")
 async def execute_code_generation(request: Dict[str, Any]):
     """Execute code generation task with REAL agent implementation"""
     
@@ -1304,7 +1494,7 @@ async def _broadcast_task_update(task_id: str, task: Dict[str, Any]):
     
     await manager.broadcast(json.dumps(update))
 
-@app.get("/api/agents/code-generator/tasks/{task_id}")
+@app.get("/api/agents/code_generator/tasks/{task_id}")
 async def get_code_generation_task(task_id: str):
     """Get status of specific code generation task"""
     
@@ -1319,7 +1509,7 @@ async def get_code_generation_task(task_id: str):
     
     raise HTTPException(status_code=404, detail="Task not found")
 
-@app.get("/api/agents/code-generator/tasks")
+@app.get("/api/agents/code_generator/tasks")
 async def get_code_generation_tasks():
     """Get all code generation tasks (active and history)"""
     
@@ -1337,7 +1527,7 @@ async def get_code_generation_tasks():
         "total_completed": len(code_generator_state["task_history"])
     }
 
-@app.delete("/api/agents/code-generator/tasks/{task_id}")
+@app.delete("/api/agents/code_generator/tasks/{task_id}")
 async def cancel_code_generation_task(task_id: str):
     """Cancel active code generation task"""
     
@@ -1360,7 +1550,7 @@ async def cancel_code_generation_task(task_id: str):
     
     return {"success": True, "message": "Task cancelled successfully"}
 
-@app.get("/api/agents/code-generator/metrics")
+@app.get("/api/agents/code_generator/metrics")
 async def get_code_generator_metrics():
     """Get code generator performance metrics"""
     
@@ -3716,7 +3906,11 @@ async def websocket_endpoint(websocket: WebSocket):
     except Exception as e:
         print(f"WebSocket error: {e}")
     finally:
-        await websocket.close()
+        try:
+            if websocket.client_state.name != "DISCONNECTED":
+                await websocket.close()
+        except Exception:
+            pass
 
 # Dashboard-specific WebSocket endpoint
 @app.websocket("/ws/dashboard")
@@ -3814,7 +4008,11 @@ async def dashboard_websocket_endpoint(websocket: WebSocket):
         print(f"Dashboard WebSocket error: {e}")
     finally:
         print("Dashboard WebSocket disconnected")
-        await websocket.close()
+        try:
+            if websocket.client_state.name != "DISCONNECTED":
+                await websocket.close()
+        except Exception:
+            pass
 
 # DeepSeek R1 Integration Endpoint
 @app.post("/api/ai/deepseek/generate")
