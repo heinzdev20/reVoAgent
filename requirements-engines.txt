@@ -2,40 +2,40 @@
 # Advanced dependencies for the revolutionary Three-Engine Architecture
 
 # Perfect Recall Engine Dependencies
-redis>=4.5.0                    # High-performance memory store
-chromadb>=0.4.0                 # Vector database for semantic search
-sentence-transformers>=2.2.0    # Embedding generation
-numpy>=1.24.0                   # Numerical operations
+redis>=6.2.0                    # High-performance memory store
+chromadb>=1.0.12                # Vector database for semantic search
+sentence-transformers>=4.1.0    # Embedding generation
+numpy>=2.3.0                    # Numerical operations
 
 # Parallel Mind Engine Dependencies
-psutil>=5.9.0                   # System monitoring and metrics
-concurrent-futures>=3.1.1       # Enhanced parallel processing
+psutil>=7.0.0                   # System monitoring and metrics
+# concurrent-futures is built-in for Python 3.12+
 
 # Creative Engine Dependencies
 # (Uses built-in libraries for creativity techniques)
 
 # Engine Coordination Dependencies
-asyncio-mqtt>=0.11.0            # Optional: For distributed coordination
-websockets>=11.0                # Real-time WebSocket communication
+asyncio-mqtt>=0.16.2            # Optional: For distributed coordination
+websockets>=15.0.1              # Real-time WebSocket communication
 
 # Real-Time Communication & Monitoring
-python-socketio>=5.8.0          # Socket.IO support
-uvicorn[standard]>=0.23.0       # ASGI server with WebSocket support
+python-socketio>=5.13.0         # Socket.IO support
+uvicorn[standard]>=0.34.3       # ASGI server with WebSocket support
 
 # Security & Authentication
-python-jose>=3.3.0              # JWT token handling
+python-jose>=3.5.0              # JWT token handling
 passlib>=1.7.4                  # Password hashing
 
 # Performance Enhancements
-uvloop>=0.17.0                  # High-performance event loop (Unix only)
-orjson>=3.8.0                   # Fast JSON serialization
-msgpack>=1.0.0                  # Efficient binary serialization
+uvloop>=0.21.0                  # High-performance event loop (Unix only)
+orjson>=3.10.18                 # Fast JSON serialization
+msgpack>=1.1.0                  # Efficient binary serialization
 
 # Monitoring and Observability
-prometheus-client>=0.16.0       # Metrics collection
-structlog>=22.3.0               # Structured logging
+prometheus-client>=0.22.1       # Metrics collection
+structlog>=25.4.0               # Structured logging
 
 # Development and Testing
-pytest>=7.2.0                   # Testing framework
-pytest-asyncio>=0.21.0          # Async testing support
-pytest-benchmark>=4.0.0         # Performance benchmarking
+pytest>=8.4.0                   # Testing framework
+pytest-asyncio>=1.0.0           # Async testing support
+pytest-benchmark>=5.1.0         # Performance benchmarking
