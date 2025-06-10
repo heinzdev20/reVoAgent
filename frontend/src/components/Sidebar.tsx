@@ -19,7 +19,8 @@ import {
   Brain,
   Store,
   Building2,
-  Cog
+  Cog,
+  Zap
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import type { TabId } from '@/types';
@@ -57,6 +58,7 @@ const sidebarSections: SidebarSection[] = [
     title: 'AI ENGINES',
     items: [
       { id: 'engine-orchestrator', label: 'Engine Orchestrator', icon: <Brain className="w-4 h-4" />, status: 'active' },
+      { id: 'realtime-dashboard', label: 'Real-Time Dashboard', icon: <Zap className="w-4 h-4" />, status: 'active', badge: 'LIVE' },
       { id: 'code-generator', label: 'Code Generator', icon: <Code2 className="w-4 h-4" />, status: 'active' },
       { id: 'debug-agent', label: 'Debug Agent', icon: <Bug className="w-4 h-4" /> },
       { id: 'testing-agent', label: 'Testing Agent', icon: <TestTube className="w-4 h-4" /> },

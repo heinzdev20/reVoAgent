@@ -108,6 +108,9 @@ function App() {
       case 'configuration':
         return <ConfigurationManager />;
       
+      case 'realtime-dashboard':
+        return <RealTimeDashboard />;
+      
       default:
         return <Dashboard />;
     }

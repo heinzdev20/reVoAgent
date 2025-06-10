@@ -85,7 +85,8 @@ export type TabId =
   | 'engine-orchestrator'
   | 'mcp-marketplace'
   | 'enterprise-console'
-  | 'configuration';
+  | 'configuration'
+  | 'realtime-dashboard';
 
 export interface WebSocketMessage {
   type: string;
