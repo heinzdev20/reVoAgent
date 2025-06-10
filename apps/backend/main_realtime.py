@@ -226,6 +226,31 @@ async def execute_security_analysis(request: AgentExecutionRequest):
     """Execute security analysis with real AI"""
     return await execute_agent_task("security_agent", request)
 
+@app.post("/api/agents/deploy-agent/execute")
+async def execute_deployment(request: AgentExecutionRequest):
+    """Execute deployment with real AI"""
+    return await execute_agent_task("deploy_agent", request)
+
+@app.post("/api/agents/browser-agent/execute")
+async def execute_browser_automation(request: AgentExecutionRequest):
+    """Execute browser automation with real AI"""
+    return await execute_agent_task("browser_agent", request)
+
+@app.post("/api/agents/documentation-agent/execute")
+async def execute_documentation(request: AgentExecutionRequest):
+    """Execute documentation generation with real AI"""
+    return await execute_agent_task("documentation_agent", request)
+
+@app.post("/api/agents/performance-optimizer/execute")
+async def execute_performance_optimization(request: AgentExecutionRequest):
+    """Execute performance optimization with real AI"""
+    return await execute_agent_task("performance_optimizer", request)
+
+@app.post("/api/agents/architecture-advisor/execute")
+async def execute_architecture_analysis(request: AgentExecutionRequest):
+    """Execute architecture analysis with real AI"""
+    return await execute_agent_task("architecture_advisor", request)
+
 # ============================================================================
 # REAL-TIME WEBSOCKET ENDPOINTS
 # ============================================================================
