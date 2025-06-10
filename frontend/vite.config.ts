@@ -14,14 +14,14 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 12000,
     cors: true,
-    allowedHosts: ['all'],
+    allowedHosts: ['work-2-lzknunbbrnlcrlvi.prod-runtime.all-hands.dev', 'localhost', '127.0.0.1'],
     proxy: {
       '/api': {
-        target: 'http://localhost:12001',
+        target: 'http://localhost:8000',
         changeOrigin: true,
       },
       '/ws': {
-        target: 'ws://localhost:12001',
+        target: 'ws://localhost:8000',
         ws: true,
         changeOrigin: true,
       },
