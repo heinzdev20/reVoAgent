@@ -4,6 +4,7 @@ import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
 import { Dashboard } from './components/Dashboard';
 import RealTimeDashboard from './components/RealTimeDashboard';
+import { EnhancedDashboard } from './components/EnhancedDashboard';
 import { PlaceholderView } from './components/PlaceholderView';
 import { EnhancedCodeGenerator } from './components/agents/EnhancedCodeGenerator';
 import { DebugAgent } from './components/agents/DebugAgent';
@@ -77,7 +78,7 @@ const MainDashboard: React.FC = () => {
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard':
-        return <RealTimeDashboard />;
+        return <EnhancedDashboard />;
       
       case 'projects':
         return <Projects />;
