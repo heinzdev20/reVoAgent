@@ -11,9 +11,15 @@ import {
   Database,
   Shield,
   TestTube,
-  Package
+  Package,
+  Loader2,
+  AlertCircle,
+  Settings,
+  Eye,
+  Save
 } from 'lucide-react';
-import { api, AGENT_TYPES, type AgentStatus, type AgentExecutionResult } from '../../services/api';
+import { useAgentStore, useAgentStatus, useAgentError, useIsAgentExecuting } from '../../stores/agentStore';
+import { AGENT_TYPES } from '../../services/api';
 
 interface CodeGenTemplate {
   id: string;
@@ -44,6 +50,13 @@ interface CodeGenRequest {
 }
 
 export function EnhancedCodeGenerator() {
+  // State management using Zustand store
+  const agentStatus = useAgentStatus(AGENT_TYPES.CODE_GENERATOR);
+  const agentError = useAgentError(AGENT_TYPES.CODE_GENERATOR);
+  const isExecuting = useIsAgentExecuting(AGENT_TYPES.CODE_GENERATOR);
+  const { executeAgent, fetchAgentStatus } = useAgentStore();
+
+  // Local component state
   const [taskDescription, setTaskDescription] = useState(
     'Create a complete e-commerce API with user auth, product catalog, shopping cart, payment integration, and admin dashboard'
   );
@@ -52,13 +65,13 @@ export function EnhancedCodeGenerator() {
   const [selectedFramework, setSelectedFramework] = useState('fastapi');
   const [selectedDatabase, setSelectedDatabase] = useState('postgresql');
   const [selectedFeatures, setSelectedFeatures] = useState(['auth', 'tests', 'docs', 'docker', 'cicd']);
-  const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState<CodeGenProgress | null>(null);
   const [templates, setTemplates] = useState<CodeGenTemplate[]>([]);
   const [generatedCode, setGeneratedCode] = useState<string>('');
   const [generationResult, setGenerationResult] = useState<any>(null);
   const [selectedFile, setSelectedFile] = useState<string>('main.py');
   const [codeFiles, setCodeFiles] = useState<Record<string, string>>({});
+  const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
 
   const languages = ['python', 'typescript', 'javascript', 'java', 'go', 'rust'];
   const frameworks = {
@@ -82,7 +95,8 @@ export function EnhancedCodeGenerator() {
 
   useEffect(() => {
     loadTemplates();
-  }, []);
+    fetchAgentStatus(AGENT_TYPES.CODE_GENERATOR);
+  }, [fetchAgentStatus]);
 
   const loadTemplates = async () => {
     try {
@@ -121,13 +135,12 @@ export function EnhancedCodeGenerator() {
   };
 
   const handleStartGeneration = async () => {
-    setIsGenerating(true);
     setGeneratedCode('');
     setGenerationResult(null);
     setProgress(null);
     
     try {
-      // Prepare task data for the new backend API
+      // Prepare task data for the agent
       const taskData = {
         description: taskDescription,
         parameters: {
@@ -144,29 +157,15 @@ export function EnhancedCodeGenerator() {
 
       console.log('Starting code generation with task data:', taskData);
       
-      // Call the new backend API endpoint
-      const response = await fetch('/api/agents/code-generator/execute', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(taskData)
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const result = await response.json();
-      console.log('Code generation task started:', result);
+      // Use the agent store to execute the task
+      const taskId = await executeAgent(AGENT_TYPES.CODE_GENERATOR, taskData);
+      console.log('Code generation task started:', taskId);
       
       // Start polling for task progress
-      const taskId = result.task_id;
       pollTaskProgress(taskId);
       
     } catch (error) {
       console.error('Failed to start code generation:', error);
-      setIsGenerating(false);
       alert('Failed to start code generation. Please try again.');
     }
   };

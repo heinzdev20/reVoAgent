@@ -16,16 +16,19 @@ export interface WorkflowData {
   progress: number;
   icon: string;
   status: 'running' | 'completed' | 'paused' | 'failed';
-  startTime: string;
+  startTime?: string;
+  estimatedTime?: string;
   estimatedCompletion?: string;
+  description?: string;
 }
 
 export interface ActivityItem {
   id: string;
   title: string;
   description: string;
-  time: string;
-  type: 'success' | 'warning' | 'error' | 'info';
+  timestamp: Date;
+  type: 'agent' | 'workflow' | 'system';
+  status: 'success' | 'warning' | 'error' | 'info';
   icon?: string;
 }
 
@@ -77,6 +80,7 @@ export type TabId =
   | 'testing-agent'
   | 'deploy-agent'
   | 'browser-agent'
+  | 'agent-management'
   | 'model-registry'
   | 'settings'
   | 'security'

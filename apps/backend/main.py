@@ -497,6 +497,200 @@ async def update_config_section(section: str, config_data: Dict[str, Any]):
         "message": "Configuration updated successfully"
     }
 
+# ============================================================================
+# AGENT MANAGEMENT API - COMPREHENSIVE IMPLEMENTATION
+# ============================================================================
+
+# Agent status tracking
+agent_tasks = {}  # Store active tasks
+agent_history = {}  # Store task history
+
+@app.get("/api/agents")
+async def get_all_agents():
+    """Get status of all agents"""
+    agents = {}
+    active_tasks = 0
+    
+    for agent_type in ["code_generator", "debug_agent", "testing_agent", "deploy_agent", "browser_agent", "security_agent"]:
+        # Get agent instance
+        agent = get_agent_instance(agent_type)
+        if agent:
+            status = {
+                "agent_type": agent_type,
+                "status": "busy" if agent.current_task else "idle",
+                "current_task": agent.current_task,
+                "performance": {
+                    "success_rate": (agent.success_count / max(agent.task_count, 1)) * 100,
+                    "avg_response_time": 1200  # Mock value
+                },
+                "last_updated": datetime.now().isoformat()
+            }
+            agents[agent_type] = status
+            if agent.current_task:
+                active_tasks += 1
+    
+    return {
+        "agents": agents,
+        "active_tasks": active_tasks,
+        "total_agents": len(agents)
+    }
+
+@app.get("/api/agents/{agent_type}/status")
+async def get_agent_status(agent_type: str):
+    """Get specific agent status"""
+    agent = get_agent_instance(agent_type)
+    if not agent:
+        raise HTTPException(status_code=404, detail=f"Agent {agent_type} not found")
+    
+    return {
+        "agent_type": agent_type,
+        "status": "busy" if agent.current_task else "idle",
+        "current_task": agent.current_task,
+        "performance": {
+            "success_rate": (agent.success_count / max(agent.task_count, 1)) * 100,
+            "avg_response_time": 1200
+        },
+        "last_updated": datetime.now().isoformat()
+    }
+
+@app.post("/api/agents/{agent_type}/execute")
+async def execute_agent_task(agent_type: str, task_data: Dict[str, Any]):
+    """Execute a task with the specified agent"""
+    agent = get_agent_instance(agent_type)
+    if not agent:
+        raise HTTPException(status_code=404, detail=f"Agent {agent_type} not found")
+    
+    # Generate task ID
+    task_id = str(uuid.uuid4())
+    
+    # Store task info
+    task_info = {
+        "id": task_id,
+        "agent_type": agent_type,
+        "parameters": task_data,
+        "status": "running",
+        "created_at": datetime.now().isoformat(),
+        "progress": 0
+    }
+    
+    agent_tasks[task_id] = task_info
+    
+    # Add to agent history
+    if agent_type not in agent_history:
+        agent_history[agent_type] = []
+    agent_history[agent_type].insert(0, task_info)
+    
+    # Execute task asynchronously
+    asyncio.create_task(execute_agent_task_async(agent, task_id, task_data))
+    
+    return {
+        "success": True,
+        "task_id": task_id,
+        "agent_type": agent_type,
+        "status": "running",
+        "estimated_completion": "2-5 minutes"
+    }
+
+async def execute_agent_task_async(agent, task_id: str, task_data: Dict[str, Any]):
+    """Execute agent task asynchronously"""
+    try:
+        # Update task status
+        if task_id in agent_tasks:
+            agent_tasks[task_id]["status"] = "running"
+            agent_tasks[task_id]["progress"] = 10
+        
+        # Execute the actual task
+        result = await agent.execute_task(
+            task_data.get("description", ""),
+            task_data.get("parameters", {})
+        )
+        
+        # Update task with result
+        if task_id in agent_tasks:
+            agent_tasks[task_id]["status"] = "completed"
+            agent_tasks[task_id]["progress"] = 100
+            agent_tasks[task_id]["result"] = result
+            agent_tasks[task_id]["completed_at"] = datetime.now().isoformat()
+        
+        # Update agent history
+        for history_item in agent_history.get(agent_tasks[task_id]["agent_type"], []):
+            if history_item["id"] == task_id:
+                history_item.update(agent_tasks[task_id])
+                break
+                
+    except Exception as e:
+        # Update task with error
+        if task_id in agent_tasks:
+            agent_tasks[task_id]["status"] = "failed"
+            agent_tasks[task_id]["error"] = str(e)
+            agent_tasks[task_id]["completed_at"] = datetime.now().isoformat()
+
+@app.get("/api/agents/{agent_type}/tasks/{task_id}")
+async def get_agent_task(agent_type: str, task_id: str):
+    """Get specific task status"""
+    if task_id not in agent_tasks:
+        raise HTTPException(status_code=404, detail="Task not found")
+    
+    task = agent_tasks[task_id]
+    if task["agent_type"] != agent_type:
+        raise HTTPException(status_code=404, detail="Task not found for this agent")
+    
+    return task
+
+@app.delete("/api/agents/{agent_type}/tasks/{task_id}")
+async def cancel_agent_task(agent_type: str, task_id: str):
+    """Cancel a running task"""
+    if task_id not in agent_tasks:
+        raise HTTPException(status_code=404, detail="Task not found")
+    
+    task = agent_tasks[task_id]
+    if task["agent_type"] != agent_type:
+        raise HTTPException(status_code=404, detail="Task not found for this agent")
+    
+    if task["status"] == "running":
+        task["status"] = "cancelled"
+        task["completed_at"] = datetime.now().isoformat()
+        
+        # Update agent history
+        for history_item in agent_history.get(agent_type, []):
+            if history_item["id"] == task_id:
+                history_item.update(task)
+                break
+    
+    return {"success": True, "message": "Task cancelled"}
+
+@app.get("/api/agents/{agent_type}/history")
+async def get_agent_history(agent_type: str, limit: int = 10):
+    """Get agent task history"""
+    history = agent_history.get(agent_type, [])
+    limited_history = history[:limit]
+    
+    return {
+        "agent_type": agent_type,
+        "history": limited_history,
+        "total_tasks": len(history)
+    }
+
+def get_agent_instance(agent_type: str):
+    """Get agent instance by type"""
+    try:
+        if agent_type == "code_generator":
+            return code_generator_agent
+        elif agent_type == "debug_agent":
+            return debug_agent
+        elif agent_type == "testing_agent":
+            return testing_agent
+        elif agent_type == "deploy_agent":
+            return deploy_agent
+        elif agent_type == "browser_agent":
+            return browser_agent
+        elif agent_type == "security_agent":
+            return security_agent
+        else:
+            return None
+    except:
+        return None
+
 # Real-time Dashboard API
 @app.get("/api/dashboard/stats")
 async def get_dashboard_stats():

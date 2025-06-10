@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
 import { Dashboard } from './components/Dashboard';
@@ -9,6 +9,7 @@ import { DebugAgent } from './components/agents/DebugAgent';
 import TestingAgent from './components/agents/TestingAgent';
 import DeployAgent from './components/agents/DeployAgent';
 import BrowserAgent from './components/agents/BrowserAgent';
+import { AgentManagement } from './components/AgentManagement';
 import Projects from './components/Projects';
 import Workflows from './components/Workflows';
 import Analytics from './components/Analytics';
@@ -25,6 +26,7 @@ import { EnterpriseConsole } from './components/enterprise/EnterpriseConsole';
 import { ConfigurationManager } from './components/config/ConfigurationManager';
 
 import { useWebSocket } from './hooks/useWebSocket';
+import { webSocketService } from './services/websocketService';
 import type { TabId } from './types';
 import { 
   FolderOpen, 
@@ -50,6 +52,17 @@ function App() {
   
   // Initialize WebSocket connection
   useWebSocket();
+  
+  // Initialize WebSocket service
+  useEffect(() => {
+    webSocketService.connect().catch((error) => {
+      console.error('Failed to connect WebSocket:', error);
+    });
+    
+    return () => {
+      webSocketService.disconnect();
+    };
+  }, []);
 
   const renderContent = () => {
     switch (activeTab) {
@@ -79,6 +92,9 @@ function App() {
       
       case 'browser-agent':
         return <BrowserAgent />;
+      
+      case 'agent-management':
+        return <AgentManagement />;
       
       case 'model-registry':
         return <ModelRegistry />;

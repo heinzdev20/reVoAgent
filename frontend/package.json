@@ -12,13 +12,14 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@types/d3": "^7.4.3",
+    "clsx": "^2.0.0",
+    "d3": "^7.8.5",
+    "lucide-react": "^0.294.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "d3": "^7.8.5",
-    "@types/d3": "^7.4.3",
-    "lucide-react": "^0.294.0",
-    "clsx": "^2.0.0",
-    "tailwind-merge": "^2.0.0"
+    "tailwind-merge": "^2.0.0",
+    "zustand": "^5.0.5"
   },
   "devDependencies": {
     "@types/react": "^18.2.37",
