@@ -80,6 +80,8 @@ export type TabId =
   | 'testing-agent'
   | 'deploy-agent'
   | 'browser-agent'
+  | 'security-agent'
+  | 'documentation-agent'
   | 'agent-management'
   | 'model-registry'
   | 'settings'

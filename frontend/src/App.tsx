@@ -9,6 +9,8 @@ import { DebugAgent } from './components/agents/DebugAgent';
 import TestingAgent from './components/agents/TestingAgent';
 import DeployAgent from './components/agents/DeployAgent';
 import BrowserAgent from './components/agents/BrowserAgent';
+import { SecurityAgent } from './components/agents/SecurityAgent';
+import { DocumentationAgent } from './components/agents/DocumentationAgent';
 import { AgentManagement } from './components/AgentManagement';
 import Projects from './components/Projects';
 import Workflows from './components/Workflows';
@@ -92,6 +94,12 @@ function App() {
       
       case 'browser-agent':
         return <BrowserAgent />;
+      
+      case 'security-agent':
+        return <SecurityAgent />;
+      
+      case 'documentation-agent':
+        return <DocumentationAgent />;
       
       case 'agent-management':
         return <AgentManagement />;

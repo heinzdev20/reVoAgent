@@ -18,7 +18,8 @@ export const AGENT_TYPES = {
   TESTING_AGENT: 'testing_agent',
   DEPLOY_AGENT: 'deploy_agent',
   BROWSER_AGENT: 'browser_agent',
-  SECURITY_AGENT: 'security_agent'
+  SECURITY_AGENT: 'security_agent',
+  DOCUMENTATION_AGENT: 'documentation_agent'
 } as const;
 
 export type AgentType = typeof AGENT_TYPES[keyof typeof AGENT_TYPES];

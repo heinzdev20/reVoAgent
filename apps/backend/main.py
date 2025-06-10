@@ -511,7 +511,7 @@ async def get_all_agents():
     agents = {}
     active_tasks = 0
     
-    for agent_type in ["code_generator", "debug_agent", "testing_agent", "deploy_agent", "browser_agent", "security_agent"]:
+    for agent_type in ["code_generator", "debug_agent", "testing_agent", "deploy_agent", "browser_agent", "security_agent", "documentation_agent"]:
         # Get agent instance
         agent = get_agent_instance(agent_type)
         if agent:
@@ -686,6 +686,8 @@ def get_agent_instance(agent_type: str):
             return browser_agent
         elif agent_type == "security_agent":
             return security_agent
+        elif agent_type == "documentation_agent":
+            return agent_instances.get("documentation_agent")
         else:
             return None
     except:

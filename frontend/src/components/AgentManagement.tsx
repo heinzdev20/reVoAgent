@@ -22,7 +22,8 @@ import {
   Shield,
   MoreVertical,
   TrendingUp,
-  Users
+  Users,
+  FileText
 } from 'lucide-react';
 import { 
   useAgentStore, 
@@ -109,6 +110,10 @@ function AgentCard({ agentType, name, description, icon, color }: AgentCardProps
         [AGENT_TYPES.SECURITY_AGENT]: {
           description: 'Perform security scan',
           parameters: { target: 'application' }
+        },
+        [AGENT_TYPES.DOCUMENTATION_AGENT]: {
+          description: 'Generate API documentation',
+          parameters: { doc_type: 'api', files: ['src/main.py'] }
         }
       };
 
@@ -319,6 +324,13 @@ export function AgentManagement() {
       name: 'Security Auditor',
       description: 'Security scanning and vulnerability assessment',
       icon: <Shield className="w-6 h-6 text-white" />,
+      color: 'bg-red-600'
+    },
+    {
+      type: AGENT_TYPES.DOCUMENTATION_AGENT,
+      name: 'Documentation Generator',
+      description: 'AI-powered documentation creation and management',
+      icon: <FileText className="w-6 h-6 text-white" />,
       color: 'bg-indigo-500'
     }
   ];
@@ -367,7 +379,7 @@ export function AgentManagement() {
             <div className="text-sm text-gray-600">Total Agents</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">6</div>
+            <div className="text-2xl font-bold text-green-600">7</div>
             <div className="text-sm text-gray-600">Active Agents</div>
           </div>
           <div className="text-center">
