@@ -14,7 +14,26 @@ import time
 from datetime import datetime
 
 # Add packages to path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / "packages"))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+# Import real agent implementations
+from packages.agents.code_generator import CodeGeneratorAgent
+from packages.agents.debugging_agent import DebuggingAgent
+from packages.agents.testing_agent import TestingAgent
+from packages.agents.documentation_agent import DocumentationAgent
+from packages.core.config import AgentConfig
+from packages.core.memory import MemoryManager
+
+# Simple mock managers for now
+class MockModelManager:
+    """Mock model manager for testing."""
+    async def generate_response(self, prompt: str, **kwargs):
+        return f"Mock response for: {prompt[:50]}..."
+
+class MockToolManager:
+    """Mock tool manager for testing."""
+    async def execute_tool(self, tool_name: str, *args, **kwargs):
+        return f"Mock tool execution: {tool_name} with args: {args} kwargs: {kwargs}"
 
 app = FastAPI(
     title="reVoAgent Enterprise API", 
@@ -478,6 +497,63 @@ agent_state = {
     "task_history": []
 }
 
+# Initialize real agent instances
+agent_instances = {}
+
+def initialize_agents():
+    """Initialize real agent instances with proper configuration."""
+    global agent_instances
+    
+    # Create agent configurations
+    default_config = AgentConfig(
+        max_concurrent_tasks=3,
+        timeout=300,
+        retry_count=3,
+        memory_limit=1024
+    )
+    
+    # Create managers
+    model_manager = MockModelManager()
+    tool_manager = MockToolManager()
+    memory_manager = MemoryManager()
+    
+    # Initialize agent instances
+    agent_instances = {
+        "code_generator": CodeGeneratorAgent(
+            agent_id="code_gen_001",
+            config=default_config,
+            model_manager=model_manager,
+            tool_manager=tool_manager,
+            memory_manager=memory_manager
+        ),
+        "debug_agent": DebuggingAgent(
+            agent_id="debug_001", 
+            config=default_config,
+            model_manager=model_manager,
+            tool_manager=tool_manager,
+            memory_manager=memory_manager
+        ),
+        "testing_agent": TestingAgent(
+            agent_id="test_001",
+            config=default_config,
+            model_manager=model_manager,
+            tool_manager=tool_manager,
+            memory_manager=memory_manager
+        ),
+        "documentation_agent": DocumentationAgent(
+            agent_id="doc_001",
+            config=default_config,
+            model_manager=model_manager,
+            tool_manager=tool_manager,
+            memory_manager=memory_manager
+        )
+    }
+    
+    print("✅ Real agent instances initialized successfully")
+
+# Initialize agents on startup
+initialize_agents()
+
 @app.get("/api/agents")
 async def get_all_agents():
     """Get status of all agents"""
@@ -520,41 +596,44 @@ code_generator_state = {
 
 @app.post("/api/agents/code-generator/execute")
 async def execute_code_generation(request: Dict[str, Any]):
-    """Execute code generation task with real-time monitoring"""
+    """Execute code generation task with REAL agent implementation"""
     
-    task_id = str(uuid.uuid4())
     task_description = request.get("description", "")
     parameters = request.get("parameters", {})
     
     if not task_description:
         raise HTTPException(status_code=400, detail="Task description is required")
     
-    # Create task
-    task = {
-        "id": task_id,
-        "type": _analyze_task_type(task_description),
-        "description": task_description,
-        "parameters": parameters,
-        "status": "pending",
-        "progress": 0.0,
-        "created_at": datetime.now().isoformat(),
-        "result": None,
-        "error": None
-    }
+    # Get the real agent instance
+    code_agent = agent_instances.get("code_generator")
+    if not code_agent:
+        raise HTTPException(status_code=500, detail="Code generator agent not available")
     
-    code_generator_state["active_tasks"][task_id] = task
-    agent_state["agents"]["code_generator"]["status"] = "busy"
-    agent_state["agents"]["code_generator"]["current_task"] = task_description
-    
-    # Execute task asynchronously
-    asyncio.create_task(_execute_code_generation_task(task_id, task_description, parameters))
-    
-    return {
-        "task_id": task_id,
-        "status": "started",
-        "message": "Code generation task started",
-        "estimated_completion": "30-60 seconds"
-    }
+    try:
+        # Update agent state
+        agent_state["agents"]["code_generator"]["status"] = "busy"
+        agent_state["agents"]["code_generator"]["current_task"] = task_description
+        
+        # Execute task with REAL agent
+        result = await code_agent.execute_task(task_description, parameters)
+        
+        # Update agent state
+        agent_state["agents"]["code_generator"]["status"] = "idle"
+        agent_state["agents"]["code_generator"]["current_task"] = None
+        
+        return {
+            "task_id": result.get("task_id", str(uuid.uuid4())),
+            "status": "completed",
+            "result": result,
+            "message": "Code generation completed successfully"
+        }
+        
+    except Exception as e:
+        # Update agent state on error
+        agent_state["agents"]["code_generator"]["status"] = "idle"
+        agent_state["agents"]["code_generator"]["current_task"] = None
+        
+        raise HTTPException(status_code=500, detail=f"Code generation failed: {str(e)}")
 
 async def _execute_code_generation_task(task_id: str, description: str, parameters: Dict[str, Any]):
     """Execute code generation task with real-time updates"""
@@ -1026,41 +1105,44 @@ debug_agent_state = {
 
 @app.post("/api/agents/debug-agent/execute")
 async def execute_debugging(request: Dict[str, Any]):
-    """Execute debugging task with real-time monitoring"""
+    """Execute debugging task with REAL agent implementation"""
     
-    task_id = str(uuid.uuid4())
     task_description = request.get("description", "")
     parameters = request.get("parameters", {})
     
     if not task_description:
         raise HTTPException(status_code=400, detail="Task description is required")
     
-    # Create task
-    task = {
-        "id": task_id,
-        "type": _analyze_debug_task_type(task_description),
-        "description": task_description,
-        "parameters": parameters,
-        "status": "pending",
-        "progress": 0.0,
-        "created_at": datetime.now().isoformat(),
-        "result": None,
-        "error": None
-    }
+    # Get the real agent instance
+    debug_agent = agent_instances.get("debug_agent")
+    if not debug_agent:
+        raise HTTPException(status_code=500, detail="Debug agent not available")
     
-    debug_agent_state["active_tasks"][task_id] = task
-    agent_state["agents"]["debug_agent"]["status"] = "busy"
-    agent_state["agents"]["debug_agent"]["current_task"] = task_description
-    
-    # Execute task asynchronously
-    asyncio.create_task(_execute_debugging_task(task_id, task_description, parameters))
-    
-    return {
-        "task_id": task_id,
-        "status": "started",
-        "message": "Debugging task started",
-        "estimated_completion": "30-90 seconds"
-    }
+    try:
+        # Update agent state
+        agent_state["agents"]["debug_agent"]["status"] = "busy"
+        agent_state["agents"]["debug_agent"]["current_task"] = task_description
+        
+        # Execute task with REAL agent
+        result = await debug_agent.execute_task(task_description, parameters)
+        
+        # Update agent state
+        agent_state["agents"]["debug_agent"]["status"] = "idle"
+        agent_state["agents"]["debug_agent"]["current_task"] = None
+        
+        return {
+            "task_id": result.get("task_id", str(uuid.uuid4())),
+            "status": "completed",
+            "result": result,
+            "message": "Debugging completed successfully"
+        }
+        
+    except Exception as e:
+        # Update agent state on error
+        agent_state["agents"]["debug_agent"]["status"] = "idle"
+        agent_state["agents"]["debug_agent"]["current_task"] = None
+        
+        raise HTTPException(status_code=500, detail=f"Debugging failed: {str(e)}")
 
 async def _execute_debugging_task(task_id: str, description: str, parameters: Dict[str, Any]):
     """Execute debugging task with real-time updates"""
@@ -1391,41 +1473,44 @@ testing_agent_state = {
 
 @app.post("/api/agents/testing-agent/execute")
 async def execute_testing(request: Dict[str, Any]):
-    """Execute testing task with real-time monitoring"""
+    """Execute testing task with REAL agent implementation"""
     
-    task_id = str(uuid.uuid4())
     task_description = request.get("description", "")
     parameters = request.get("parameters", {})
     
     if not task_description:
         raise HTTPException(status_code=400, detail="Task description is required")
     
-    # Create task
-    task = {
-        "id": task_id,
-        "type": _analyze_test_task_type(task_description),
-        "description": task_description,
-        "parameters": parameters,
-        "status": "pending",
-        "progress": 0.0,
-        "created_at": datetime.now().isoformat(),
-        "result": None,
-        "error": None
-    }
+    # Get the real agent instance
+    testing_agent = agent_instances.get("testing_agent")
+    if not testing_agent:
+        raise HTTPException(status_code=500, detail="Testing agent not available")
     
-    testing_agent_state["active_tasks"][task_id] = task
-    agent_state["agents"]["testing_agent"]["status"] = "busy"
-    agent_state["agents"]["testing_agent"]["current_task"] = task_description
-    
-    # Execute task asynchronously
-    asyncio.create_task(_execute_testing_task(task_id, task_description, parameters))
-    
-    return {
-        "task_id": task_id,
-        "status": "started",
-        "message": "Testing task started",
-        "estimated_completion": "30-120 seconds"
-    }
+    try:
+        # Update agent state
+        agent_state["agents"]["testing_agent"]["status"] = "busy"
+        agent_state["agents"]["testing_agent"]["current_task"] = task_description
+        
+        # Execute task with REAL agent
+        result = await testing_agent.execute_task(task_description, parameters)
+        
+        # Update agent state
+        agent_state["agents"]["testing_agent"]["status"] = "idle"
+        agent_state["agents"]["testing_agent"]["current_task"] = None
+        
+        return {
+            "task_id": result.get("task_id", str(uuid.uuid4())),
+            "status": "completed",
+            "result": result,
+            "message": "Testing completed successfully"
+        }
+        
+    except Exception as e:
+        # Update agent state on error
+        agent_state["agents"]["testing_agent"]["status"] = "idle"
+        agent_state["agents"]["testing_agent"]["current_task"] = None
+        
+        raise HTTPException(status_code=500, detail=f"Testing failed: {str(e)}")
 
 async def _execute_testing_task(task_id: str, description: str, parameters: Dict[str, Any]):
     """Execute testing task with real-time updates"""
@@ -2016,41 +2101,44 @@ documentation_agent_state = {
 
 @app.post("/api/agents/documentation-agent/execute")
 async def execute_documentation(request: Dict[str, Any]):
-    """Execute documentation task with real-time monitoring"""
+    """Execute documentation task with REAL agent implementation"""
     
-    task_id = str(uuid.uuid4())
     task_description = request.get("description", "")
     parameters = request.get("parameters", {})
     
     if not task_description:
         raise HTTPException(status_code=400, detail="Task description is required")
     
-    # Create task
-    task = {
-        "id": task_id,
-        "type": _analyze_doc_task_type(task_description),
-        "description": task_description,
-        "parameters": parameters,
-        "status": "pending",
-        "progress": 0.0,
-        "created_at": datetime.now().isoformat(),
-        "result": None,
-        "error": None
-    }
+    # Get the real agent instance
+    doc_agent = agent_instances.get("documentation_agent")
+    if not doc_agent:
+        raise HTTPException(status_code=500, detail="Documentation agent not available")
     
-    documentation_agent_state["active_tasks"][task_id] = task
-    agent_state["agents"]["documentation_agent"]["status"] = "busy"
-    agent_state["agents"]["documentation_agent"]["current_task"] = task_description
-    
-    # Execute task asynchronously
-    asyncio.create_task(_execute_documentation_task(task_id, task_description, parameters))
-    
-    return {
-        "task_id": task_id,
-        "status": "started",
-        "message": "Documentation task started",
-        "estimated_completion": "60-180 seconds"
-    }
+    try:
+        # Update agent state
+        agent_state["agents"]["documentation_agent"]["status"] = "busy"
+        agent_state["agents"]["documentation_agent"]["current_task"] = task_description
+        
+        # Execute task with REAL agent
+        result = await doc_agent.execute_task(task_description, parameters)
+        
+        # Update agent state
+        agent_state["agents"]["documentation_agent"]["status"] = "idle"
+        agent_state["agents"]["documentation_agent"]["current_task"] = None
+        
+        return {
+            "task_id": result.get("task_id", str(uuid.uuid4())),
+            "status": "completed",
+            "result": result,
+            "message": "Documentation completed successfully"
+        }
+        
+    except Exception as e:
+        # Update agent state on error
+        agent_state["agents"]["documentation_agent"]["status"] = "idle"
+        agent_state["agents"]["documentation_agent"]["current_task"] = None
+        
+        raise HTTPException(status_code=500, detail=f"Documentation failed: {str(e)}")
 
 async def _execute_documentation_task(task_id: str, description: str, parameters: Dict[str, Any]):
     """Execute documentation task with real-time updates"""
@@ -3065,7 +3153,7 @@ async def get_documentation_agent_metrics():
 
 @app.post("/api/agents/{agent_type}/execute")
 async def execute_agent_task(agent_type: str, task_data: Dict[str, Any]):
-    """Execute task with specific agent"""
+    """Execute task with REAL agent implementation"""
     if agent_type not in agent_state["agents"]:
         raise HTTPException(status_code=404, detail="Agent not found")
     
@@ -3073,34 +3161,38 @@ async def execute_agent_task(agent_type: str, task_data: Dict[str, Any]):
     if agent_state["agents"][agent_type]["status"] != "idle":
         raise HTTPException(status_code=409, detail="Agent is currently busy")
     
-    # Generate task ID
-    task_id = f"task_{agent_type}_{int(datetime.now().timestamp())}"
+    # Get the real agent instance
+    agent_instance = agent_instances.get(agent_type)
+    if not agent_instance:
+        raise HTTPException(status_code=500, detail=f"Agent {agent_type} not available")
     
-    # Update agent status
-    agent_state["agents"][agent_type]["status"] = "busy"
-    agent_state["agents"][agent_type]["current_task"] = task_id
-    
-    # Store task
-    task = {
-        "id": task_id,
-        "agent_type": agent_type,
-        "parameters": task_data,
-        "status": "running",
-        "created_at": datetime.now().isoformat(),
-        "progress": 0
-    }
-    agent_state["active_tasks"][task_id] = task
-    
-    # Simulate task execution (in real implementation, this would be async)
-    asyncio.create_task(simulate_agent_execution(agent_type, task_id, task_data))
-    
-    return {
-        "success": True,
-        "task_id": task_id,
-        "agent_type": agent_type,
-        "status": "started",
-        "estimated_completion": "2-5 minutes"
-    }
+    try:
+        # Update agent status
+        agent_state["agents"][agent_type]["status"] = "busy"
+        task_description = task_data.get("description", "")
+        agent_state["agents"][agent_type]["current_task"] = task_description
+        
+        # Execute task with REAL agent
+        result = await agent_instance.execute_task(task_description, task_data.get("parameters", {}))
+        
+        # Update agent status
+        agent_state["agents"][agent_type]["status"] = "idle"
+        agent_state["agents"][agent_type]["current_task"] = None
+        
+        return {
+            "success": True,
+            "task_id": result.get("task_id", str(uuid.uuid4())),
+            "agent_type": agent_type,
+            "status": "completed",
+            "result": result
+        }
+        
+    except Exception as e:
+        # Update agent status on error
+        agent_state["agents"][agent_type]["status"] = "idle"
+        agent_state["agents"][agent_type]["current_task"] = None
+        
+        raise HTTPException(status_code=500, detail=f"Agent execution failed: {str(e)}")
 
 async def simulate_agent_execution(agent_type: str, task_id: str, task_data: Dict[str, Any]):
     """Simulate agent task execution with realistic progress"""

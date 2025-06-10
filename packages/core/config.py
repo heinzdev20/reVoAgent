@@ -1,8 +1,39 @@
 """Centralized Configuration Loader"""
 import yaml
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict, Any, Optional
+from dataclasses import dataclass
 import os
+
+@dataclass
+class AgentConfig:
+    """Configuration for individual agents."""
+    max_concurrent_tasks: int = 5
+    timeout: int = 300  # 5 minutes
+    retry_count: int = 3
+    memory_limit: int = 1024  # MB
+    model: str = "deepseek-r1"  # Default model
+    tools: list = None  # Available tools
+    custom_parameters: Dict[str, Any] = None
+    
+    def __post_init__(self):
+        if self.custom_parameters is None:
+            self.custom_parameters = {}
+        if self.tools is None:
+            self.tools = ["terminal", "profiler", "log_analyzer", "code_analyzer"]
+
+@dataclass
+class EngineConfig:
+    """Configuration for engines."""
+    name: str
+    enabled: bool = True
+    max_workers: int = 10
+    memory_limit: int = 2048  # MB
+    custom_settings: Dict[str, Any] = None
+    
+    def __post_init__(self):
+        if self.custom_settings is None:
+            self.custom_settings = {}
 
 class ConfigLoader:
     """Centralized configuration management"""
