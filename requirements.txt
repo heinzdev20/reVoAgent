@@ -1,386 +1,59 @@
-# Core dependencies
+# Updated requirements.txt with real AI integration dependencies
+fastapi>=0.104.1
+uvicorn[standard]>=0.24.0
 pydantic>=2.5.0
-pyyaml>=6.0
-click>=8.1.0
-rich>=13.0.0
-asyncio-mqtt>=0.16.0
+python-multipart>=0.0.6
+websockets>=12.0
+aiofiles>=23.2.1
 
-# AI/ML dependencies
-torch>=2.1.0
-transformers>=4.35.0
-langchain>=0.1.0
-langchain-community>=0.0.10
-sentence-transformers>=2.2.0
-onnxruntime>=1.16.0
+# Real AI Provider Dependencies
+openai>=1.0.0
+anthropic>=0.7.0
 
-# vLLM for local model serving (integrated from xCodeAgent01)
-vllm>=0.2.0
+# Optional: Local AI Models
+transformers>=4.21.0
+torch>=1.13.0
+sentence-transformers
 
-# Web and browser automation
-playwright>=1.40.0
-selenium>=4.15.0
-beautifulsoup4>=4.12.0
-requests>=2.31.0
-httpx>=0.25.0
+# Database and Storage
+aiosqlite>=0.19.0
+redis>=5.0.1
 
-# Development tools
-gitpython>=3.1.40
-docker>=6.1.0
-psutil>=5.9.0
+# Monitoring and Logging
+prometheus-client>=0.18.0
+structlog>=23.2.0
 
-# AI Integration (Optional - install based on needs)
-# openai>=1.0.0              # For OpenAI GPT models
-# anthropic>=0.7.0           # For Anthropic Claude models  
-# transformers>=4.21.0       # For local models
-# torch>=1.12.0              # For local model inference
-
-# Database and storage
-redis>=5.0.0
-
-# Web framework (enhanced from xCodeAgent01)
-fastapi>=0.104.0
-uvicorn>=0.24.0
+# Development and Testing
+pytest>=7.4.3
+pytest-asyncio>=0.21.1
+httpx>=0.25.2
 websockets>=12.0
 
-# OpenHands integration dependencies
-openai>=1.0.0
-anthropic>=0.8.0
-
-# Additional utilities
+# Utilities
 python-dotenv>=1.0.0
-tenacity>=8.2.0
-jinja2>=3.1.0
-aiofiles>=23.2.0
-numpy>=1.24.0
-pandas>=2.0.0
-
-# Monitoring and metrics
-prometheus-client>=0.19.0
-
-# Testing framework
-pytest>=7.4.0
-pytest-asyncio>=0.21.0
-
-# Code quality tools
-black>=23.0.0
-flake8>=6.0.0
-mypy>=1.5.0
-
-# Deployment tools
-kubernetes>=28.1.0
-docker-compose>=1.29.0
-
-# Security
-cryptography>=41.0.0
-
-# Performance optimization
-cython>=3.0.0
-
-# Additional integrations
-jupyter>=1.0.0
-notebook>=7.0.0
-
-# Browser automation (enhanced)
-undetected-chromedriver>=3.5.0
-
-# File processing
-python-magic>=0.4.27
-pillow>=10.0.0
-
-# Network utilities
-netifaces>=0.11.0
-
-# Process management
-supervisor>=4.2.0
-
-# Configuration management
-configparser>=6.0.0
-
-# Async utilities
-asyncio-throttle>=1.0.0
-
-# Data validation
-cerberus>=1.3.0
-
-# Caching
-diskcache>=5.6.0
-
-# Logging
-structlog>=23.1.0
-
-# Time utilities
-python-dateutil>=2.8.0
-pytz>=2023.3
-
-# UUID utilities
-uuid>=1.30
-
-# JSON utilities
-orjson>=3.9.0
-
-# HTTP client enhancements
-aiohttp>=3.8.0
-
-# WebSocket enhancements
-python-socketio>=5.8.0
-
-# Task queue
-celery>=5.3.0
-
-# Message broker
-kombu>=5.3.0
-
-# Environment detection
-distro>=1.8.0
-
-# System information
-py-cpuinfo>=9.0.0
-
-# Memory profiling
-memory-profiler>=0.61.0
-
-# Progress bars
-tqdm>=4.66.0
-
-# CLI enhancements
+click>=8.1.7
+rich>=13.7.0
 typer>=0.9.0
 
-# Configuration validation
-pydantic-settings>=2.0.0
-
-# API documentation
-sphinx>=7.1.0
-sphinx-rtd-theme>=1.3.0
-
-# Development server
-watchdog>=3.0.0
-
-# Code formatting
-autopep8>=2.0.0
-
-# Import sorting
-isort>=5.12.0
-
-# Documentation generation
-mkdocs>=1.5.0
-mkdocs-material>=9.2.0
-
-# API testing
-httpie>=3.2.0
-
-# Database migrations
-alembic>=1.12.0
-
-# ORM
-sqlalchemy>=2.0.0
-
-# Background tasks
-rq>=1.15.0
-
-# Distributed computing
-dask>=2023.8.0
-
-# Machine learning utilities
-scikit-learn>=1.3.0
-
-# Natural language processing
-spacy>=3.6.0
-nltk>=3.8.0
-
-# Computer vision
-opencv-python>=4.8.0
-
-# Audio processing
-librosa>=0.10.0
-
-# Data visualization
-matplotlib>=3.7.0
-seaborn>=0.12.0
-plotly>=5.15.0
-
-# Jupyter extensions
-ipywidgets>=8.1.0
-jupyterlab>=4.0.0
-
-# Development utilities
-ipython>=8.14.0
-ipdb>=0.13.0
-
-# Performance monitoring
-py-spy>=0.3.0
-
-# Memory optimization
-pympler>=0.9.0
-
-# Parallel processing
-joblib>=1.3.0
-multiprocessing-logging>=0.3.0
-
-# Cloud integrations
-boto3>=1.28.0  # AWS
-google-cloud-storage>=2.10.0  # Google Cloud
-azure-storage-blob>=12.17.0  # Azure
-
-# Container orchestration
-docker-py>=6.1.0
-
-# Service discovery
-consul>=1.1.0
-
-# Load balancing
-haproxy-stats>=2.0.0
-
-# Reverse proxy
-nginx-python>=1.1.0
-
-# SSL/TLS
-pyopenssl>=23.2.0
-
-# Authentication
-pyjwt>=2.8.0
-passlib[bcrypt]>=1.7.0
-python-multipart>=0.0.6
-
-# Rate limiting
-slowapi>=0.1.0
-
-# Input validation
-marshmallow>=3.20.0
-
-# Serialization
-msgpack>=1.0.0
-
-# Compression
-zstandard>=0.21.0
-
-# Encryption
-fernet>=1.0.0
-
-# Hashing
-hashlib>=20081119
-
-# Random utilities
-secrets>=3.3.0
-
-# String utilities
-fuzzywuzzy>=0.18.0
-python-levenshtein>=0.21.0
-
-# URL utilities
-yarl>=1.9.0
-furl>=2.1.0
-
-# Email utilities
-email-validator>=2.0.0
-
-# Phone number utilities
-phonenumbers>=8.13.0
-
-# Color utilities
-colorama>=0.4.0
-termcolor>=2.3.0
-
-# Progress tracking
-alive-progress>=3.1.0
-
-# System monitoring
-glances>=3.4.0
-
-# Resource monitoring
-resource>=0.2.0
-
-# Network monitoring
-speedtest-cli>=2.1.0
-
-# Disk monitoring
-shutil>=3.11.0
-
-# Process monitoring
-psutil>=5.9.0
-
-# Log monitoring
-watchdog>=3.0.0
-
-# File monitoring
-inotify>=0.2.0
-
-# System alerts
-plyer>=2.1.0
-
-# Desktop notifications
-notify2>=0.3.0
-
-# Cross-platform utilities
-pathlib2>=2.3.0
-pathtools>=0.1.0
-
-# Archive utilities
-patool>=1.12.0
-
-# Backup utilities
-duplicity>=0.8.0
-
-# Synchronization
-rsync>=1.0.0
-
-# Version control
-dulwich>=0.21.0
-
-# Package management
-pip-tools>=7.3.0
-
-# Virtual environment
-virtualenv>=20.24.0
-
-# Environment management
-conda>=23.7.0
-
-# Dependency management
-poetry>=1.6.0
-
-# Build tools
-setuptools>=68.0.0
-wheel>=0.41.0
-build>=0.10.0
-
-# Distribution
-twine>=4.0.0
-
-# Documentation
-sphinx-autodoc-typehints>=1.24.0
-
-# Code coverage
-coverage>=7.3.0
-
-# Benchmarking
-pytest-benchmark>=4.0.0
-
-# Load testing
-locust>=2.16.0
-
-# Security scanning
-bandit>=1.7.0
-safety>=2.3.0
-
-# Dependency checking
-pip-audit>=2.6.0
-
-# License checking
-pip-licenses>=4.3.0
-
-# Code complexity
-radon>=6.0.0
-xenon>=0.9.0
-
-# Dead code detection
-vulture>=2.9.0
-
-# Import analysis
-importlib-metadata>=6.8.0
-
-# Type checking
-types-requests>=2.31.0
-types-pyyaml>=6.0.0
-
-# Stub packages
-types-setuptools>=68.0.0
+# Security
+cryptography>=41.0.8
+passlib[bcrypt]>=1.7.4
+
+# Performance
+orjson>=3.9.10
+msgpack>=1.0.7
+
+# Error tracking and monitoring
+sentry-sdk[fastapi]>=1.38.0
+
+# WebSocket and real-time features
+socketio>=5.10.0
+python-socketio[asyncio_client]>=5.10.0
+
+# HTTP client for external APIs
+httpx>=0.25.2
+aiohttp>=3.9.1
+
+# Rate limiting and caching
+slowapi>=0.1.9
+cachetools>=5.3.2
