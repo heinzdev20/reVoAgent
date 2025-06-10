@@ -20,7 +20,10 @@ import {
   Store,
   Building2,
   Cog,
-  Zap
+  Zap,
+  FileText,
+  Gauge,
+  Layers
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import type { TabId } from '@/types';
@@ -64,6 +67,10 @@ const sidebarSections: SidebarSection[] = [
       { id: 'testing-agent', label: 'Testing Agent', icon: <TestTube className="w-4 h-4" /> },
       { id: 'deploy-agent', label: 'Deploy Agent', icon: <Rocket className="w-4 h-4" /> },
       { id: 'browser-agent', label: 'Browser Agent', icon: <Globe className="w-4 h-4" /> },
+      { id: 'security-agent', label: 'Security Agent', icon: <Shield className="w-4 h-4" /> },
+      { id: 'documentation-agent', label: 'Documentation Agent', icon: <FileText className="w-4 h-4" /> },
+      { id: 'performance-optimizer', label: 'Performance Optimizer', icon: <Gauge className="w-4 h-4" /> },
+      { id: 'architecture-advisor', label: 'Architecture Advisor', icon: <Layers className="w-4 h-4" /> },
     ],
   },
   {

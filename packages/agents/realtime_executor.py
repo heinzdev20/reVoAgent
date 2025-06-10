@@ -83,12 +83,47 @@ class RealTimeAgentExecutor:
                 "timeout": 240,
                 "capabilities": ["unit_testing", "integration_testing", "coverage_analysis"]
             },
+            "deploy_agent": {
+                "name": "Deploy Agent",
+                "description": "Handles deployment and DevOps tasks",
+                "max_concurrent": 2,
+                "timeout": 600,
+                "capabilities": ["docker", "kubernetes", "ci_cd", "monitoring", "deployment"]
+            },
+            "browser_agent": {
+                "name": "Browser Agent",
+                "description": "Web scraping and browser automation",
+                "max_concurrent": 3,
+                "timeout": 300,
+                "capabilities": ["web_scraping", "automation", "testing", "monitoring", "selenium"]
+            },
             "security_agent": {
                 "name": "Security Agent",
                 "description": "Performs security analysis and auditing",
                 "max_concurrent": 1,
                 "timeout": 300,
                 "capabilities": ["vulnerability_scan", "security_audit", "compliance_check"]
+            },
+            "documentation_agent": {
+                "name": "Documentation Agent",
+                "description": "Automated documentation generation",
+                "max_concurrent": 2,
+                "timeout": 240,
+                "capabilities": ["code_docs", "api_docs", "readme_generation", "wiki", "markdown"]
+            },
+            "performance_optimizer": {
+                "name": "Performance Optimizer Agent",
+                "description": "Analyzes and optimizes system performance",
+                "max_concurrent": 1,
+                "timeout": 360,
+                "capabilities": ["performance_analysis", "optimization", "profiling", "benchmarking"]
+            },
+            "architecture_advisor": {
+                "name": "Architecture Advisor Agent", 
+                "description": "Provides architectural guidance and recommendations",
+                "max_concurrent": 1,
+                "timeout": 300,
+                "capabilities": ["architecture_analysis", "design_patterns", "scalability", "best_practices"]
             }
         }
     
