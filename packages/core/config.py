@@ -35,6 +35,31 @@ class EngineConfig:
         if self.custom_settings is None:
             self.custom_settings = {}
 
+@dataclass
+class Config:
+    """General configuration class."""
+    environment: str = "development"
+    debug: bool = True
+    log_level: str = "INFO"
+    agent_config: AgentConfig = None
+    engine_config: EngineConfig = None
+    
+    def __post_init__(self):
+        if self.agent_config is None:
+            self.agent_config = AgentConfig()
+        if self.engine_config is None:
+            self.engine_config = EngineConfig(name="default")
+
+# Global config instance
+_global_config = None
+
+def get_config() -> Config:
+    """Get global configuration instance."""
+    global _global_config
+    if _global_config is None:
+        _global_config = Config()
+    return _global_config
+
 class ConfigLoader:
     """Centralized configuration management"""
     

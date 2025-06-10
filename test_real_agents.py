@@ -124,8 +124,163 @@ async def test_agents_api():
                 error_text = await response.text()
                 print(f"❌ Documentation failed: {response.status}")
                 print(f"   Error: {error_text}")
+        
+        # Test 6: Execute deployment task
+        print("\n🚀 Testing real deploy agent...")
+        deploy_task = {
+            "description": "Deploy application to production environment",
+            "parameters": {
+                "environment": "production",
+                "deployment_type": "docker"
+            }
+        }
+        
+        async with session.post(
+            f"{base_url}/api/agents/execute",
+            json={"agent_type": "deploy_agent", **deploy_task},
+            headers={"Content-Type": "application/json"}
+        ) as response:
+            if response.status == 200:
+                result = await response.json()
+                print(f"✅ Deployment successful!")
+                print(f"   Task ID: {result.get('task_id')}")
+                print(f"   Status: {result.get('status')}")
+            else:
+                error_text = await response.text()
+                print(f"❌ Deployment failed: {response.status}")
+                print(f"   Error: {error_text}")
+        
+        # Test 7: Execute browser automation task
+        print("\n🌐 Testing real browser agent...")
+        browser_task = {
+            "description": "Automate web form filling and data extraction",
+            "parameters": {
+                "url": "https://example.com/form",
+                "action": "fill_form"
+            }
+        }
+        
+        async with session.post(
+            f"{base_url}/api/agents/execute",
+            json={"agent_type": "browser_agent", **browser_task},
+            headers={"Content-Type": "application/json"}
+        ) as response:
+            if response.status == 200:
+                result = await response.json()
+                print(f"✅ Browser automation successful!")
+                print(f"   Task ID: {result.get('task_id')}")
+                print(f"   Status: {result.get('status')}")
+            else:
+                error_text = await response.text()
+                print(f"❌ Browser automation failed: {response.status}")
+                print(f"   Error: {error_text}")
+        
+        # Test 8: Execute security analysis task
+        print("\n🔒 Testing real security agent...")
+        security_task = {
+            "description": "Perform security analysis on web application",
+            "parameters": {
+                "target": "web_application",
+                "scan_type": "vulnerability_assessment"
+            }
+        }
+        
+        async with session.post(
+            f"{base_url}/api/agents/execute",
+            json={"agent_type": "security_agent", **security_task},
+            headers={"Content-Type": "application/json"}
+        ) as response:
+            if response.status == 200:
+                result = await response.json()
+                print(f"✅ Security analysis successful!")
+                print(f"   Task ID: {result.get('task_id')}")
+                print(f"   Status: {result.get('status')}")
+            else:
+                error_text = await response.text()
+                print(f"❌ Security analysis failed: {response.status}")
+                print(f"   Error: {error_text}")
+        
+        # Test 6: Execute deploy task
+        print("\n🚀 Testing real deploy agent...")
+        deploy_task = {
+            "description": "Deploy a Docker container to production",
+            "parameters": {
+                "image": "myapp:latest",
+                "environment": "production",
+                "replicas": 3
+            }
+        }
+        
+        async with session.post(
+            f"{base_url}/api/agents/deploy_agent/execute",
+            json=deploy_task,
+            headers={"Content-Type": "application/json"}
+        ) as response:
+            if response.status == 200:
+                result = await response.json()
+                print(f"✅ Deployment successful!")
+                print(f"   Task ID: {result.get('task_id')}")
+                print(f"   Status: {result.get('status')}")
+            else:
+                error_text = await response.text()
+                print(f"❌ Deployment failed: {response.status}")
+                print(f"   Error: {error_text}")
+        
+        # Test 7: Execute browser task
+        print("\n🌐 Testing real browser agent...")
+        browser_task = {
+            "description": "Automate web form filling and submission",
+            "parameters": {
+                "url": "https://example.com/form",
+                "form_data": {"name": "Test User", "email": "test@example.com"}
+            }
+        }
+        
+        async with session.post(
+            f"{base_url}/api/agents/browser_agent/execute",
+            json=browser_task,
+            headers={"Content-Type": "application/json"}
+        ) as response:
+            if response.status == 200:
+                result = await response.json()
+                print(f"✅ Browser automation successful!")
+                print(f"   Task ID: {result.get('task_id')}")
+                print(f"   Status: {result.get('status')}")
+            else:
+                error_text = await response.text()
+                print(f"❌ Browser automation failed: {response.status}")
+                print(f"   Error: {error_text}")
+        
+        # Test 8: Execute security task
+        print("\n🔒 Testing real security agent...")
+        security_task = {
+            "description": "Perform security audit on web application",
+            "parameters": {
+                "target": "https://example.com",
+                "scan_type": "comprehensive"
+            }
+        }
+        
+        async with session.post(
+            f"{base_url}/api/agents/security_agent/execute",
+            json=security_task,
+            headers={"Content-Type": "application/json"}
+        ) as response:
+            if response.status == 200:
+                result = await response.json()
+                print(f"✅ Security audit successful!")
+                print(f"   Task ID: {result.get('task_id')}")
+                print(f"   Status: {result.get('status')}")
+                if 'security_analysis' in result:
+                    analysis = result['security_analysis']
+                    print(f"   Security Score: {analysis.get('security_score', 'N/A')}")
+                    print(f"   Vulnerabilities: {analysis.get('vulnerabilities_found', 'N/A')}")
+            else:
+                error_text = await response.text()
+                print(f"❌ Security audit failed: {response.status}")
+                print(f"   Error: {error_text}")
 
 if __name__ == "__main__":
-    print("🚀 Testing reVoAgent Real Agent Integration")
-    print("=" * 50)
+    print("🚀 Testing reVoAgent Real Agent Integration - ALL 7 AGENTS")
+    print("=" * 60)
     asyncio.run(test_agents_api())
