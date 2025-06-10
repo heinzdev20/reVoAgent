@@ -279,6 +279,10 @@ async def test_agents_api():
                 error_text = await response.text()
                 print(f"❌ Security audit failed: {response.status}")
                 print(f"   Error: {error_text}")
+        
+        print("\n" + "="*60)
+        print("🎉 ALL 7 AGENTS INTEGRATION TEST COMPLETE!")
+        print("="*60)
 
 if __name__ == "__main__":
     print("🚀 Testing reVoAgent Real Agent Integration - ALL 7 AGENTS")
