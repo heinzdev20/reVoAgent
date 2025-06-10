@@ -5,6 +5,9 @@ export function useWebSocket() {
   const isConnected = useRef(false);
 
   useEffect(() => {
+    // Temporarily disable WebSocket to prevent startup issues
+    // TODO: Re-enable after fixing connection issues
+    /*
     if (!isConnected.current) {
       wsService.connect();
       isConnected.current = true;
@@ -14,6 +17,7 @@ export function useWebSocket() {
       wsService.disconnect();
       isConnected.current = false;
     };
+    */
   }, []);
 
   return wsService;

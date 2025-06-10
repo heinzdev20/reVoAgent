@@ -118,7 +118,7 @@ export const useEngineWebSocket = (
   // Refs
   const socketRef = useRef<WebSocket | null>(null);
   const reconnectAttemptsRef = useRef(0);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const reconnectTimeoutRef = useRef<number | null>(null);
   const subscriptionsRef = useRef<Set<string>>(new Set());
 
   // Message handlers

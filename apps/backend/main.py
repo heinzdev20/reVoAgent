@@ -328,9 +328,16 @@ async def websocket_endpoint(websocket):
         await websocket.close()
 
 if __name__ == "__main__":
+    import sys
+    
+    # Check for port argument
+    port = 8000
+    if len(sys.argv) > 1 and sys.argv[1] == "--port" and len(sys.argv) > 2:
+        port = int(sys.argv[2])
+    
     uvicorn.run(
         "main:app",
         host="0.0.0.0",
-        port=8000,
+        port=port,
         reload=True
     )

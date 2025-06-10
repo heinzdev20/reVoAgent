@@ -270,7 +270,7 @@ export const MCPMarketplace: React.FC = () => {
                   <h3 className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
                     <span>{server.name}</span>
                     {server.certified && (
-                      <CheckCircle className="w-4 h-4 text-green-500" title="Certified Server" />
+                      <CheckCircle className="w-4 h-4 text-green-500" />
                     )}
                   </h3>
                   <p className="text-sm text-gray-600">{server.provider} • v{server.version}</p>

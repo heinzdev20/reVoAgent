@@ -12,16 +12,16 @@ export default defineConfig({
   },
   server: {
     host: '0.0.0.0',
-    port: 12002,
+    port: 12000,
     cors: true,
     allowedHosts: ['all'],
     proxy: {
       '/api': {
-        target: 'http://localhost:12000',
+        target: 'http://localhost:8000',
         changeOrigin: true,
       },
       '/ws': {
-        target: 'ws://localhost:12000',
+        target: 'ws://localhost:8000',
         ws: true,
         changeOrigin: true,
       },

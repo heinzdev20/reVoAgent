@@ -330,14 +330,14 @@ const TaskExecutionPanel: React.FC = () => {
           <Textarea
             placeholder={input.placeholder}
             value={value}
-            onChange={(e) => handleInputChange(input.name, e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleInputChange(input.name, e.target.value)}
             className="min-h-[100px]"
           />
         );
       
       case 'select':
         return (
-          <Select value={value} onValueChange={(val) => handleInputChange(input.name, val)}>
+          <Select value={value} onValueChange={(val: string) => handleInputChange(input.name, val)}>
             <SelectTrigger>
               <SelectValue placeholder={`Select ${input.label}`} />
             </SelectTrigger>
@@ -357,7 +357,7 @@ const TaskExecutionPanel: React.FC = () => {
             type="number"
             placeholder={input.placeholder}
             value={value}
-            onChange={(e) => handleInputChange(input.name, parseFloat(e.target.value) || 0)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(input.name, parseFloat(e.target.value) || 0)}
           />
         );
       
@@ -366,7 +366,7 @@ const TaskExecutionPanel: React.FC = () => {
           <Input
             placeholder={input.placeholder}
             value={value}
-            onChange={(e) => handleInputChange(input.name, e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(input.name, e.target.value)}
           />
         );
     }
@@ -384,7 +384,7 @@ const TaskExecutionPanel: React.FC = () => {
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs defaultValue={activeTab}>
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="templates">Task Templates</TabsTrigger>
           <TabsTrigger value="executions">
