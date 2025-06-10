@@ -97,7 +97,9 @@ export function useDashboardData() {
     fetchData();
   }, []);
 
-  // WebSocket event handlers for real-time updates
+  // WebSocket event handlers for real-time updates (temporarily disabled)
+  // TODO: Re-enable when WebSocket endpoints are implemented
+  /*
   useWebSocketEvent('stats_update', (data: DashboardStats) => {
     setStats(data);
   });
@@ -127,12 +129,12 @@ export function useDashboardData() {
       prev.map(m => m.id === data.id ? data : m)
     );
   });
-
   useWebSocketEvent('agent_update', (data: AgentInfo) => {
     setAgents(prev =>
       prev.map(a => a.id === data.id ? data : a)
     );
   });
+  */
 
   return {
     stats,

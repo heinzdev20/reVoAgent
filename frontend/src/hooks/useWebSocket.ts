@@ -5,6 +5,7 @@ export function useWebSocket() {
   const isConnected = useRef(false);
 
   useEffect(() => {
+    // Re-enabled WebSocket with proper backend support
     if (!isConnected.current) {
       wsService.connect();
       isConnected.current = true;

@@ -45,7 +45,17 @@ export const RealTimeDashboard: React.FC = () => {
   // WebSocket connection management
   const connectWebSocket = useCallback(() => {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}/ws/dashboard`;
+    // Use the backend URL for WebSocket connection
+    const currentHost = window.location.host;
+    let wsUrl;
+    
+    if (currentHost.includes('work-1')) {
+      // Frontend is on work-1, backend is on work-2
+      wsUrl = `${protocol}//${currentHost.replace('work-1', 'work-2')}/ws/dashboard`;
+    } else {
+      // Fallback to localhost for development
+      wsUrl = `${protocol}//localhost:12001/ws/dashboard`;
+    }
     
     const websocket = new WebSocket(wsUrl);
     
@@ -267,7 +277,129 @@ export const RealTimeDashboard: React.FC = () => {
           {/* Alerts Panel */}
           <AlertsPanel alerts={dashboardData.alerts} />
         </div>
+
+        {/* Real-time AI Testing Panel */}
+        <div className="mt-6">
+          <AITestingPanel />
+        </div>
       </main>
+    </div>
+  );
+};
+
+// AI Testing Panel Component
+const AITestingPanel: React.FC = () => {
+  const [testResult, setTestResult] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [testType, setTestType] = useState<'basic' | 'reasoning' | 'creative'>('basic');
+
+  const runAITest = async () => {
+    setIsLoading(true);
+    try {
+      // Use the backend URL for API calls
+      const currentHost = window.location.host;
+      let apiUrl;
+      
+      if (currentHost.includes('work-1')) {
+        // Frontend is on work-1, backend is on work-2
+        apiUrl = `https://${currentHost.replace('work-1', 'work-2')}/api/ai/test-realtime`;
+      } else {
+        // Fallback to localhost for development
+        apiUrl = 'http://localhost:12001/api/ai/test-realtime';
+      }
+      
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ test_type: testType }),
+      });
+      
+      const result = await response.json();
+      setTestResult(result);
+    } catch (error) {
+      console.error('AI test failed:', error);
+      setTestResult({ error: 'Test failed' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="bg-white rounded-lg p-6 shadow">
+      <h3 className="text-lg font-semibold mb-4">🧠 Real-time AI Testing (DeepSeek R1)</h3>
+      
+      <div className="flex items-center space-x-4 mb-4">
+        <select 
+          value={testType} 
+          onChange={(e) => setTestType(e.target.value as any)}
+          className="border rounded px-3 py-2"
+        >
+          <option value="basic">Basic Response</option>
+          <option value="reasoning">Advanced Reasoning</option>
+          <option value="creative">Creative Generation</option>
+        </select>
+        
+        <button
+          onClick={runAITest}
+          disabled={isLoading}
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+        >
+          {isLoading ? '🔄 Testing...' : '🚀 Test DeepSeek R1'}
+        </button>
+      </div>
+
+      {testResult && (
+        <div className="mt-4 p-4 bg-gray-50 rounded border">
+          <div className="text-sm text-gray-600 mb-2">
+            Model: {testResult.model} | Latency: {testResult.real_time_metrics?.latency_ms}ms
+          </div>
+          
+          {testResult.test_result && (
+            <div className="space-y-2">
+              <div className="font-medium">{testResult.test_result.test}</div>
+              
+              {testResult.test_result.reasoning_steps && (
+                <div>
+                  <div className="font-medium text-sm">Reasoning Steps:</div>
+                  <ul className="list-disc list-inside text-sm space-y-1">
+                    {testResult.test_result.reasoning_steps.map((step: string, idx: number) => (
+                      <li key={idx}>{step}</li>
+                    ))}
+                  </ul>
+                  <div className="mt-2 font-medium">Answer: {testResult.test_result.answer}</div>
+                </div>
+              )}
+              
+              {testResult.test_result.creative_output && (
+                <div>
+                  <div className="font-medium text-sm">Creative Output:</div>
+                  <div className="italic bg-blue-50 p-2 rounded">
+                    {testResult.test_result.creative_output}
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    Creativity Score: {testResult.test_result.creativity_score}/10
+                  </div>
+                </div>
+              )}
+              
+              {testResult.test_result.response && (
+                <div>
+                  <div className="font-medium text-sm">Response:</div>
+                  <div className="bg-green-50 p-2 rounded">
+                    {testResult.test_result.response}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          
+          <div className="mt-3 text-xs text-gray-500">
+            Tested at: {new Date(testResult.timestamp).toLocaleString()}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
