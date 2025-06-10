@@ -19,7 +19,9 @@ export const AGENT_TYPES = {
   DEPLOY_AGENT: 'deploy_agent',
   BROWSER_AGENT: 'browser_agent',
   SECURITY_AGENT: 'security_agent',
-  DOCUMENTATION_AGENT: 'documentation_agent'
+  DOCUMENTATION_AGENT: 'documentation_agent',
+  PERFORMANCE_OPTIMIZER: 'performance_optimizer',
+  ARCHITECTURE_ADVISOR: 'architecture_advisor'
 } as const;
 
 export type AgentType = typeof AGENT_TYPES[keyof typeof AGENT_TYPES];

@@ -63,7 +63,7 @@ export interface ModelInfo {
 export interface AgentInfo {
   id: string;
   name: string;
-  type: 'code-generator' | 'debug' | 'testing' | 'deploy' | 'browser';
+  type: 'code-generator' | 'debug' | 'testing' | 'deploy' | 'browser' | 'security' | 'documentation' | 'performance-optimizer' | 'architecture-advisor';
   status: 'active' | 'idle' | 'busy' | 'error';
   currentTask?: string;
   performance: number;
@@ -82,6 +82,8 @@ export type TabId =
   | 'browser-agent'
   | 'security-agent'
   | 'documentation-agent'
+  | 'performance-optimizer'
+  | 'architecture-advisor'
   | 'agent-management'
   | 'model-registry'
   | 'settings'

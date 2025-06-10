@@ -13,6 +13,8 @@ import DeployAgent from './components/agents/DeployAgent';
 import BrowserAgent from './components/agents/BrowserAgent';
 import { SecurityAgent } from './components/agents/SecurityAgent';
 import { DocumentationAgent } from './components/agents/DocumentationAgent';
+import { PerformanceOptimizerAgent } from './components/agents/PerformanceOptimizerAgent';
+import { ArchitectureAdvisorAgent } from './components/agents/ArchitectureAdvisorAgent';
 import { AgentManagement } from './components/AgentManagement';
 import Projects from './components/Projects';
 import Workflows from './components/Workflows';
@@ -109,6 +111,12 @@ const MainDashboard: React.FC = () => {
       
       case 'documentation-agent':
         return <DocumentationAgent />;
+      
+      case 'performance-optimizer':
+        return <PerformanceOptimizerAgent />;
+      
+      case 'architecture-advisor':
+        return <ArchitectureAdvisorAgent />;
       
       case 'agent-management':
         return <AgentManagement />;

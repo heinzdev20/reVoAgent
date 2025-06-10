@@ -114,6 +114,14 @@ function AgentCard({ agentType, name, description, icon, color }: AgentCardProps
         [AGENT_TYPES.DOCUMENTATION_AGENT]: {
           description: 'Generate API documentation',
           parameters: { doc_type: 'api', files: ['src/main.py'] }
+        },
+        [AGENT_TYPES.PERFORMANCE_OPTIMIZER]: {
+          description: 'Analyze system performance',
+          parameters: { type: 'quick', metrics: ['cpu', 'memory'] }
+        },
+        [AGENT_TYPES.ARCHITECTURE_ADVISOR]: {
+          description: 'Review architecture patterns',
+          parameters: { type: 'quick', components: ['backend', 'frontend'] }
         }
       };
 
