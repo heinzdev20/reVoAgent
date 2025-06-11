@@ -79,7 +79,7 @@ function SortableWidget({
       case 'QuickTools':
         return <QuickTools />;
       case 'SystemStatus':
-        return <SystemStatus />;
+        return <SystemStatus metrics={{}} />;
       default:
         return (
           <div className="p-6 bg-white rounded-lg border border-gray-200">

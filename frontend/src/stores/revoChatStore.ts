@@ -45,7 +45,7 @@ interface RevoChatStore extends ChatState {
   addActiveAgent: (agent: string) => void;
   removeActiveAgent: (agent: string) => void;
   
-  setCurrentWorkflow: (workflow: WorkflowStatus | null) => void;
+  setCurrentWorkflow: (workflow: WorkflowStatus | undefined) => void;
   updateWorkflowProgress: (workflowId: string, progress: number) => void;
   
   updateSettings: (settings: Partial<ChatSettings>) => void;
@@ -85,7 +85,7 @@ export const useRevoChatStore = create<RevoChatStore>()(
     messages: [],
     isConnected: false,
     isTyping: false,
-    currentWorkflow: null,
+    currentWorkflow: undefined,
     activeAgents: [],
     inputHistory: [],
     historyIndex: -1,
@@ -193,7 +193,7 @@ export const useRevoChatStore = create<RevoChatStore>()(
     },
 
     // Workflow actions
-    setCurrentWorkflow: (workflow: WorkflowStatus | null) => {
+    setCurrentWorkflow: (workflow: WorkflowStatus | undefined) => {
       set({ currentWorkflow: workflow });
     },
 

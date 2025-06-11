@@ -129,44 +129,50 @@ export function SystemMetrics() {
     {
       label: 'Success Rate',
       value: `${stats.successRate}%`,
-      trend: previousStats ? calculateTrend(stats.successRate, previousStats.successRate).trend : 'stable',
+      trend: previousStats ? calculateTrend(stats.successRate, previousStats.successRate).trend : 'stable' as const,
       trendValue: previousStats ? calculateTrend(stats.successRate, previousStats.successRate).value : '0%',
       color: stats.successRate >= 95 ? 'text-green-600' : stats.successRate >= 90 ? 'text-yellow-600' : 'text-red-600',
     },
     {
       label: 'API Cost',
       value: `$${stats.apiCost.toFixed(2)}`,
-      trend: previousStats ? calculateTrend(stats.apiCost, previousStats.apiCost).trend : 'stable',
+      trend: previousStats ? calculateTrend(stats.apiCost, previousStats.apiCost).trend : 'stable' as const,
       trendValue: previousStats ? calculateTrend(stats.apiCost, previousStats.apiCost).value : '0%',
       color: 'text-green-600',
     },
     {
       label: 'Active Agents',
       value: stats.activeAgents.toString(),
-      trend: previousStats ? calculateTrend(stats.activeAgents, previousStats.activeAgents).trend : 'stable',
+      trend: previousStats ? calculateTrend(stats.activeAgents, previousStats.activeAgents).trend : 'stable' as const,
       trendValue: previousStats ? calculateTrend(stats.activeAgents, previousStats.activeAgents).value : '0%',
       color: 'text-purple-600',
     },
     {
       label: 'Response Time',
       value: `${stats.responseTime}ms`,
-      trend: responseTrend.trend === 'up' ? 'down' : responseTrend.trend === 'down' ? 'up' : 'stable', // Invert for response time
+      trend: (responseTrend.trend === 'up' ? 'down' : responseTrend.trend === 'down' ? 'up' : 'stable') as 'up' | 'down' | 'stable', // Invert for response time
       trendValue: responseTrend.value,
       color: stats.responseTime <= 200 ? 'text-green-600' : stats.responseTime <= 500 ? 'text-yellow-600' : 'text-red-600',
     },
     {
       label: 'Memory Usage',
       value: stats.memoryUsage,
+      trend: 'stable' as const,
+      trendValue: '0%',
       color: 'text-orange-600',
     },
     {
       label: 'Models Loaded',
       value: stats.modelsLoaded.toString(),
+      trend: 'stable' as const,
+      trendValue: '0%',
       color: 'text-indigo-600',
     },
     {
       label: 'Uptime',
       value: stats.uptime,
+      trend: 'stable' as const,
+      trendValue: '0%',
       color: 'text-green-600',
     },
   ];

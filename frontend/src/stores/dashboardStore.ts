@@ -60,7 +60,7 @@ export interface DashboardActions {
   updateStats: (stats: Partial<DashboardStats>) => void;
   updateSystemMetrics: (metrics: Record<string, SystemMetric>) => void;
   addActivity: (activity: ActivityItem) => void;
-  updateWorkflowStatus: (workflowId: string, status: string) => void;
+  updateWorkflowStatus: (workflowId: string, status: 'running' | 'completed' | 'paused' | 'failed') => void;
   
   // Performance tracking
   addPerformanceSnapshot: () => void;
@@ -215,7 +215,7 @@ export const useDashboardStore = create<DashboardState & DashboardActions>()(
         // Update workflow status locally
         set((state) => ({
           workflows: state.workflows.map(w =>
-            w.id === workflowId ? { ...w, status: 'stopped' } : w
+            w.id === workflowId ? { ...w, status: 'paused' as const } : w
           ),
           activeWorkflows: state.activeWorkflows.filter(w => w.id !== workflowId),
         }));
@@ -283,7 +283,7 @@ export const useDashboardStore = create<DashboardState & DashboardActions>()(
       }));
     },
 
-    updateWorkflowStatus: (workflowId: string, status: string) => {
+    updateWorkflowStatus: (workflowId: string, status: 'running' | 'completed' | 'paused' | 'failed') => {
       set((state) => ({
         workflows: state.workflows.map(w =>
           w.id === workflowId ? { ...w, status } : w

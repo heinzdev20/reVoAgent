@@ -443,7 +443,7 @@ export function ZeroTrustMonitor() {
                     {Math.round(threat.confidence * 100)}% confidence
                   </span>
                   {threat.automated && (
-                    <Zap className="w-4 h-4 text-yellow-600" title="Automated response" />
+                    <Zap className="w-4 h-4 text-yellow-600" />
                   )}
                 </div>
               </div>

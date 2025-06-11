@@ -36,8 +36,8 @@ export const useReVoWebSocket = (options: UseReVoWebSocketOptions) => {
   const [lastError, setLastError] = useState<string | null>(null);
   
   const wsRef = useRef<WebSocket | null>(null);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const heartbeatTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const reconnectTimeoutRef = useRef<number | null>(null);
+  const heartbeatTimeoutRef = useRef<number | null>(null);
   const reconnectCountRef = useRef(0);
   const messageQueueRef = useRef<WebSocketMessage[]>([]);
 
@@ -203,10 +203,9 @@ export const useReVoWebSocket = (options: UseReVoWebSocketOptions) => {
 
   const sendMessage = useCallback((message: Partial<WebSocketMessage>) => {
     const fullMessage: WebSocketMessage = {
-      type: 'message',
-      timestamp: Date.now(),
-      id: `msg_${Date.now()}_${Math.random()}`,
-      ...message
+      type: message.type || 'message',
+      data: message.data || {},
+      timestamp: Date.now()
     };
 
     if (wsRef.current?.readyState === WebSocket.OPEN) {

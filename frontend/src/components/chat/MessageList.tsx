@@ -31,7 +31,7 @@ export const MessageList: React.FC<MessageListProps> = memo(({
   const containerRef = useRef<HTMLDivElement>(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [isUserScrolling, setIsUserScrolling] = useState(false);
-  const scrollTimeoutRef = useRef<NodeJS.Timeout>();
+  const scrollTimeoutRef = useRef<number>();
 
   // Auto-scroll to bottom when new messages arrive
   const scrollToBottom = useCallback((smooth = true) => {
@@ -177,7 +177,7 @@ export const MessageList: React.FC<MessageListProps> = memo(({
             showAgentName={settings.showAgentNames}
             enableSyntaxHighlighting={settings.enableSyntaxHighlighting}
             enableMarkdownRendering={settings.enableMarkdownRendering}
-            theme={settings.theme}
+            theme={settings.theme === 'auto' ? 'dark' : settings.theme}
             onRetry={onRetryMessage}
             onCopy={onCopyMessage}
             onContextMenu={onContextMenu}
