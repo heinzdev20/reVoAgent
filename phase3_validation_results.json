@@ -1,0 +1,46 @@
+{
+  "backend_api": {
+    "success_rate": 100.0,
+    "successful_endpoints": 6,
+    "total_endpoints": 6,
+    "status": "passed"
+  },
+  "websocket": {
+    "connection": true,
+    "messaging": true,
+    "status": "passed"
+  },
+  "agent_coordination": {
+    "total_agents": 100,
+    "claude_agents": 0,
+    "gemini_agents": 0,
+    "openhands_agents": 0,
+    "coordination_system": true,
+    "target_agents": 100,
+    "coverage_percent": 100.0,
+    "status": "passed"
+  },
+  "performance": {
+    "avg_response_time": 0.9011268615722656,
+    "response_time_target": true,
+    "uptime_target": false,
+    "cost_optimization": true,
+    "performance_score": 66.66666666666666,
+    "status": "failed"
+  },
+  "security": {
+    "security_score": 97.5,
+    "security_target": true,
+    "compliance_target": true,
+    "overall_security": true,
+    "status": "passed"
+  },
+  "summary": {
+    "overall_status": "PASSED",
+    "success_rate": 80.0,
+    "passed_validations": 4,
+    "total_validations": 5,
+    "duration_seconds": 0.049356698989868164,
+    "timestamp": "2025-06-11T20:20:01.496414"
+  }
+}

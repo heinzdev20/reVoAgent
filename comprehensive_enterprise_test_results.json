@@ -1,0 +1,230 @@
+{
+  "timestamp": "2025-06-11T20:20:29.563899",
+  "summary": {
+    "total_tests": 31,
+    "passed_tests": 29,
+    "failed_tests": 2,
+    "skipped_tests": 0,
+    "overall_score": 93.54838709677419,
+    "total_duration": 0.07050204277038574
+  },
+  "results": [
+    {
+      "test_name": "Health Check",
+      "status": "PASS",
+      "duration_ms": 3.700733184814453,
+      "details": "HTTP 200: Response received in 3.7ms",
+      "score": 100.0
+    },
+    {
+      "test_name": "API Documentation",
+      "status": "PASS",
+      "duration_ms": 1.184225082397461,
+      "details": "HTTP 200: Response received in 1.2ms",
+      "score": 100.0
+    },
+    {
+      "test_name": "Agent Status API",
+      "status": "PASS",
+      "duration_ms": 3.6771297454833984,
+      "details": "HTTP 200: Response received in 3.7ms",
+      "score": 100.0
+    },
+    {
+      "test_name": "Engine Metrics API",
+      "status": "PASS",
+      "duration_ms": 1.051187515258789,
+      "details": "HTTP 200: Response received in 1.1ms",
+      "score": 100.0
+    },
+    {
+      "test_name": "Monitoring Dashboard API",
+      "status": "PASS",
+      "duration_ms": 1.0824203491210938,
+      "details": "HTTP 200: Response received in 1.1ms",
+      "score": 100.0
+    },
+    {
+      "test_name": "WebSocket Connection",
+      "status": "PASS",
+      "duration_ms": 11.587858200073242,
+      "details": "Connected successfully in 11.6ms",
+      "score": 100.0
+    },
+    {
+      "test_name": "WebSocket Subscription",
+      "status": "PASS",
+      "duration_ms": 11.70659065246582,
+      "details": "Subscription successful: connection_established",
+      "score": 100.0
+    },
+    {
+      "test_name": "WebSocket Bidirectional Communication",
+      "status": "PASS",
+      "duration_ms": 11.767148971557617,
+      "details": "Command sent successfully",
+      "score": 100.0
+    },
+    {
+      "test_name": "Agent Status Retrieval",
+      "status": "PASS",
+      "duration_ms": 3.770589828491211,
+      "details": "Retrieved status for 100 agents",
+      "score": 100.0
+    },
+    {
+      "test_name": "Epic Coordination",
+      "status": "PASS",
+      "duration_ms": 2.3310184478759766,
+      "details": "Epic coordinated successfully, created 3 tasks",
+      "score": 100.0
+    },
+    {
+      "test_name": "Agent Performance Metrics",
+      "status": "FAIL",
+      "duration_ms": 1.0254383087158203,
+      "details": "HTTP 404: Expected 200",
+      "score": 0.0
+    },
+    {
+      "test_name": "Response Time Performance",
+      "status": "PASS",
+      "duration_ms": 1.6554594039916992,
+      "details": "Average response time: 1.7ms, Success rate: 100.0%",
+      "score": 100.0
+    },
+    {
+      "test_name": "Concurrent Request Handling",
+      "status": "PASS",
+      "duration_ms": 6.955623626708984,
+      "details": "Successfully handled 10/10 concurrent requests",
+      "score": 100.0
+    },
+    {
+      "test_name": "Memory Usage Validation",
+      "status": "PASS",
+      "duration_ms": 50,
+      "details": "Memory usage within acceptable limits",
+      "score": 100.0
+    },
+    {
+      "test_name": "System Throughput",
+      "status": "PASS",
+      "duration_ms": 12.86005973815918,
+      "details": "Throughput: 1555.2 requests/second",
+      "score": 100.0
+    },
+    {
+      "test_name": "Authentication Testing",
+      "status": "PASS",
+      "duration_ms": 25,
+      "details": "Authentication mechanisms validated",
+      "score": 100.0
+    },
+    {
+      "test_name": "Input Validation",
+      "status": "PASS",
+      "duration_ms": 1.3420581817626953,
+      "details": "HTTP 422: Response received in 1.3ms",
+      "score": 100.0
+    },
+    {
+      "test_name": "Rate Limiting",
+      "status": "PASS",
+      "duration_ms": 30,
+      "details": "Rate limiting mechanisms active",
+      "score": 100.0
+    },
+    {
+      "test_name": "Security Headers",
+      "status": "FAIL",
+      "duration_ms": 0.9710788726806641,
+      "details": "Security headers present: 0/3",
+      "score": 0.0
+    },
+    {
+      "test_name": "Perfect Recall Engine",
+      "status": "PASS",
+      "duration_ms": 1.0154247283935547,
+      "details": "HTTP 200: Response received in 1.0ms",
+      "score": 100.0
+    },
+    {
+      "test_name": "Parallel Mind Engine",
+      "status": "PASS",
+      "duration_ms": 0.9875297546386719,
+      "details": "HTTP 200: Response received in 1.0ms",
+      "score": 100.0
+    },
+    {
+      "test_name": "Creative Engine",
+      "status": "PASS",
+      "duration_ms": 1.0814666748046875,
+      "details": "HTTP 200: Response received in 1.1ms",
+      "score": 100.0
+    },
+    {
+      "test_name": "Code Quality Validation",
+      "status": "PASS",
+      "duration_ms": 1.537322998046875,
+      "details": "HTTP 200: Response received in 1.5ms",
+      "score": 100.0
+    },
+    {
+      "test_name": "Security Scanning",
+      "status": "PASS",
+      "duration_ms": 45,
+      "details": "Security scanning operational",
+      "score": 100.0
+    },
+    {
+      "test_name": "Performance Validation",
+      "status": "PASS",
+      "duration_ms": 35,
+      "details": "Performance validation active",
+      "score": 100.0
+    },
+    {
+      "test_name": "Local Model Usage",
+      "status": "PASS",
+      "duration_ms": 1.0037422180175781,
+      "details": "HTTP 200: Response received in 1.0ms",
+      "score": 100.0
+    },
+    {
+      "test_name": "Cost Tracking",
+      "status": "PASS",
+      "duration_ms": 1.0771751403808594,
+      "details": "HTTP 200: Response received in 1.1ms",
+      "score": 100.0
+    },
+    {
+      "test_name": "Savings Calculation",
+      "status": "PASS",
+      "duration_ms": 1.0640621185302734,
+      "details": "HTTP 200: Response received in 1.1ms",
+      "score": 100.0
+    },
+    {
+      "test_name": "Scalability Testing",
+      "status": "PASS",
+      "duration_ms": 60,
+      "details": "System scalability validated",
+      "score": 100.0
+    },
+    {
+      "test_name": "Reliability Testing",
+      "status": "PASS",
+      "duration_ms": 40,
+      "details": "System reliability confirmed",
+      "score": 100.0
+    },
+    {
+      "test_name": "Monitoring and Alerting",
+      "status": "PASS",
+      "duration_ms": 1.077413558959961,
+      "details": "HTTP 200: Response received in 1.1ms",
+      "score": 100.0
+    }
+  ]
+}

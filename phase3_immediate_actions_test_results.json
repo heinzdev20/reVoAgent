@@ -1,0 +1,103 @@
+{
+  "backend_api_connection": {
+    "health_check": false,
+    "ai_models_endpoint": false,
+    "agents_endpoint": true,
+    "metrics_endpoint": false,
+    "security_endpoint": false,
+    "cost_endpoint": false,
+    "response_times": {
+      "health": 1.4157295227050781,
+      "ai_models": 0.7898807525634766,
+      "agents": 0.7278919219970703,
+      "system_metrics": 0.5693435668945312,
+      "security_status": 0.5733966827392578,
+      "cost_analytics": 0.5757808685302734
+    },
+    "error_details": [
+      "ai_models: HTTP 404",
+      "system_metrics: HTTP 404",
+      "security_status: HTTP 404",
+      "cost_analytics: HTTP 404"
+    ],
+    "health_endpoint": true,
+    "success_rate": 33.33333333333333,
+    "status": "failed"
+  },
+  "websocket_validation": {
+    "connection_established": true,
+    "message_sending": true,
+    "message_receiving": true,
+    "real_time_updates": true,
+    "connection_stability": false,
+    "latency_ms": 4999.9895095825195,
+    "error_details": [
+      "'ClientConnection' object has no attribute 'open'"
+    ],
+    "success_rate": 80.0,
+    "status": "passed"
+  },
+  "agent_coordination": {
+    "agent_creation": false,
+    "claude_agents": {
+      "count": 0,
+      "active": 0
+    },
+    "gemini_agents": {
+      "count": 0,
+      "active": 0
+    },
+    "openhands_agents": {
+      "count": 0,
+      "active": 0
+    },
+    "coordination_system": false,
+    "task_distribution": false,
+    "performance_tracking": false,
+    "error_details": [
+      "Agent creation failed: 405"
+    ],
+    "total_agents": 0,
+    "target_agents": 100,
+    "agent_coverage": 0,
+    "success_rate": 0.0,
+    "status": "failed"
+  },
+  "performance_optimization": {
+    "response_time_target": true,
+    "throughput_test": true,
+    "resource_usage": false,
+    "cost_optimization": false,
+    "uptime_validation": false,
+    "metrics": {
+      "avg_response_time": 0.47271251678466797,
+      "max_response_time": 1.1706352233886719,
+      "throughput_rps": 1436.7794357435496,
+      "cost_savings_percent": 0,
+      "uptime_percent": 0
+    },
+    "error_details": [],
+    "success_rate": 40.0,
+    "status": "failed"
+  },
+  "security_compliance": {
+    "security_score_target": false,
+    "vulnerability_scan": false,
+    "compliance_frameworks": false,
+    "access_controls": false,
+    "encryption_status": false,
+    "audit_logging": false,
+    "metrics": {
+      "security_score": 0,
+      "critical_vulnerabilities": 0,
+      "compliance_score": 0
+    },
+    "error_details": [],
+    "success_rate": 0.0,
+    "status": "failed"
+  },
+  "overall_status": "failed",
+  "overall_success_rate": 20.0,
+  "duration_seconds": 12.382445096969604,
+  "timestamp": "2025-06-11T20:18:56.227791"
+}
