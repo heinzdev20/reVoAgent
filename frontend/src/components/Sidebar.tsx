@@ -25,8 +25,9 @@ import {
   Gauge,
   Layers
 } from 'lucide-react';
-import { cn } from '@/utils/cn';
-import type { TabId } from '@/types';
+import { clsx } from 'clsx';
+import { GlassSidebar, GlassBadge } from './ui/glass';
+import type { TabId } from '../types';
 
 interface SidebarProps {
   activeTab: TabId;
@@ -104,32 +105,34 @@ const integrations = [
 export function Sidebar({ activeTab, onTabChange, className }: SidebarProps) {
   const renderStatusIndicator = (status?: string) => {
     if (status === 'active') {
-      return <Circle className="w-2 h-2 fill-blue-500 text-blue-500" />;
+      return <Circle className="w-2 h-2 fill-blue-400 text-blue-400 animate-pulse" />;
     }
     return null;
   };
 
   const renderBadge = (badge?: string | number) => {
     if (!badge) return null;
+    
+    const badgeColor = badge === 'LIVE' ? 'green' : 
+                      badge === 'NEW' ? 'purple' : 
+                      typeof badge === 'number' ? 'blue' : 'yellow';
+    
     return (
-      <span className="bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full text-xs">
-        [{badge}]
-      </span>
+      <GlassBadge color={badgeColor} className="text-xs">
+        {badge}
+      </GlassBadge>
     );
   };
 
   return (
-    <aside className={cn(
-      "w-64 bg-white shadow-lg border-r border-gray-200 overflow-y-auto",
-      className
-    )}>
+    <GlassSidebar className={clsx("w-64 overflow-y-auto", className)}>
       {/* Sidebar Sections */}
       {sidebarSections.map((section, sectionIndex) => (
-        <div key={section.title} className={cn(
+        <div key={section.title} className={clsx(
           "p-4",
-          sectionIndex < sidebarSections.length - 1 && "border-b border-gray-200"
+          sectionIndex < sidebarSections.length - 1 && "border-b border-white/10"
         )}>
-          <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+          <h3 className="text-xs font-semibold text-white/60 uppercase tracking-wider mb-3">
             {section.title}
           </h3>
           <nav className="space-y-1">
@@ -137,7 +140,7 @@ export function Sidebar({ activeTab, onTabChange, className }: SidebarProps) {
               <button
                 key={item.id}
                 onClick={() => onTabChange(item.id)}
-                className={cn(
+                className={clsx(
                   "sidebar-item flex items-center space-x-2",
                   activeTab === item.id ? "sidebar-item-active" : "sidebar-item-inactive"
                 )}
@@ -153,19 +156,19 @@ export function Sidebar({ activeTab, onTabChange, className }: SidebarProps) {
       ))}
 
       {/* Integrations Section */}
-      <div className="p-4 border-b border-gray-200">
-        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+      <div className="p-4 border-b border-white/10">
+        <h3 className="text-xs font-semibold text-white/60 uppercase tracking-wider mb-3">
           INTEGRATIONS
         </h3>
         <nav className="space-y-1">
           {integrations.map((integration) => (
-            <div key={integration.name} className="flex items-center justify-between px-3 py-2 text-sm">
-              <span className="text-gray-700">{integration.name}</span>
-              <CheckCircle className="w-4 h-4 text-green-500" />
+            <div key={integration.name} className="flex items-center justify-between px-3 py-2 text-sm text-white/80">
+              <span>{integration.name}</span>
+              <CheckCircle className="w-4 h-4 text-green-400" />
             </div>
           ))}
         </nav>
       </div>
-    </aside>
+    </GlassSidebar>
   );
 }

@@ -98,13 +98,13 @@ export function EnhancedDashboard() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
+        <div className="text-center glass-card">
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"
+            className="w-12 h-12 border-4 border-blue-400 border-t-transparent rounded-full mx-auto mb-4"
           />
-          <p className="text-gray-600">Loading enhanced dashboard...</p>
+          <p className="text-white/90">Loading enhanced dashboard...</p>
         </div>
       </div>
     );
@@ -113,13 +113,13 @@ export function EnhancedDashboard() {
   if (error) {
     return (
       <div className="p-6">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-          <WifiOff className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-red-800 font-medium text-lg mb-2">Connection Error</h3>
-          <p className="text-red-600 mb-4">{error}</p>
+        <div className="glass-card text-center border-red-500/30">
+          <WifiOff className="w-12 h-12 text-red-400 mx-auto mb-4" />
+          <h3 className="text-white font-medium text-lg mb-2">Connection Error</h3>
+          <p className="text-white/80 mb-4">{error}</p>
           <button 
             onClick={() => startAutoRefresh()}
-            className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+            className="glass-button bg-red-500/20 border-red-500/30 hover:bg-red-500/30"
           >
             Retry Connection
           </button>
@@ -129,9 +129,9 @@ export function EnhancedDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       {/* Enhanced Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-20">
+      <div className="glass-header sticky top-0 z-20">
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
             {/* Left Section */}
