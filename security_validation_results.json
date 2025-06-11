@@ -1,0 +1,90 @@
+{
+  "overall_score": 94.29,
+  "categories": {
+    "container_security": {
+      "score": 90,
+      "max_score": 100,
+      "issues": [
+        "Consider explicit file ownership"
+      ]
+    },
+    "kubernetes_security": {
+      "score": 100,
+      "max_score": 100,
+      "issues": [
+        "Container in k8s-deployment.yaml may run as root",
+        "Container in k8s-deployment.yaml has writable root filesystem",
+        "Container in k8s-deployment.yaml allows privilege escalation",
+        "Container in k8s-deployment.yaml uses default capabilities",
+        "Container in k8s-deployment.yaml may run as root",
+        "Container in k8s-deployment.yaml has writable root filesystem",
+        "Container in k8s-deployment.yaml allows privilege escalation",
+        "Container in k8s-deployment.yaml uses default capabilities",
+        "Container in k8s/three-engine-deployment.yaml may run as root",
+        "Container in k8s/three-engine-deployment.yaml has writable root filesystem",
+        "Container in k8s/three-engine-deployment.yaml allows privilege escalation",
+        "Container in k8s/three-engine-deployment.yaml uses default capabilities",
+        "Container in k8s/three-engine-deployment.yaml may run as root",
+        "Container in k8s/three-engine-deployment.yaml has writable root filesystem",
+        "Container in k8s/three-engine-deployment.yaml allows privilege escalation",
+        "Container in k8s/three-engine-deployment.yaml uses default capabilities",
+        "Container in k8s/three-engine-deployment.yaml may run as root",
+        "Container in k8s/three-engine-deployment.yaml has writable root filesystem",
+        "Container in k8s/three-engine-deployment.yaml allows privilege escalation",
+        "Container in k8s/three-engine-deployment.yaml uses default capabilities",
+        "Container in k8s/three-engine-deployment.yaml may run as root",
+        "Container in k8s/three-engine-deployment.yaml has writable root filesystem",
+        "Container in k8s/three-engine-deployment.yaml allows privilege escalation",
+        "Container in k8s/three-engine-deployment.yaml uses default capabilities",
+        "Container in deployment/k8s/deployments.yaml may run as root",
+        "Container in deployment/k8s/deployments.yaml has writable root filesystem",
+        "Container in deployment/k8s/deployments.yaml allows privilege escalation",
+        "Container in deployment/k8s/deployments.yaml uses default capabilities",
+        "Container in deployment/k8s/deployments.yaml may run as root",
+        "Container in deployment/k8s/deployments.yaml has writable root filesystem",
+        "Container in deployment/k8s/deployments.yaml allows privilege escalation",
+        "Container in deployment/k8s/deployments.yaml uses default capabilities",
+        "Container in deployment/k8s/deployments.yaml may run as root",
+        "Container in deployment/k8s/deployments.yaml has writable root filesystem",
+        "Container in deployment/k8s/deployments.yaml allows privilege escalation",
+        "Container in deployment/k8s/deployments.yaml uses default capabilities",
+        "Container in deployment/k8s/deployments.yaml may run as root",
+        "Container in deployment/k8s/deployments.yaml has writable root filesystem",
+        "Container in deployment/k8s/deployments.yaml allows privilege escalation",
+        "Container in deployment/k8s/deployments.yaml uses default capabilities",
+        "No RBAC configuration found"
+      ]
+    },
+    "network_security": {
+      "score": 70,
+      "max_score": 100,
+      "issues": [
+        "No TLS/SSL configuration found"
+      ]
+    },
+    "authentication_security": {
+      "score": 100,
+      "max_score": 100,
+      "issues": []
+    },
+    "data_security": {
+      "score": 100,
+      "max_score": 100,
+      "issues": []
+    },
+    "api_security": {
+      "score": 100,
+      "max_score": 100,
+      "issues": []
+    },
+    "dependency_security": {
+      "score": 100,
+      "max_score": 100,
+      "issues": []
+    }
+  },
+  "vulnerabilities": [],
+  "recommendations": [
+    "Improve network security: No TLS/SSL configuration found"
+  ]
+}

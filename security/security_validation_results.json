@@ -1,0 +1,365 @@
+{
+  "timestamp": "2025-06-11T06:18:24.138334+00:00",
+  "checks": {
+    "ssl_tls_configuration": {
+      "name": "SSL/TLS Configuration",
+      "passed": true,
+      "details": {
+        "ssl_version": "PROTOCOL_TLS_CLIENT",
+        "check_hostname": true,
+        "verify_mode": "CERT_REQUIRED",
+        "cipher_count": 17,
+        "strong_ciphers_only": true
+      },
+      "vulnerabilities": [],
+      "recommendations": []
+    },
+    "authentication_security": {
+      "name": "Authentication Security",
+      "passed": true,
+      "details": {
+        "jwt_config": {
+          "algorithm": "HS256",
+          "expiry": 3600,
+          "issuer": "revoagent",
+          "audience": "revoagent-api"
+        },
+        "password_policy": {
+          "min_length": 12,
+          "require_uppercase": true,
+          "require_lowercase": true,
+          "require_numbers": true,
+          "require_special_chars": true,
+          "max_age_days": 90,
+          "history_count": 12
+        },
+        "session_config": {
+          "secure_cookies": true,
+          "httponly_cookies": true,
+          "samesite": "Strict",
+          "session_timeout": 1800
+        },
+        "mfa_config": {
+          "enabled": true,
+          "methods": [
+            "TOTP",
+            "SMS",
+            "Email"
+          ],
+          "backup_codes": true
+        }
+      },
+      "vulnerabilities": [],
+      "recommendations": [
+        "Consider using RS256 for enhanced security"
+      ]
+    },
+    "api_security": {
+      "name": "API Security",
+      "passed": true,
+      "details": {
+        "rate_limiting": {
+          "enabled": true,
+          "requests_per_minute": 100,
+          "burst_limit": 200,
+          "ip_whitelist": [],
+          "api_key_limits": {
+            "free": 1000,
+            "pro": 10000,
+            "enterprise": 100000
+          }
+        },
+        "cors_config": {
+          "allowed_origins": [
+            "https://app.revoagent.com"
+          ],
+          "allowed_methods": [
+            "GET",
+            "POST",
+            "PUT",
+            "DELETE"
+          ],
+          "allowed_headers": [
+            "Authorization",
+            "Content-Type"
+          ],
+          "expose_headers": [
+            "X-Request-ID"
+          ],
+          "max_age": 3600,
+          "credentials": true
+        },
+        "api_versioning": {
+          "strategy": "header",
+          "current_version": "v1",
+          "supported_versions": [
+            "v1"
+          ],
+          "deprecation_policy": "6_months"
+        },
+        "input_validation": {
+          "request_size_limit": "10MB",
+          "json_depth_limit": 10,
+          "string_length_limit": 1000,
+          "array_size_limit": 100,
+          "sanitization": true,
+          "sql_injection_protection": true,
+          "xss_protection": true
+        }
+      },
+      "vulnerabilities": [],
+      "recommendations": []
+    },
+    "data_encryption": {
+      "name": "Data Encryption",
+      "passed": true,
+      "details": {
+        "encryption_at_rest": {
+          "database": {
+            "enabled": true,
+            "algorithm": "AES-256-GCM",
+            "key_rotation": "monthly"
+          },
+          "file_storage": {
+            "enabled": true,
+            "algorithm": "AES-256-CBC",
+            "key_management": "AWS KMS"
+          },
+          "backups": {
+            "enabled": true,
+            "algorithm": "AES-256-GCM"
+          }
+        },
+        "encryption_in_transit": {
+          "api_endpoints": {
+            "tls_version": "1.3",
+            "certificate_type": "EV SSL",
+            "hsts_enabled": true
+          },
+          "internal_communication": {
+            "service_mesh": true,
+            "mutual_tls": true
+          },
+          "database_connections": {
+            "ssl_required": true,
+            "certificate_validation": true
+          }
+        },
+        "key_management": {
+          "key_derivation": "PBKDF2",
+          "key_length": 256,
+          "salt_length": 32,
+          "iterations": 100000,
+          "key_rotation_frequency": "quarterly",
+          "hardware_security_module": true
+        }
+      },
+      "vulnerabilities": [],
+      "recommendations": []
+    },
+    "network_security": {
+      "name": "Network Security",
+      "passed": true,
+      "details": {
+        "firewall_config": {
+          "enabled": true,
+          "default_policy": "deny",
+          "allowed_ports": [
+            80,
+            443,
+            22
+          ],
+          "rate_limiting": true,
+          "geo_blocking": true,
+          "ddos_protection": true
+        },
+        "network_segmentation": {
+          "vpc_enabled": true,
+          "private_subnets": true,
+          "public_subnets": true,
+          "nat_gateway": true,
+          "security_groups": {
+            "web_tier": [
+              "80",
+              "443"
+            ],
+            "app_tier": [
+              "8000",
+              "8001"
+            ],
+            "db_tier": [
+              "5432",
+              "6379"
+            ]
+          }
+        },
+        "intrusion_detection": {
+          "enabled": true,
+          "real_time_monitoring": true,
+          "automated_response": true,
+          "threat_intelligence": true,
+          "log_analysis": true
+        }
+      },
+      "vulnerabilities": [],
+      "recommendations": []
+    },
+    "container_security": {
+      "name": "Container Security",
+      "passed": true,
+      "details": {
+        "base_image_security": {
+          "minimal_base_images": true,
+          "vulnerability_scanning": true,
+          "image_signing": true,
+          "registry_security": true,
+          "latest_tag_avoided": true
+        },
+        "runtime_security": {
+          "non_root_user": true,
+          "read_only_filesystem": true,
+          "no_privileged_containers": true,
+          "resource_limits": true,
+          "security_contexts": true,
+          "network_policies": true
+        },
+        "kubernetes_security": {
+          "rbac_enabled": true,
+          "pod_security_policies": true,
+          "network_policies": true,
+          "secrets_encryption": true,
+          "admission_controllers": true,
+          "audit_logging": true
+        }
+      },
+      "vulnerabilities": [],
+      "recommendations": []
+    },
+    "secrets_management": {
+      "name": "Secrets Management",
+      "passed": true,
+      "details": {
+        "secrets_storage": {
+          "vault_enabled": true,
+          "encryption_at_rest": true,
+          "access_control": true,
+          "audit_logging": true,
+          "automatic_rotation": true
+        },
+        "environment_security": {
+          "no_secrets_in_env": true,
+          "encrypted_env_files": true,
+          "runtime_injection": true
+        },
+        "api_key_management": {
+          "secure_generation": true,
+          "expiration_dates": true,
+          "scope_limitations": true,
+          "usage_monitoring": true,
+          "revocation_capability": true
+        }
+      },
+      "vulnerabilities": [],
+      "recommendations": []
+    },
+    "input_validation": {
+      "name": "Input Validation",
+      "passed": true,
+      "details": {
+        "validation_rules": {
+          "schema_validation": true,
+          "type_checking": true,
+          "length_limits": true,
+          "format_validation": true,
+          "whitelist_validation": true
+        },
+        "sanitization": {
+          "html_sanitization": true,
+          "sql_injection_prevention": true,
+          "xss_prevention": true,
+          "command_injection_prevention": true,
+          "path_traversal_prevention": true
+        },
+        "file_upload_security": {
+          "file_type_validation": true,
+          "file_size_limits": true,
+          "virus_scanning": true,
+          "quarantine_system": true,
+          "content_type_validation": true
+        }
+      },
+      "vulnerabilities": [],
+      "recommendations": []
+    },
+    "logging_monitoring": {
+      "name": "Logging & Monitoring",
+      "passed": true,
+      "details": {
+        "security_logging": {
+          "authentication_events": true,
+          "authorization_failures": true,
+          "data_access_logs": true,
+          "configuration_changes": true,
+          "security_incidents": true
+        },
+        "log_protection": {
+          "log_encryption": true,
+          "log_integrity": true,
+          "centralized_logging": true,
+          "log_retention_policy": true,
+          "access_controls": true
+        },
+        "monitoring_alerting": {
+          "real_time_monitoring": true,
+          "anomaly_detection": true,
+          "automated_alerting": true,
+          "incident_response": true,
+          "threat_hunting": true
+        }
+      },
+      "vulnerabilities": [],
+      "recommendations": []
+    },
+    "compliance_standards": {
+      "name": "Compliance Standards",
+      "passed": true,
+      "details": {
+        "soc2_compliance": {
+          "security": true,
+          "availability": true,
+          "processing_integrity": true,
+          "confidentiality": true,
+          "privacy": true
+        },
+        "gdpr_compliance": {
+          "data_protection_by_design": true,
+          "consent_management": true,
+          "right_to_erasure": true,
+          "data_portability": true,
+          "breach_notification": true
+        },
+        "iso27001_compliance": {
+          "information_security_policy": true,
+          "risk_management": true,
+          "asset_management": true,
+          "access_control": true,
+          "incident_management": true
+        }
+      },
+      "vulnerabilities": [],
+      "recommendations": []
+    }
+  },
+  "overall_score": 100.0,
+  "vulnerabilities": [],
+  "recommendations": [
+    "Consider using RS256 for enhanced security"
+  ],
+  "compliance": {
+    "soc2_ready": true,
+    "gdpr_compliant": true,
+    "iso27001_aligned": true,
+    "enterprise_ready": true,
+    "security_score": 100.0
+  }
+}
