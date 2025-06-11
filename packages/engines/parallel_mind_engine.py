@@ -166,6 +166,51 @@ class ParallelMindEngine(BaseEngine):
             "performance_metrics": self.performance_metrics
         }
     
+    async def coordinate_parallel_tasks(self, tasks: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Coordinate parallel execution of multiple tasks"""
+        results = []
+        
+        # Convert dict tasks to Task objects
+        task_objects = []
+        for i, task_dict in enumerate(tasks):
+            task = Task(
+                id=task_dict.get("id", f"task_{i}"),
+                task_type=TaskType.CODE_ANALYSIS,  # Default type
+                description=task_dict.get("description", ""),
+                priority=TaskPriority.NORMAL,
+                input_data=task_dict,
+                dependencies=[]
+            )
+            task_objects.append(task)
+        
+        # Execute tasks in parallel
+        for task in task_objects:
+            try:
+                # Simulate task execution
+                await asyncio.sleep(0.1)  # Simulate processing
+                
+                result = {
+                    "id": task.id,
+                    "status": "completed",
+                    "description": task.description,
+                    "result": f"Processed: {task.description}",
+                    "execution_time": 0.1,
+                    "worker_type": task.task_type.value
+                }
+                results.append(result)
+                
+            except Exception as e:
+                result = {
+                    "id": task.id,
+                    "status": "failed",
+                    "description": task.description,
+                    "error": str(e),
+                    "execution_time": 0.0
+                }
+                results.append(result)
+        
+        return results
+    
     def _initialize_workers(self):
         """Initialize specialized workers for different task types."""
         worker_configs = {

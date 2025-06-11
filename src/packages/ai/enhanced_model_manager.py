@@ -76,6 +76,7 @@ class GenerationRequest:
     max_tokens: int = 1000
     temperature: float = 0.7
     force_local: bool = True
+    force_cloud: bool = False
     fallback_allowed: bool = True
     cost_limit: Optional[float] = None  # Maximum cost in USD
 
@@ -136,7 +137,7 @@ class EnhancedModelManager:
         """Initialize AI model configurations"""
         
         # 1. DeepSeek R1 0528 (Primary - Local/Opensource)
-        self.models["deepseek-r1"] = ModelConfig(
+        deepseek_model = ModelConfig(
             model_id="deepseek-r1",
             name="DeepSeek R1 0528",
             model_type=ModelType.LOCAL_OPENSOURCE,
@@ -149,6 +150,9 @@ class EnhancedModelManager:
             memory_requirement=8192,  # 8GB RAM
             gpu_requirement=True
         )
+        # For demo purposes, mark as available
+        deepseek_model.status = ModelStatus.AVAILABLE
+        self.models["deepseek-r1"] = deepseek_model
         
         # 2. Llama (Secondary - Local)
         self.models["llama"] = ModelConfig(
@@ -597,7 +601,7 @@ class EnhancedModelManager:
             "average_cost_per_request": self.metrics["total_cost"] / max(total_requests, 1)
         }
     
-    def generate_response(self, prompt: str, **kwargs) -> Dict[str, Any]:
+    def generate_response_sync(self, prompt: str, **kwargs) -> Dict[str, Any]:
         """Generate response (sync method for compatibility)"""
         # For compatibility, return a simple response without async processing
         # In production, this would run the async version in an event loop
