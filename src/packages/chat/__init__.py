@@ -4,17 +4,23 @@ Advanced conversational AI with multi-agent collaboration
 """
 
 from .multi_agent_chat import (
-    MultiAgentChatOrchestrator,
+    AdvancedMultiAgentChat,
     ChatMessage,
     ChatMessageType,
     AgentRole,
-    AgentCollaborationContext
+    CollaborationMode,
+    ConflictResolutionStrategy,
+    AgentCollaborationSession,
+    multi_agent_chat
 )
 
 __all__ = [
-    'MultiAgentChatOrchestrator',
+    'AdvancedMultiAgentChat',
     'ChatMessage', 
     'ChatMessageType',
     'AgentRole',
-    'AgentCollaborationContext'
+    'CollaborationMode',
+    'ConflictResolutionStrategy',
+    'AgentCollaborationSession',
+    'multi_agent_chat'
 ]

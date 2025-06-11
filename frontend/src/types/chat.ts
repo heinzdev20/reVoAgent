@@ -145,8 +145,65 @@ export interface ChatSettings {
 }
 
 export interface WebSocketMessage {
-  type: 'message' | 'status' | 'workflow_update' | 'agent_feedback' | 'function_call' | 'error';
+  type: 'message' | 'status' | 'workflow_update' | 'agent_feedback' | 'function_call' | 'error' | 'multi_agent_event';
   data: any;
   timestamp: number;
   id?: string;
+}
+
+// Enhanced Multi-Agent Chat Types
+export interface MultiAgentChatEvent {
+  event_type: 'message' | 'agent_thinking' | 'agent_response' | 'collaboration_start' | 'collaboration_update' | 'collaboration_complete' | 'workflow_created' | 'session_update' | 'error';
+  session_id: string;
+  data: Record<string, any>;
+  timestamp: string;
+  agent_id?: string;
+}
+
+export interface AgentState {
+  agent_id: string;
+  role: string;
+  status: 'idle' | 'thinking' | 'responding' | 'collaborating' | 'complete';
+  current_task?: string;
+  progress: number;
+  last_update: string;
+}
+
+export interface CollaborationPattern {
+  name: string;
+  agents: string[];
+  pattern: 'parallel_analysis' | 'sequential_cascade' | 'swarm_intelligence' | 'iterative_collaboration';
+  merge_strategy: string;
+  real_time: boolean;
+  streaming: boolean;
+}
+
+export interface MultiAgentSession {
+  session_id: string;
+  user_id: string;
+  created_at: string;
+  status: 'active' | 'ended';
+  collaboration_pattern: string;
+  message_history: MultiAgentMessage[];
+  agent_states: Record<string, AgentState>;
+  shared_context: Record<string, any>;
+  real_time_updates: boolean;
+}
+
+export interface MultiAgentMessage {
+  id: string;
+  type: 'user' | 'agent' | 'system' | 'multi_agent_response';
+  content: string | Record<string, any>;
+  user_id?: string;
+  agent_role?: string;
+  timestamp: string;
+  metadata?: Record<string, any>;
+}
+
+export interface AgentCollaborationState {
+  active_agents: AgentState[];
+  collaboration_phase: 'starting' | 'analyzing' | 'collaborating' | 'consensus' | 'complete';
+  progress: number;
+  current_pattern: CollaborationPattern;
+  real_time_events: MultiAgentChatEvent[];
 }

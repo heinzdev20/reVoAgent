@@ -1,0 +1,55 @@
+{
+  "timestamp": "2025-06-11T08:28:19.293101",
+  "backend_url": "http://localhost:8000",
+  "tests": {
+    "backend_health": {
+      "status": "PASSED",
+      "response_time": 0.001768,
+      "data": {
+        "status": "healthy",
+        "timestamp": "2025-06-11T08:28:19.295151",
+        "service": "reVoAgent Backend API",
+        "version": "1.0.0"
+      }
+    },
+    "model_api": {
+      "status": "PASSED",
+      "response_time": 0.00118,
+      "total_models": 3,
+      "local_models": 2,
+      "cost_savings": "95%+",
+      "local_models_active": true
+    },
+    "agents_api": {
+      "status": "PASSED",
+      "response_time": 0.001059,
+      "total_agents": 20,
+      "active_agents": 4,
+      "agents_list": [
+        "Code Analyst",
+        "Debug Detective",
+        "Workflow Manager",
+        "Multi-Agent Chat"
+      ]
+    },
+    "chat_workflow": {
+      "status": "PASSED",
+      "response_time": 0.001139,
+      "model_used": "deepseek_r1_0528",
+      "cost": 0.0,
+      "response_received": true,
+      "local_model_used": true
+    },
+    "cost_optimization": {
+      "status": "PASSED",
+      "total_requests": 5,
+      "local_requests": 5,
+      "local_percentage": 100.0,
+      "total_cost": 0.0,
+      "estimated_cost_savings": 100.0,
+      "target_achieved": true
+    }
+  },
+  "overall_status": "EXCELLENT",
+  "success_rate": 100.0
+}
