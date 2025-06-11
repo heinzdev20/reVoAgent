@@ -220,6 +220,11 @@ class GlassmorphismDesignSystem:
         
         logger.info("🎨 Glassmorphism Design System initialized")
         self._register_default_components()
+    
+    async def initialize(self):
+        """Async initialization method for compatibility"""
+        # Already initialized in __init__, this is for compatibility
+        return self
 
     def _register_default_components(self):
         """Register default component definitions"""

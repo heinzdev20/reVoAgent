@@ -323,6 +323,43 @@ class UnifiedConfigurationManager:
         if not self.config:
             raise ConfigurationError("Configuration not initialized")
         return self.config
+    
+    def get(self, key: str, default: Any = None) -> Any:
+        """Get configuration value by key (supports dot notation)"""
+        if not self.config:
+            raise ConfigurationError("Configuration not initialized")
+        
+        # Handle dot notation for nested keys
+        keys = key.split('.')
+        value = self.config
+        
+        for k in keys:
+            if hasattr(value, k):
+                value = getattr(value, k)
+            elif isinstance(value, dict) and k in value:
+                value = value[k]
+            else:
+                return default
+        
+        return value
+    
+    def set_environment(self, environment: str):
+        """Set the environment"""
+        self.environment = Environment(environment)
+    
+    def encrypt_value(self, value: str) -> str:
+        """Encrypt a value"""
+        if not self.encryption_key:
+            raise ConfigurationError("Encryption not initialized")
+        fernet = Fernet(self.encryption_key)
+        return fernet.encrypt(value.encode()).decode()
+    
+    def decrypt_value(self, encrypted_value: str) -> str:
+        """Decrypt a value"""
+        if not self.encryption_key:
+            raise ConfigurationError("Encryption not initialized")
+        fernet = Fernet(self.encryption_key)
+        return fernet.decrypt(encrypted_value.encode()).decode()
 
     def get_database_url(self) -> str:
         """Get database connection URL"""

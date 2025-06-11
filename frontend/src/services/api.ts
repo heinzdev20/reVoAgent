@@ -9,8 +9,8 @@ import type {
 } from '@/types';
 
 // Connect to real backend running on port 12001
-const API_BASE = 'http://localhost:12001/api';
-const WS_BASE = 'ws://localhost:12001';
+const API_BASE = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : 'http://localhost:12001/api';
+const WS_BASE = import.meta.env.VITE_WS_URL || 'ws://localhost:12001';
 
 // Agent types mapping
 export const AGENT_TYPES = {

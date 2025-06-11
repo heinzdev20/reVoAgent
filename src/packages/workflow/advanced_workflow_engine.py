@@ -322,6 +322,11 @@ class AdvancedWorkflowEngine:
         self.event_handlers: Dict[str, List[Callable]] = defaultdict(list)
         
         logger.info("🔄 Advanced Workflow Engine initialized")
+    
+    async def initialize(self):
+        """Async initialization method for compatibility"""
+        # Already initialized in __init__, this is for compatibility
+        return self
 
     async def create_workflow(self, name: str, description: str, created_by: Optional[str] = None) -> str:
         """Create a new workflow definition"""
