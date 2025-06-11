@@ -126,13 +126,13 @@ class EnhancedQualityGates:
         return {
             "sql_injection": [
                 {
-                    "pattern": r'["\'].*\+.*["\'].*(?:SELECT|INSERT|UPDATE|DELETE|DROP)',
+                    "pattern": r'["\'][^"\']*\+[^"\']*["\'][^"\']*(?:SELECT|INSERT|UPDATE|DELETE|DROP)',
                     "severity": SecurityLevel.CRITICAL,
                     "cwe": "CWE-89",
                     "description": "Potential SQL injection vulnerability"
                 },
                 {
-                    "pattern": r'execute.*\(.*\+.*\)',
+                    "pattern": r'execute[^(]*\([^)]*\+[^)]*\)',
                     "severity": SecurityLevel.HIGH,
                     "cwe": "CWE-89",
                     "description": "Dynamic SQL execution with concatenation"
