@@ -19,6 +19,11 @@ from enum import Enum
 from typing import Dict, List, Optional, Any, Tuple, Callable
 import math
 
+try:
+    from .base_engine import BaseEngine
+except ImportError:
+    from base_engine import BaseEngine
+
 logger = logging.getLogger(__name__)
 
 class CreativityDomain(Enum):
@@ -79,7 +84,7 @@ class GeneticIndividual:
     generation: int
     parent_ids: List[str] = field(default_factory=list)
 
-class CreativeEngine:
+class CreativeEngine(BaseEngine):
     """
     🎨 Creative Engine
     
@@ -89,6 +94,7 @@ class CreativeEngine:
     """
     
     def __init__(self):
+        super().__init__("creative", {})
         # Pattern library
         self.creative_patterns: Dict[str, CreativePattern] = {}
         self.solution_history: Dict[str, Solution] = {}
@@ -112,6 +118,27 @@ class CreativeEngine:
         self._initialize_domain_knowledge()
         
         logger.info("🎨 Creative Engine initialized with pattern synthesis capabilities")
+    
+    async def initialize(self) -> bool:
+        """Initialize the Creative Engine."""
+        try:
+            self._initialize_creative_patterns()
+            self._initialize_domain_knowledge()
+            return True
+        except Exception as e:
+            logger.error(f"Failed to initialize Creative Engine: {e}")
+            return False
+    
+    async def get_engine_status(self) -> Dict[str, Any]:
+        """Get current engine status and metrics."""
+        return {
+            "engine_name": "Creative Engine",
+            "status": "operational",
+            "pattern_count": len(self.creative_patterns),
+            "solution_history_count": len(self.solution_history),
+            "population_size": self.population_size,
+            "novelty_threshold": self.novelty_threshold
+        }
     
     def _initialize_creative_patterns(self):
         """Initialize the library of creative patterns."""

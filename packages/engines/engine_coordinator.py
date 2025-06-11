@@ -11,10 +11,17 @@ from typing import Dict, List, Any, Optional, Union
 from dataclasses import dataclass
 from enum import Enum
 
-from .perfect_recall.engine import PerfectRecallEngine, RecallRequest
-from .parallel_mind.worker_manager import WorkerManager
-from .creative_engine.solution_generator import SolutionGenerator
+from .perfect_recall_engine import PerfectRecallEngine
+from .parallel_mind_engine import ParallelMindEngine
+from .creative_engine import CreativeEngine
 from .base_engine import BaseEngine
+
+@dataclass
+class RecallRequest:
+    """Request for Perfect Recall Engine."""
+    query: str
+    context: Optional[str] = None
+    limit: int = 10
 
 class EngineType(Enum):
     PERFECT_RECALL = "perfect_recall"
@@ -87,18 +94,13 @@ class EngineCoordinator(BaseEngine):
         """Initialize all engines"""
         try:
             # Initialize Perfect Recall Engine
-            self.engines[EngineType.PERFECT_RECALL] = PerfectRecallEngine(
-                self.config.get('perfect_recall', {})
-            )
+            self.engines[EngineType.PERFECT_RECALL] = PerfectRecallEngine()
             
-            # Initialize Parallel Mind Engine (Worker Manager)
-            self.engines[EngineType.PARALLEL_MIND] = WorkerManager(
-                min_workers=self.config.get('parallel_mind', {}).get('min_workers', 4),
-                max_workers=self.config.get('parallel_mind', {}).get('max_workers', 16)
-            )
+            # Initialize Parallel Mind Engine
+            self.engines[EngineType.PARALLEL_MIND] = ParallelMindEngine()
             
-            # Initialize Creative Engine (Solution Generator)
-            self.engines[EngineType.CREATIVE] = SolutionGenerator()
+            # Initialize Creative Engine
+            self.engines[EngineType.CREATIVE] = CreativeEngine()
             
             # Start all engines
             initialization_results = []
@@ -108,11 +110,12 @@ class EngineCoordinator(BaseEngine):
             initialization_results.append(recall_init)
             
             # Initialize Parallel Mind
-            parallel_init = await self.engines[EngineType.PARALLEL_MIND].start()
+            parallel_init = await self.engines[EngineType.PARALLEL_MIND].initialize()
             initialization_results.append(parallel_init)
             
-            # Creative engine doesn't need async initialization
-            initialization_results.append(True)
+            # Initialize Creative Engine
+            creative_init = await self.engines[EngineType.CREATIVE].initialize()
+            initialization_results.append(creative_init)
             
             if all(initialization_results):
                 self.status = "active"

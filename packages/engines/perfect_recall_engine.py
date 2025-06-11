@@ -45,7 +45,7 @@ class RecallResult:
     similarity_score: float
     relevance_score: float
 
-class PerfectRecallEngine:
+class PerfectRecallEngine(BaseEngine):
     """
     🧠 Perfect Recall Engine
     
@@ -54,6 +54,7 @@ class PerfectRecallEngine:
     """
     
     def __init__(self, storage_path: str = "data/memory"):
+        super().__init__("perfect_recall", {})
         self.storage_path = Path(storage_path)
         self.storage_path.mkdir(parents=True, exist_ok=True)
         
@@ -72,6 +73,27 @@ class PerfectRecallEngine:
         self._load_existing_memories()
         
         logger.info("🧠 Perfect Recall Engine initialized")
+    
+    async def initialize(self) -> bool:
+        """Initialize the Perfect Recall Engine."""
+        try:
+            self._initialize_storage()
+            self._load_existing_memories()
+            return True
+        except Exception as e:
+            logger.error(f"Failed to initialize Perfect Recall Engine: {e}")
+            return False
+    
+    async def get_engine_status(self) -> Dict[str, Any]:
+        """Get current engine status and metrics."""
+        return {
+            "engine_name": "Perfect Recall Engine",
+            "status": "operational",
+            "memory_count": len(self.memory_db),
+            "storage_path": str(self.storage_path),
+            "vector_db_available": hasattr(self, 'vector_db') and self.vector_db is not None,
+            "knowledge_graph_available": hasattr(self, 'knowledge_graph') and self.knowledge_graph is not None
+        }
     
     def _initialize_storage(self):
         """Initialize storage components."""

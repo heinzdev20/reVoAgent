@@ -18,6 +18,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional, Any, Callable, Union
 from queue import Queue, PriorityQueue
+
+try:
+    from .base_engine import BaseEngine
+except ImportError:
+    from base_engine import BaseEngine
 import threading
 
 logger = logging.getLogger(__name__)
@@ -96,7 +101,7 @@ class WorkflowResult:
     errors: List[str]
     performance_metrics: Dict[str, Any]
 
-class ParallelMindEngine:
+class ParallelMindEngine(BaseEngine):
     """
     ⚡ Parallel Mind Engine
     
@@ -105,6 +110,7 @@ class ParallelMindEngine:
     """
     
     def __init__(self, max_workers: int = None):
+        super().__init__("parallel_mind", {})
         self.max_workers = max_workers or min(32, (asyncio.get_event_loop().get_debug() and 4) or 8)
         
         # Task management
@@ -138,6 +144,27 @@ class ParallelMindEngine:
         self._start_orchestrator()
         
         logger.info(f"⚡ Parallel Mind Engine initialized with {self.max_workers} workers")
+    
+    async def initialize(self) -> bool:
+        """Initialize the Parallel Mind Engine."""
+        try:
+            self._initialize_workers()
+            self._start_orchestrator()
+            return True
+        except Exception as e:
+            logger.error(f"Failed to initialize Parallel Mind Engine: {e}")
+            return False
+    
+    async def get_engine_status(self) -> Dict[str, Any]:
+        """Get current engine status and metrics."""
+        return {
+            "engine_name": "Parallel Mind Engine",
+            "status": "operational",
+            "max_workers": self.max_workers,
+            "active_tasks": len(self.tasks),
+            "active_workers": len(self.workers),
+            "performance_metrics": self.performance_metrics
+        }
     
     def _initialize_workers(self):
         """Initialize specialized workers for different task types."""
