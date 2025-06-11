@@ -1,7 +1,7 @@
 {
-  "timestamp": "2025-06-11T08:18:29.070189",
+  "timestamp": "2025-06-11T08:28:27.540874",
   "overall_status": "GOOD",
-  "health_score": 84.7,
+  "health_score": 87.5,
   "priority_1_checks": {
     "enhanced_ai_model_manager": {
       "status": "PASSED",
@@ -17,22 +17,17 @@
       "recommendations": []
     },
     "frontend_backend_integration": {
-      "status": "FAILED",
-      "score": 66.7,
+      "status": "PASSED",
+      "score": 83.3,
       "checks": {
         "frontend_exists": true,
         "react_apps_present": true,
-        "api_connectivity": false,
+        "api_connectivity": true,
         "websocket_support": true,
         "authentication_flow": false,
         "ui_components": true
       },
-      "recommendations": [
-        "Start backend API server",
-        "Test frontend-backend communication",
-        "Validate WebSocket connections",
-        "Test authentication flow end-to-end"
-      ]
+      "recommendations": []
     },
     "core_api_health": {
       "status": "PASSED",
@@ -86,7 +81,5 @@
   },
   "recommendations": [],
   "critical_issues": [],
-  "warnings": [
-    "Backend API not responding - start with 'python main.py'"
-  ]
+  "warnings": []
 }
