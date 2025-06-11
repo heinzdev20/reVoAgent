@@ -172,3 +172,5 @@ export function Sidebar({ activeTab, onTabChange, className }: SidebarProps) {
     </GlassSidebar>
   );
 }
+
+export default Sidebar;
