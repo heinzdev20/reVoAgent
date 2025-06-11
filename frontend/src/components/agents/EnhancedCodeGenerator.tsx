@@ -73,6 +73,7 @@ export function EnhancedCodeGenerator() {
   const [selectedFile, setSelectedFile] = useState<string>('main.py');
   const [codeFiles, setCodeFiles] = useState<Record<string, string>>({});
   const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const languages = ['python', 'typescript', 'javascript', 'java', 'go', 'rust'];
   const frameworks = {
@@ -139,6 +140,7 @@ export function EnhancedCodeGenerator() {
     setGeneratedCode('');
     setGenerationResult(null);
     setProgress(null);
+    setIsGenerating(true);
     
     try {
       // Prepare task data for the agent
@@ -167,6 +169,7 @@ export function EnhancedCodeGenerator() {
       
     } catch (error) {
       console.error('Failed to start code generation:', error);
+      setIsGenerating(false);
       alert('Failed to start code generation. Please try again.');
     }
   };
@@ -214,7 +217,7 @@ export function EnhancedCodeGenerator() {
   };
 
   const updateProgressDisplay = (task: any) => {
-    const statusToPhase = {
+    const statusToPhase: Record<string, string> = {
       'analyzing': 'architecture_planning',
       'preparing': 'database_models',
       'generating': 'api_endpoints',
@@ -222,7 +225,7 @@ export function EnhancedCodeGenerator() {
       'completed': 'tests_documentation'
     };
     
-    const currentPhase = statusToPhase[task.status] || 'architecture_planning';
+    const currentPhase = statusToPhase[task.status as string] || 'architecture_planning';
     const phases = ['architecture_planning', 'database_models', 'api_endpoints', 'authentication', 'tests_documentation'];
     
     const phaseProgress: Record<string, number> = {};

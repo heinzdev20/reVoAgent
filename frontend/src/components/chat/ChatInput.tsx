@@ -393,10 +393,3 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   );
 };
 
-// Extend Window interface for speech recognition
-declare global {
-  interface Window {
-    webkitSpeechRecognition: any;
-    SpeechRecognition: any;
-  }
-}

@@ -186,8 +186,8 @@ export const mockApi = {
 export const enableMockMode = () => {
   const originalFetch = window.fetch;
   
-  window.fetch = async (url: string | Request, options?: RequestInit): Promise<Response> => {
-    const urlString = typeof url === 'string' ? url : url.url;
+  window.fetch = async (url: RequestInfo | URL, options?: RequestInit): Promise<Response> => {
+    const urlString = typeof url === 'string' ? url : url instanceof URL ? url.href : (url as Request).url;
     
     // Check if it's an API call
     if (urlString.includes('/api/')) {

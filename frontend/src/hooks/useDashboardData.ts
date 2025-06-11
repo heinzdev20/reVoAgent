@@ -66,15 +66,17 @@ export function useDashboardData() {
             id: "1",
             title: "Enhanced Code Gen: FastAPI+Auth+Tests ✓",
             description: "OpenHands Integration • Quality Score: 94%",
-            time: "2 min ago",
-            type: "success"
+            timestamp: new Date(Date.now() - 2 * 60 * 1000),
+            type: "agent",
+            status: "success"
           },
           {
             id: "2",
             title: "Workflow Engine: 8 agents parallel execution ✓",
             description: "Microservices architecture • Resource optimized",
-            time: "8 min ago",
-            type: "success"
+            timestamp: new Date(Date.now() - 8 * 60 * 1000),
+            type: "workflow",
+            status: "success"
           }
         ];
 
