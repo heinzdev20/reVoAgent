@@ -74,8 +74,8 @@ class ResponseGenerator:
             models = self.model_loader.get_loaded_models()
             model = models[target_model]
             
-            # Generate response based on model capabilities
-            if hasattr(model, 'generate_code') and request.task_type == "code_generation":
+            # Generate response based on task type
+            if request.task_type == "code_generation":
                 content = await self._generate_code_response(model, request)
             else:
                 content = await self._generate_text_response(model, request)

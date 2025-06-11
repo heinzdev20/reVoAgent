@@ -38,7 +38,10 @@ class TestGenerationRequest:
         with pytest.raises(ValidationError) as exc_info:
             GenerationRequest(prompt="")
         
-        assert "Prompt cannot be empty" in str(exc_info.value)
+        # Check for either the custom validator message or Pydantic's built-in message
+        error_str = str(exc_info.value)
+        assert ("Prompt cannot be empty" in error_str or 
+                "String should have at least 1 character" in error_str)
     
     def test_prompt_validation_whitespace(self):
         """Test prompt validation with whitespace only."""
@@ -54,7 +57,10 @@ class TestGenerationRequest:
         with pytest.raises(ValidationError) as exc_info:
             GenerationRequest(prompt=long_prompt)
         
-        assert "ensure this value has at most 10000 characters" in str(exc_info.value)
+        # Check for either old or new Pydantic error message format
+        error_str = str(exc_info.value)
+        assert ("ensure this value has at most 10000 characters" in error_str or 
+                "String should have at most 10000 characters" in error_str)
     
     def test_max_tokens_validation(self):
         """Test max_tokens validation."""

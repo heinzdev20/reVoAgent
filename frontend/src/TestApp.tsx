@@ -66,7 +66,7 @@ export function TestApp() {
               </GlassButton>
               
               <GlassButton 
-                variant="secondary"
+                variant="medium"
                 onClick={() => alert('✅ Glassmorphism UI System Working!')}
               >
                 Test UI

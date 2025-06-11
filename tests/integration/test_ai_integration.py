@@ -7,19 +7,21 @@ import asyncio
 import json
 import os
 import sys
+import pytest
 from pathlib import Path
 
 # Add packages to Python path
-sys.path.insert(0, str(Path(__file__).parent / "packages"))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))  # Go to repo root
 
+@pytest.mark.asyncio
 async def test_llm_client():
     """Test the LLM client with different providers."""
     print("🧪 Testing ReVo AI LLM Integration")
     print("=" * 50)
     
     try:
-        from ai.llm_config import create_llm_client_from_env, LLMConfigManager
-        from ai.llm_client import LLMProvider
+        from packages.ai.llm_config import create_llm_client_from_env, LLMConfigManager
+        from packages.ai.llm_client import LLMProvider
         
         # Create LLM client
         print("📋 Creating LLM client...")

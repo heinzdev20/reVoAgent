@@ -28,6 +28,40 @@ class ModelStatus(Enum):
     ERROR = "error"
 
 
+class TaskType(Enum):
+    """Task types for AI generation."""
+    CODE_GENERATION = "code_generation"
+    TEXT_GENERATION = "text_generation"
+    ANALYSIS = "analysis"
+    DEBUGGING = "debugging"
+    OPTIMIZATION = "optimization"
+    TESTING = "testing"
+    DOCUMENTATION = "documentation"
+
+
+class Language(Enum):
+    """Programming languages."""
+    PYTHON = "python"
+    JAVASCRIPT = "javascript"
+    TYPESCRIPT = "typescript"
+    JAVA = "java"
+    CPP = "cpp"
+    CSHARP = "csharp"
+    GO = "go"
+    RUST = "rust"
+    PHP = "php"
+    RUBY = "ruby"
+    SWIFT = "swift"
+    KOTLIN = "kotlin"
+    SCALA = "scala"
+    HTML = "html"
+    CSS = "css"
+    SQL = "sql"
+    BASH = "bash"
+    POWERSHELL = "powershell"
+    OTHER = "other"
+
+
 @dataclass
 class ModelInfo:
     """Model information and metadata."""

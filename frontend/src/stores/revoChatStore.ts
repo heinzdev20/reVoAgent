@@ -19,7 +19,7 @@ interface RevoChatStore extends ChatState {
   settings: ChatSettings;
   
   // Current workflow
-  currentWorkflow: WorkflowStatus | null;
+  currentWorkflow?: WorkflowStatus;
   
   // Connection state
   connectionStatus: 'connecting' | 'connected' | 'disconnected' | 'error';

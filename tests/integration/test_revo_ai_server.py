@@ -4,20 +4,25 @@ Runs the backend with DeepSeek R1 0528, Llama, OpenAI, and Anthropic fallbacks
 """
 
 import asyncio
+import pytest
 import logging
+import pytest
 import os
+import pytest
 import sys
+import pytest
 from pathlib import Path
 from typing import Dict, Any
 
 # Add packages to Python path
-sys.path.insert(0, str(Path(__file__).parent / "packages"))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 import uvicorn
+import pytest
 
 # Import our components
 from apps.backend.revo_websocket import (
@@ -73,7 +78,7 @@ async def websocket_health_check():
 async def llm_health_check():
     """LLM providers health check."""
     try:
-        from ai.llm_config import create_llm_client_from_env
+        from packages.ai.llm_config import create_llm_client_from_env
         llm_client = create_llm_client_from_env()
         health_results = await llm_client.health_check()
         usage_stats = llm_client.get_usage_stats()
@@ -107,10 +112,11 @@ async def broadcast_message(message: str, message_type: str = "system"):
 
 # LLM testing endpoints
 @app.post("/test/llm")
+@pytest.mark.asyncio
 async def test_llm(prompt: str = "Hello, how are you?"):
     """Test LLM functionality."""
     try:
-        from ai.llm_config import create_llm_client_from_env
+        from packages.ai.llm_config import create_llm_client_from_env
         llm_client = create_llm_client_from_env()
         
         messages = [{"role": "user", "content": prompt}]
@@ -134,10 +140,11 @@ async def test_llm(prompt: str = "Hello, how are you?"):
         }
 
 @app.post("/test/function-calling")
+@pytest.mark.asyncio
 async def test_function_calling():
     """Test LLM function calling capability."""
     try:
-        from ai.llm_config import create_llm_client_from_env
+        from packages.ai.llm_config import create_llm_client_from_env
         llm_client = create_llm_client_from_env()
         
         messages = [
@@ -186,7 +193,7 @@ async def test_function_calling():
 async def get_llm_config():
     """Get LLM configuration summary."""
     try:
-        from ai.llm_config import LLMConfigManager, create_llm_client_from_env
+        from packages.ai.llm_config import LLMConfigManager, create_llm_client_from_env
         
         # Get configurations
         configs = LLMConfigManager.get_default_configs()
@@ -211,7 +218,7 @@ async def get_llm_config():
 @app.get("/setup/env-template")
 async def get_env_template():
     """Get environment variable template for LLM setup."""
-    from ai.llm_config import setup_environment_template
+    from packages.ai.llm_config import setup_environment_template
     return {
         "template": setup_environment_template(),
         "instructions": [
@@ -233,6 +240,7 @@ if Path("frontend/dist").exists():
 
 # Development test page
 @app.get("/test")
+@pytest.mark.asyncio
 async def test_page():
     """Simple test page for WebSocket connection."""
     html_content = """
@@ -397,7 +405,7 @@ async def startup_event():
     
     # Check LLM configuration
     try:
-        from ai.llm_config import create_llm_client_from_env, LLMConfigManager
+        from packages.ai.llm_config import create_llm_client_from_env, LLMConfigManager
         
         configs = LLMConfigManager.get_default_configs()
         logger.info(f"Found {len(configs)} LLM configurations")
