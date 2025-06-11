@@ -1,157 +1,245 @@
-#!/usr/bin/env python3
 """
-Test AI Integration
-
-Comprehensive test of the reVoAgent AI integration following the ASCII wireframe design.
+Test AI Integration for ReVo Chat Interface
+Tests the LLM client with multiple providers and function calling
 """
 
 import asyncio
 import json
-import time
-import requests
-from typing import Dict, Any
+import os
+import sys
+from pathlib import Path
 
-BASE_URL = "http://localhost:12000/api/v1"
+# Add packages to Python path
+sys.path.insert(0, str(Path(__file__).parent / "packages"))
 
-def test_api_endpoint(endpoint: str, method: str = "GET", data: Dict[Any, Any] = None) -> Dict[Any, Any]:
-    """Test an API endpoint and return the response."""
-    url = f"{BASE_URL}{endpoint}"
+async def test_llm_client():
+    """Test the LLM client with different providers."""
+    print("🧪 Testing ReVo AI LLM Integration")
+    print("=" * 50)
     
     try:
-        if method == "GET":
-            response = requests.get(url)
-        elif method == "POST":
-            response = requests.post(url, json=data)
+        from ai.llm_config import create_llm_client_from_env, LLMConfigManager
+        from ai.llm_client import LLMProvider
+        
+        # Create LLM client
+        print("📋 Creating LLM client...")
+        llm_client = create_llm_client_from_env()
+        
+        # Get configuration summary
+        configs = LLMConfigManager.get_default_configs()
+        summary = LLMConfigManager.get_config_summary(configs)
+        
+        print("\n🔧 Configuration Summary:")
+        for provider, info in summary.items():
+            status = "✅" if info["enabled"] else "❌"
+            cost = "Free" if info["cost_per_token"] == 0 else f"${info['cost_per_token']}/token"
+            print(f"  {status} {provider}: {info['model']} ({cost})")
+        
+        # Test 1: Simple chat completion
+        print("\n🗣️  Test 1: Simple Chat Completion")
+        print("-" * 30)
+        
+        messages = [
+            {"role": "user", "content": "Hello! Please introduce yourself as ReVo AI and tell me you're ready to help with development tasks."}
+        ]
+        
+        response = await llm_client.chat_completion(messages)
+        
+        print(f"Provider: {response.provider.value}")
+        print(f"Model: {response.model}")
+        print(f"Response: {response.content}")
+        print(f"Tokens: {response.tokens_used}")
+        print(f"Cost: ${response.cost:.6f}")
+        print(f"Time: {response.response_time:.2f}s")
+        
+        if response.error:
+            print(f"Error: {response.error}")
+        
+        # Test 2: Function calling
+        print("\n🔧 Test 2: Function Calling")
+        print("-" * 30)
+        
+        function_messages = [
+            {"role": "user", "content": "Please run the command 'ls -la' to list all files in the current directory"}
+        ]
+        
+        tools = [
+            {
+                "type": "function",
+                "function": {
+                    "name": "run_terminal_command",
+                    "description": "Execute a shell command on the local machine",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "command": {"type": "string", "description": "The command to execute"}
+                        },
+                        "required": ["command"]
+                    }
+                }
+            }
+        ]
+        
+        function_response = await llm_client.chat_completion(function_messages, tools)
+        
+        print(f"Provider: {function_response.provider.value}")
+        print(f"Model: {function_response.model}")
+        print(f"Response: {function_response.content}")
+        
+        if function_response.function_calls:
+            print("Function Calls:")
+            for call in function_response.function_calls:
+                print(f"  - {call['name']}: {call['arguments']}")
         else:
-            raise ValueError(f"Unsupported method: {method}")
+            print("No function calls detected")
         
-        response.raise_for_status()
-        return response.json()
+        print(f"Tokens: {function_response.tokens_used}")
+        print(f"Cost: ${function_response.cost:.6f}")
+        print(f"Time: {function_response.response_time:.2f}s")
+        
+        # Test 3: Provider health check
+        print("\n🏥 Test 3: Provider Health Check")
+        print("-" * 30)
+        
+        health_results = await llm_client.health_check()
+        
+        for provider, health in health_results.items():
+            if health["status"] == "healthy":
+                print(f"  ✅ {provider}: {health['status']} ({health.get('response_time', 0):.2f}s)")
+            elif health["status"] == "not_configured":
+                print(f"  ⚪ {provider}: not configured")
+            else:
+                print(f"  ❌ {provider}: {health['status']} - {health.get('error', 'Unknown error')}")
+        
+        # Test 4: Usage statistics
+        print("\n📊 Test 4: Usage Statistics")
+        print("-" * 30)
+        
+        stats = llm_client.get_usage_stats()
+        
+        print(f"Total Calls: {stats['total_calls']}")
+        print(f"Total Tokens: {stats['total_tokens']}")
+        print(f"Total Cost: ${stats['total_cost']:.6f}")
+        
+        print("\nPer Provider:")
+        for provider, provider_stats in stats['providers'].items():
+            if provider_stats['calls'] > 0:
+                print(f"  {provider}: {provider_stats['calls']} calls, {provider_stats['tokens']} tokens, ${provider_stats['cost']:.6f}")
+        
+        # Test 5: Optimal provider selection
+        print("\n🎯 Test 5: Optimal Provider Selection")
+        print("-" * 30)
+        
+        optimal = llm_client.get_optimal_provider()
+        print(f"Optimal Provider: {optimal.value}")
+        print(f"Fallback Order: {[p.value for p in llm_client.fallback_order]}")
+        
+        print("\n✅ All tests completed successfully!")
+        return True
+        
     except Exception as e:
-        return {"error": str(e)}
+        print(f"\n❌ Test failed: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
 
-def print_section(title: str):
-    """Print a section header."""
-    print(f"\n{'='*60}")
-    print(f"🚀 {title}")
-    print(f"{'='*60}")
-
-def print_result(test_name: str, result: Dict[Any, Any]):
-    """Print test result."""
-    status = "✅ PASS" if "error" not in result else "❌ FAIL"
-    print(f"{status} {test_name}")
-    if "error" in result:
-        print(f"   Error: {result['error']}")
-    else:
-        print(f"   Result: {json.dumps(result, indent=2)[:200]}...")
-
-def main():
-    """Run comprehensive AI integration tests."""
-    print("🚀 reVoAgent AI Integration Test Suite")
-    print("Following ASCII Wireframe Design Specifications")
+async def test_orchestrator_integration():
+    """Test the ReVo Orchestrator with LLM integration."""
+    print("\n🎭 Testing ReVo Orchestrator Integration")
+    print("=" * 50)
     
-    # Test 1: Enhanced Code Generator Templates
-    print_section("Enhanced Code Generator - Templates")
-    templates_result = test_api_endpoint("/codegen/templates")
-    print_result("Get Available Templates", templates_result)
-    
-    # Test 2: Start Code Generation
-    print_section("Enhanced Code Generator - Start Generation")
-    codegen_request = {
-        "task_description": "Create a complete e-commerce API with user auth, product catalog, shopping cart, payment integration, and admin dashboard",
-        "template_id": "rest_api",
-        "language": "python",
-        "framework": "fastapi",
-        "database": "postgresql",
-        "features": ["auth", "tests", "docs", "docker", "cicd"]
-    }
-    
-    start_result = test_api_endpoint("/codegen/start", "POST", codegen_request)
-    print_result("Start Code Generation", start_result)
-    
-    task_id = start_result.get("task_id")
-    
-    if task_id:
-        # Test 3: Monitor Progress (Multiple Phases)
-        print_section("Enhanced Code Generator - Progress Monitoring")
+    try:
+        from core.revo_orchestrator import ReVoOrchestrator
+        from ai.llm_config import create_llm_client_from_env
         
-        for i in range(3):
-            time.sleep(1)
-            progress_result = test_api_endpoint(f"/codegen/progress/{task_id}")
-            print_result(f"Progress Check {i+1}", progress_result)
+        # Create LLM client
+        llm_client = create_llm_client_from_env()
+        
+        # Create orchestrator
+        orchestrator = ReVoOrchestrator(llm_client=llm_client)
+        
+        # Test message handling
+        test_messages = [
+            "Hello, can you help me with development tasks?",
+            "/help",
+            "/run ls -la",
+            "Create a Python function to calculate fibonacci numbers"
+        ]
+        
+        for i, message in enumerate(test_messages, 1):
+            print(f"\n📝 Test Message {i}: {message}")
+            print("-" * 40)
             
-            if progress_result.get("phases"):
-                phases = progress_result["phases"]
-                print("   Phase Status:")
-                for phase_name, phase_info in phases.items():
-                    status_icon = "✅" if phase_info["status"] == "completed" else "🔄" if phase_info["status"] == "in_progress" else "⏳"
-                    print(f"     {status_icon} {phase_info['name']}: {phase_info['progress']}%")
-    
-    # Test 4: AI Model Management
-    print_section("AI Model Management")
-    
-    models_result = test_api_endpoint("/ai/models")
-    print_result("Get AI Models", models_result)
-    
-    if models_result.get("models"):
-        model_id = models_result["models"][0]["id"]
+            # Simulate WebSocket callback
+            responses = []
+            
+            async def mock_callback(response):
+                responses.append(response)
+                print(f"Response: {response}")
+            
+            orchestrator.set_websocket_callback(mock_callback)
+            
+            # Handle the message
+            await orchestrator.handle_message({"content": message}, "test_session")
+            
+            # Wait a moment for processing
+            await asyncio.sleep(0.5)
+            
+            print(f"Received {len(responses)} responses")
         
-        # Test model loading
-        load_result = test_api_endpoint(f"/ai/models/{model_id}/load", "POST")
-        print_result(f"Load Model {model_id}", load_result)
+        print("\n✅ Orchestrator integration test completed!")
+        return True
         
-        # Check model status after loading
-        models_after_load = test_api_endpoint("/ai/models")
-        if models_after_load.get("models"):
-            loaded_model = next((m for m in models_after_load["models"] if m["id"] == model_id), None)
-            if loaded_model:
-                print_result(f"Model Status After Load", {"status": loaded_model["status"]})
+    except Exception as e:
+        print(f"\n❌ Orchestrator test failed: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
+
+def setup_test_environment():
+    """Setup test environment variables."""
+    print("🔧 Setting up test environment...")
     
-    # Test 5: AI Text Generation
-    print_section("AI Text Generation")
+    # Set default endpoints for local testing
+    os.environ.setdefault("DEEPSEEK_ENDPOINT", "http://localhost:8001")
+    os.environ.setdefault("LLAMA_ENDPOINT", "http://localhost:11434")
     
-    generation_request = {
-        "prompt": "Write a Python function to calculate the factorial of a number using recursion. Include proper error handling and documentation.",
-        "parameters": {
-            "max_tokens": 200,
-            "temperature": 0.7
-        }
-    }
+    # Disable paid providers by default for testing
+    os.environ.setdefault("OPENAI_ENABLED", "false")
+    os.environ.setdefault("ANTHROPIC_ENABLED", "false")
     
-    generation_result = test_api_endpoint("/ai/generate", "POST", generation_request)
-    print_result("AI Text Generation", generation_result)
+    print("  ✅ Environment configured for local testing")
+
+async def main():
+    """Main test function."""
+    print("🚀 ReVo AI Integration Test Suite")
+    print("=" * 60)
     
-    # Test 6: System Metrics
-    print_section("System Metrics & Monitoring")
+    setup_test_environment()
     
-    metrics_result = test_api_endpoint("/system/metrics")
-    print_result("System Metrics", metrics_result)
+    # Test LLM client
+    llm_success = await test_llm_client()
     
-    # Test 7: Integration Status
-    print_section("Integration Health Check")
-    
-    integrations_result = test_api_endpoint("/integrations/status")
-    print_result("Integration Status", integrations_result)
-    
-    # Test 8: Dashboard Status
-    print_section("Dashboard Status")
-    
-    dashboard_result = test_api_endpoint("/dashboard/status")
-    print_result("Dashboard Status", dashboard_result)
+    # Test orchestrator integration
+    orchestrator_success = await test_orchestrator_integration()
     
     # Summary
-    print_section("Test Summary")
-    print("🎯 Key Features Tested:")
-    print("   ✅ Enhanced Code Generator with multi-phase progress")
-    print("   ✅ Template-based code generation (REST API, Web App, etc.)")
-    print("   ✅ AI Model Management (DeepSeek R1, Llama)")
-    print("   ✅ Real-time progress tracking")
-    print("   ✅ System metrics and monitoring")
-    print("   ✅ Integration health checks")
-    print("\n🚀 reVoAgent AI Integration: FULLY FUNCTIONAL")
-    print("   Following ASCII wireframe specifications")
-    print("   Production-ready with real AI capabilities")
-    print("   Zero-cost local AI infrastructure")
+    print("\n📋 Test Summary")
+    print("=" * 30)
+    print(f"LLM Client: {'✅ PASS' if llm_success else '❌ FAIL'}")
+    print(f"Orchestrator: {'✅ PASS' if orchestrator_success else '❌ FAIL'}")
+    
+    if llm_success and orchestrator_success:
+        print("\n🎉 All tests passed! ReVo AI is ready for action.")
+        print("\n🚀 Next steps:")
+        print("  1. Start local LLM servers (if not running)")
+        print("  2. Run: python test_revo_ai_server.py")
+        print("  3. Open: http://localhost:8000/test")
+    else:
+        print("\n⚠️  Some tests failed. Please check the setup:")
+        print("  1. Ensure local LLM servers are running")
+        print("  2. Check network connectivity")
+        print("  3. Verify environment variables")
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
