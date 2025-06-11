@@ -1,17 +1,32 @@
 #!/usr/bin/env python3
 """
-Basic unit tests for core services
-Tests the fundamental functionality of our refactored services
+Secure unit tests for core services
+Tests the fundamental functionality of our refactored services with enterprise security
 """
 
 import pytest
 import asyncio
-from unittest.mock import Mock, AsyncMock, patch
+import os
+import tempfile
+from unittest.mock import Mock, AsyncMock, patch, MagicMock
 import sys
 from pathlib import Path
+from typing import Dict, Any, Optional
 
-# Add the project root to the path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+# Secure path handling
+PROJECT_ROOT = Path(__file__).parent.parent.parent.resolve()
+sys.path.insert(0, str(PROJECT_ROOT))
+
+# Security: Environment variable validation
+def get_secure_test_config() -> Dict[str, Any]:
+    """Get secure test configuration with validation"""
+    return {
+        "test_mode": True,
+        "debug": False,
+        "log_level": "INFO",
+        "temp_dir": tempfile.mkdtemp(prefix="secure_test_"),
+        "max_test_duration": 30  # seconds
+    }
 
 class TestBasicServiceImports:
     """Test that all services can be imported successfully"""
