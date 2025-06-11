@@ -1,17 +1,21 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import App from './App.tsx'
-import { TestApp } from './TestApp.tsx'
-import SimpleApp from './SimpleApp.tsx'
-import { DemoLoginApp } from './DemoLoginApp.tsx'
-import DebugApp from './DebugApp.tsx'
-import SimpleDebugApp from './SimpleDebugApp.tsx'
-import MinimalApp from './MinimalApp.tsx'
-import WorkingApp from './WorkingApp.tsx'
+import { EnterpriseApp } from './EnterpriseApp.tsx'
+import { enterpriseWebSocket } from './services/enterpriseWebSocket'
 import './index.css'
+
+// Initialize enterprise WebSocket connection for real-time updates
+enterpriseWebSocket.connect().catch(error => {
+  console.error('Failed to connect to Enterprise WebSocket:', error);
+});
+
+// Production Enterprise Application
+const ProductionApp = () => {
+  return <EnterpriseApp />;
+};
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <WorkingApp />
+    <ProductionApp />
   </React.StrictMode>,
 )
