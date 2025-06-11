@@ -1,0 +1,83 @@
+# Base Configuration for reVoAgent
+# This file contains default settings that apply to all environments
+
+# Database Configuration
+database:
+  host: localhost
+  port: 5432
+  database: revoagent
+  username: revoagent
+  ssl_mode: prefer
+  pool_size: 10
+  max_overflow: 20
+
+# AI Models Configuration
+ai_models:
+  deepseek_r1:
+    provider: deepseek_r1_distill
+    model_path: deepseek-ai/deepseek-r1-distill-qwen-1.5b
+    max_tokens: 4096
+    temperature: 0.7
+    timeout: 30
+    fallback_providers:
+      - llama_local
+      - openai_backup
+
+  llama_local:
+    provider: llama_local
+    model_path: meta-llama/Llama-2-7b-chat-hf
+    max_tokens: 2048
+    temperature: 0.7
+    timeout: 30
+    fallback_providers:
+      - openai_backup
+
+  openai_backup:
+    provider: openai
+    model_path: gpt-4
+    max_tokens: 4096
+    temperature: 0.7
+    timeout: 30
+    fallback_providers: []
+
+# Security Configuration
+security:
+  jwt_algorithm: HS256
+  jwt_expiration_hours: 24
+  rate_limit_per_minute: 60
+  cors_origins:
+    - "*"
+  enable_https: false
+
+# Monitoring Configuration
+monitoring:
+  enable_metrics: true
+  enable_tracing: true
+  enable_logging: true
+  log_level: INFO
+  metrics_port: 9090
+  jaeger_endpoint: ""
+  prometheus_endpoint: ""
+
+# Server Configuration
+server:
+  host: 0.0.0.0
+  port: 8000
+  workers: 4
+  reload: false
+  debug: false
+  max_request_size: 16777216  # 16MB
+
+# Custom Configuration
+custom:
+  app_name: reVoAgent
+  version: "2.0.0"
+  description: "Enterprise AI Development Platform"
+  cost_optimization:
+    target_local_percentage: 90
+    max_cloud_cost_per_month: 100.0
+  features:
+    glassmorphism_ui: true
+    real_time_collaboration: true
+    advanced_workflows: true
+    enterprise_security: true

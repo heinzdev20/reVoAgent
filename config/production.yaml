@@ -1,0 +1,50 @@
+# Production Environment Configuration
+# Secure settings for production deployment
+
+# Database Configuration
+database:
+  host: ${DB_HOST}
+  port: ${DB_PORT}
+  database: ${DB_NAME}
+  username: ${DB_USER}
+  ssl_mode: require
+  pool_size: 20
+  max_overflow: 40
+
+# Server Configuration
+server:
+  host: 0.0.0.0
+  port: ${SERVER_PORT}
+  workers: ${SERVER_WORKERS}
+  reload: false
+  debug: false
+
+# Security Configuration (strict for production)
+security:
+  rate_limit_per_minute: 60
+  cors_origins:
+    - "https://revoagent.com"
+    - "https://app.revoagent.com"
+    - "https://api.revoagent.com"
+  enable_https: true
+
+# Monitoring Configuration
+monitoring:
+  log_level: INFO
+  enable_metrics: true
+  enable_tracing: true
+  enable_logging: true
+  jaeger_endpoint: ${JAEGER_ENDPOINT}
+  prometheus_endpoint: ${PROMETHEUS_ENDPOINT}
+
+# Custom Configuration
+custom:
+  features:
+    mock_ai_responses: false
+    debug_mode: false
+    hot_reload: false
+  production:
+    enable_caching: true
+    enable_compression: true
+    enable_rate_limiting: true
+    enable_audit_logging: true
