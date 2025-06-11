@@ -1,0 +1,309 @@
+# docker-compose.memory-production.yml
+# Complete production deployment with Cognee memory integration
+
+version: '3.8'
+
+services:
+  # Main reVoAgent backend with memory
+  revoagent-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.memory
+      args:
+        - ENVIRONMENT=production
+        - ENABLE_MEMORY=true
+    image: revoagent/backend-memory:latest
+    container_name: revoagent-backend-memory
+    restart: unless-stopped
+    environment:
+      # Memory Configuration
+      - ENABLE_MEMORY=true
+      - COGNEE_LOCAL_MODELS=true
+      - COGNEE_VECTOR_DB=lancedb
+      - COGNEE_GRAPH_DB=networkx
+      - COGNEE_RELATIONAL_DB=postgres
+      
+      # Database Configuration
+      - DATABASE_URL=postgresql://revoagent:${DB_PASSWORD}@postgres:5432/revoagent_memory
+      - REDIS_URL=redis://redis:6379/0
+      
+      # Model Configuration
+      - LOCAL_MODELS_PATH=/app/data/models
+      - DEEPSEEK_MODEL_PATH=/app/data/models/deepseek-r1
+      - LLAMA_MODEL_PATH=/app/data/models/llama-3.1-70b
+      
+      # API Configuration
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - WORKERS=4
+      - LOG_LEVEL=info
+      
+      # Security
+      - JWT_SECRET=${JWT_SECRET}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      
+      # External Integrations
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - SLACK_TOKEN=${SLACK_TOKEN}
+      - JIRA_URL=${JIRA_URL}
+      - JIRA_TOKEN=${JIRA_TOKEN}
+      
+      # Monitoring
+      - PROMETHEUS_ENABLED=true
+      - GRAFANA_ENABLED=true
+      
+    volumes:
+      - ./data/models:/app/data/models:ro
+      - ./data/cognee_memory:/app/data/cognee_memory
+      - ./logs:/app/logs
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      cognee-service:
+        condition: service_started
+    networks:
+      - revoagent-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Cognee Memory Service
+  cognee-service:
+    build:
+      context: ./cognee-service
+      dockerfile: Dockerfile.local
+    image: revoagent/cognee-local:latest
+    container_name: cognee-memory-service
+    restart: unless-stopped
+    environment:
+      # LLM Configuration (use local models)
+      - LLM_PROVIDER=local
+      - LLM_ENDPOINT=http://revoagent-backend:8000/v1/chat/completions
+      - LLM_API_KEY=local-key
+      - LLM_MODEL=deepseek-r1-local
+      
+      # Embedding Configuration
+      - EMBEDDING_PROVIDER=local
+      - EMBEDDING_ENDPOINT=http://revoagent-backend:8000/v1/embeddings
+      - EMBEDDING_MODEL=local-embeddings
+      
+      # Database Configuration
+      - VECTOR_DB_PROVIDER=lancedb
+      - VECTOR_DB_PATH=/app/data/vectors
+      - GRAPH_DATABASE_PROVIDER=networkx
+      - GRAPH_DB_PATH=/app/data/graphs
+      - DB_PROVIDER=postgres
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=revoagent_memory
+      - DB_USER=revoagent
+      - DB_PASSWORD=${DB_PASSWORD}
+      
+      # Performance Configuration
+      - VECTOR_CACHE_SIZE=1000
+      - GRAPH_CACHE_SIZE=500
+      - BATCH_SIZE=32
+      - MAX_CONCURRENT_REQUESTS=8
+      
+    volumes:
+      - ./data/cognee_vectors:/app/data/vectors
+      - ./data/cognee_graphs:/app/data/graphs
+      - ./logs/cognee:/app/logs
+    ports:
+      - "8001:8001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - revoagent-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Enhanced Frontend with Memory UI
+  revoagent-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.memory
+      args:
+        - REACT_APP_API_BASE_URL=http://localhost:8000
+        - REACT_APP_WS_BASE_URL=ws://localhost:8000
+        - REACT_APP_MEMORY_ENABLED=true
+        - REACT_APP_COGNEE_ENDPOINT=http://localhost:8001
+    image: revoagent/frontend-memory:latest
+    container_name: revoagent-frontend-memory
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - revoagent-backend
+    networks:
+      - revoagent-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PostgreSQL Database with Memory Schema
+  postgres:
+    image: postgres:15-alpine
+    container_name: revoagent-postgres-memory
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=revoagent_memory
+      - POSTGRES_USER=revoagent
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init-memory-schema.sql:/docker-entrypoint-initdb.d/01-init-schema.sql
+      - ./database/seed-memory-data.sql:/docker-entrypoint-initdb.d/02-seed-data.sql
+      - ./database/postgresql.conf:/etc/postgresql/postgresql.conf
+    ports:
+      - "5432:5432"
+    networks:
+      - revoagent-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U revoagent -d revoagent_memory"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
+
+  # Redis for Caching and Sessions
+  redis:
+    image: redis:7-alpine
+    container_name: revoagent-redis-memory
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+    networks:
+      - revoagent-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    command: redis-server /usr/local/etc/redis/redis.conf
+
+  # Nginx Reverse Proxy with Load Balancing
+  nginx:
+    image: nginx:alpine
+    container_name: revoagent-nginx-proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./ssl:/etc/nginx/ssl
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - revoagent-backend
+      - revoagent-frontend
+    networks:
+      - revoagent-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Prometheus Monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: revoagent-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/rules:/etc/prometheus/rules
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - revoagent-network
+
+  # Grafana Dashboard
+  grafana:
+    image: grafana/grafana:latest
+    container_name: revoagent-grafana
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+    depends_on:
+      - prometheus
+    networks:
+      - revoagent-network
+
+  # Vector Database (LanceDB doesn't need separate service, but keeping for future)
+  # lancedb:
+  #   image: lancedb/lancedb:latest
+  #   container_name: revoagent-lancedb
+  #   restart: unless-stopped
+  #   volumes:
+  #     - ./data/lancedb:/app/data
+  #   networks:
+  #     - revoagent-network
+
+networks:
+  revoagent-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+---
+# .env.production - Environment variables for production
+DB_PASSWORD=your_secure_database_password_here
+JWT_SECRET=your_jwt_secret_key_here
+ENCRYPTION_KEY=your_encryption_key_here
+GRAFANA_PASSWORD=your_grafana_admin_password
+
+# External API Keys (replace with actual values)
+GITHUB_TOKEN=your_github_token_here
+SLACK_TOKEN=your_slack_bot_token_here
+JIRA_URL=https://your-domain.atlassian.net
+JIRA_TOKEN=your_jira_api_token_here
+
+# OpenAI Fallback (optional)
+OPENAI_API_KEY=your_openai_key_for_fallback
+ANTHROPIC_API_KEY=your_anthropic_key_for_fallback

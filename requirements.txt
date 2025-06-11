@@ -57,3 +57,29 @@ requests>=2.32.4
 # Rate limiting and caching
 slowapi>=0.1.9
 cachetools>=6.0.0
+
+# Memory and Knowledge Graph Integration
+cognee>=0.1.15
+lancedb>=0.13.0
+networkx>=3.4.2
+neo4j>=5.26.0
+psycopg2-binary>=2.9.10
+
+# Enhanced GitHub Integration
+PyGithub>=2.5.0
+gitpython>=3.1.43
+
+# Enhanced Slack Integration  
+slack-sdk>=3.33.4
+
+# Enhanced JIRA Integration
+jira>=3.8.0
+
+# Vector and Embedding Support
+numpy>=2.2.1
+scipy>=1.15.0
+scikit-learn>=1.6.1
+
+# Additional Memory Processing
+pandas>=2.2.3
+sqlalchemy>=2.0.36

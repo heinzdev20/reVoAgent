@@ -1,4 +1,4 @@
-"""reVoAgent Backend Application - Enterprise Ready"""
+"""reVoAgent Backend Application - Enterprise Ready with Memory Integration"""
 import sys
 import uuid
 from pathlib import Path
@@ -12,9 +12,16 @@ import json
 import random
 import time
 from datetime import datetime
+import logging
 
 # Add packages to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+# Import memory integration components
+from memory_api import (
+    get_memory_routers, initialize_memory_system, 
+    memory_manager, get_memory_manager
+)
 
 # Import real agent implementations
 from packages.agents.code_generator import CodeGeneratorAgent
@@ -311,9 +318,9 @@ class SecurityAgentWrapper:
             }
 
 app = FastAPI(
-    title="reVoAgent Enterprise API", 
+    title="reVoAgent Enterprise API with Memory", 
     version="2.0.0",
-    description="Enterprise-Ready AI Development Platform with MCP Integration"
+    description="Enterprise-Ready AI Development Platform with Cognee Memory Integration"
 )
 
 # CORS middleware
@@ -324,6 +331,47 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Initialize memory system on startup
+@app.on_event("startup")
+async def startup_event():
+    """Initialize memory system and other components"""
+    try:
+        logger.info("🚀 Starting reVoAgent with Memory Integration...")
+        
+        # Initialize memory system
+        memory_config = {
+            "memory_config": {
+                "enable_memory": True,
+                "vector_db_provider": "lancedb",
+                "graph_db_provider": "networkx",
+                "memory_data_path": "./data/cognee_memory"
+            }
+        }
+        
+        await initialize_memory_system(memory_config)
+        logger.info("✅ Memory system initialized successfully")
+        
+        # Include memory routers
+        for router in get_memory_routers():
+            app.include_router(router)
+        
+        logger.info("✅ Memory API endpoints registered")
+        
+    except Exception as e:
+        logger.error(f"❌ Startup failed: {e}")
+        # Continue without memory if initialization fails
+        logger.warning("⚠️ Continuing without memory capabilities")
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Cleanup on shutdown"""
+    logger.info("🛑 Shutting down reVoAgent...")
+    # Add any cleanup logic here
 
 # Global state for demo purposes
 system_state = {

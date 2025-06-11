@@ -1,0 +1,82 @@
+# Dockerfile.memory
+# Enhanced Dockerfile for reVoAgent with Cognee Memory Integration
+
+FROM python:3.11-slim
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    git \
+    libpq-dev \
+    gcc \
+    g++ \
+    cmake \
+    pkg-config \
+    libssl-dev \
+    libffi-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create app directory
+WORKDIR /app
+
+# Copy requirements first for better caching
+COPY requirements.txt .
+COPY requirements-ai.txt .
+COPY requirements-engines.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir --upgrade pip
+RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements-ai.txt
+RUN pip install --no-cache-dir -r requirements-engines.txt
+
+# Install additional memory-specific dependencies
+RUN pip install --no-cache-dir \
+    cognee>=0.1.15 \
+    lancedb>=0.13.0 \
+    networkx>=3.4.2 \
+    neo4j>=5.26.0 \
+    psycopg2-binary>=2.9.10 \
+    PyGithub>=2.5.0 \
+    gitpython>=3.1.43 \
+    slack-sdk>=3.33.4 \
+    jira>=3.8.0 \
+    numpy>=2.2.1 \
+    scipy>=1.15.0 \
+    scikit-learn>=1.6.1 \
+    pandas>=2.2.3 \
+    sqlalchemy>=2.0.36
+
+# Copy application code
+COPY . .
+
+# Create necessary directories
+RUN mkdir -p /app/data/cognee_memory/vectors
+RUN mkdir -p /app/data/cognee_memory/graphs
+RUN mkdir -p /app/data/models
+RUN mkdir -p /app/logs
+
+# Set permissions
+RUN chmod -R 755 /app
+RUN chmod +x /app/scripts/*.sh 2>/dev/null || true
+
+# Create non-root user
+RUN useradd --create-home --shell /bin/bash revoagent
+RUN chown -R revoagent:revoagent /app
+USER revoagent
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Expose port
+EXPOSE 8000
+
+# Default command
+CMD ["python", "-m", "uvicorn", "apps.backend.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
