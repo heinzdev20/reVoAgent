@@ -76,6 +76,7 @@ class GenerationRequest:
     max_tokens: int = 1000
     temperature: float = 0.7
     force_local: bool = True
+    force_cloud: bool = False
     fallback_allowed: bool = True
     cost_limit: Optional[float] = None  # Maximum cost in USD
 

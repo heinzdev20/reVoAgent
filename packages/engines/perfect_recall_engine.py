@@ -211,6 +211,39 @@ class PerfectRecallEngine(BaseEngine):
         
         return dot_product / (magnitude1 * magnitude2)
     
+    async def store_knowledge(self, content: str, metadata: Dict[str, Any]) -> str:
+        """Store knowledge with metadata (alias for store_memory)"""
+        return await self.store_memory(
+            content=content,
+            content_type=metadata.get("type", "knowledge"),
+            tags=metadata.get("tags", []),
+            context=metadata,
+            success_score=metadata.get("quality_score", 0.8)
+        )
+    
+    async def recall_knowledge(self, query: str, context: Dict[str, Any] = None) -> List[Dict[str, Any]]:
+        """Recall knowledge based on query (alias for recall_memories)"""
+        results = await self.recall_memories(
+            query=query,
+            content_type=context.get("type") if context else None,
+            limit=context.get("limit", 5) if context else 5
+        )
+        
+        # Convert MemoryEntry objects to dictionaries
+        return [
+            {
+                "id": result.id,
+                "content": result.content,
+                "content_type": result.content_type,
+                "tags": result.tags,
+                "context": result.context,
+                "success_score": result.success_score,
+                "timestamp": result.timestamp.isoformat(),
+                "similarity_score": getattr(result, 'similarity_score', 0.0)
+            }
+            for result in results
+        ]
+    
     async def store_memory(
         self,
         content: str,

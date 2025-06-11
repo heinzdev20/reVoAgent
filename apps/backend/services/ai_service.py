@@ -216,24 +216,24 @@ class ProductionAIService:
     
     async def _generate_local(self, request: GenerationRequest) -> GenerationResponse:
         """Generate response using local models"""
-        return await self.local_manager.generate_response(
-            prompt=request.prompt,
-            max_tokens=request.max_tokens,
-            temperature=request.temperature
-        )
+        return await self.local_manager.generate_response(request)
     
     async def _cloud_fallback(self, request: GenerationRequest) -> GenerationResponse:
         """Fallback to cloud models with cost tracking"""
         start_time = datetime.now()
         
         try:
-            # Use the enhanced model manager's cloud fallback
-            response = await self.local_manager.generate_response(
+            # Create a cloud-forced request
+            cloud_request = GenerationRequest(
                 prompt=request.prompt,
                 max_tokens=request.max_tokens,
                 temperature=request.temperature,
-                force_cloud=True  # Force cloud usage
+                force_cloud=True,
+                model_preference="gpt-4"  # Prefer cloud model
             )
+            
+            # Use the enhanced model manager's cloud fallback
+            response = await self.local_manager.generate_response(cloud_request)
             
             # Track costs
             self.cost_tracker["daily_cost"] += response.cost

@@ -468,11 +468,11 @@ class QualityGates:
         
         # Performance anti-patterns
         performance_issues = [
-            ('for.*in.*range.*len', 'Use enumerate() instead of range(len())'),
-            ('\.append.*for.*in', 'Consider list comprehension'),
-            ('time\.sleep\([^)]*[5-9]\d*', 'Long sleep detected'),
-            ('while True:.*time\.sleep\(0\)', 'Busy waiting detected'),
-            ('.*\+.*for.*in.*', 'String concatenation in loop')
+            (r'for.*in.*range.*len', 'Use enumerate() instead of range(len())'),
+            (r'\.append.*for.*in', 'Consider list comprehension'),
+            (r'time\.sleep\([^)]*[5-9]\d*', 'Long sleep detected'),
+            (r'while True:.*time\.sleep\(0\)', 'Busy waiting detected'),
+            (r'.*\+.*for.*in.*', 'String concatenation in loop')
         ]
         
         for pattern, message in performance_issues:
