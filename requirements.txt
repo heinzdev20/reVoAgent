@@ -59,7 +59,7 @@ slowapi>=0.1.9
 cachetools>=6.0.0
 
 # Memory and Knowledge Graph Integration
-cognee>=0.1.15
+# cognee>=0.1.15  # Installed separately due to dependency conflicts
 lancedb>=0.13.0
 networkx>=3.4.2
 neo4j>=5.26.0

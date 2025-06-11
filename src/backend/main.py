@@ -20,7 +20,7 @@ from pydantic import BaseModel, Field
 import uvicorn
 
 # Phase 4 Imports
-from packages.core.framework import ThreeEngineArchitecture
+from revoagent.core.framework import ThreeEngineArchitecture
 from src.revoagent.specialized_agents import (
     WorkflowIntelligence, AgentDashboard, CodeAnalysisAgent, 
     DebugDetectiveAgent, ArchitectureAdvisorAgent, PerformanceOptimizerAgent,
@@ -32,7 +32,7 @@ from src.revoagent.specialized_agents.integration_framework import IntegrationFr
 # Pydantic Models
 class EngineStatus(BaseModel):
     type: str
-    status: str = Field(..., regex="^(healthy|warning|error)$")
+    status: str = Field(..., pattern="^(healthy|warning|error)$")
     is_active: bool
     performance: float = Field(..., ge=0, le=1)
     last_activity: datetime
@@ -49,7 +49,7 @@ class SystemMetrics(BaseModel):
 
 class Alert(BaseModel):
     id: str
-    level: str = Field(..., regex="^(info|warning|error)$")
+    level: str = Field(..., pattern="^(info|warning|error)$")
     message: str
     timestamp: datetime
 
@@ -189,8 +189,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Static files
-app.mount("/static", StaticFiles(directory="frontend/dist"), name="static")
+# Static files (conditional mounting)
+import os
+if os.path.exists("frontend/dist"):
+    app.mount("/static", StaticFiles(directory="frontend/dist"), name="static")
 
 
 # Background tasks
@@ -506,6 +508,11 @@ async def get_integrations_status():
     
     status = await app_state.integration_framework.get_integration_status()
     return {"integrations": status}
+
+
+async def create_app():
+    """Create and return the FastAPI app instance"""
+    return app
 
 
 # Development server
