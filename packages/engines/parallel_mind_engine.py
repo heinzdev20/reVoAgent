@@ -178,8 +178,8 @@ class ParallelMindEngine(BaseEngine):
                 task_type=TaskType.CODE_ANALYSIS,  # Default type
                 description=task_dict.get("description", ""),
                 priority=TaskPriority.NORMAL,
-                dependencies=[],
-                metadata=task_dict
+                input_data=task_dict,
+                dependencies=[]
             )
             task_objects.append(task)
         

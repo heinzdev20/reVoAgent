@@ -223,9 +223,13 @@ class PerfectRecallEngine(BaseEngine):
     
     async def recall_knowledge(self, query: str, context: Dict[str, Any] = None) -> List[Dict[str, Any]]:
         """Recall knowledge based on query (alias for recall_memories)"""
+        content_types = None
+        if context and context.get("type"):
+            content_types = [context.get("type")]
+            
         results = await self.recall_memories(
             query=query,
-            content_type=context.get("type") if context else None,
+            content_types=content_types,
             limit=context.get("limit", 5) if context else 5
         )
         
