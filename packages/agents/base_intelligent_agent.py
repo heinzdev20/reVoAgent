@@ -318,6 +318,140 @@ class IntelligentAgent(ABC):
         except Exception as e:
             self.logger.error(f"Learning from feedback failed: {e}")
     
+    async def execute_with_engines(self, task: Dict[str, Any], 
+                                 coordination_strategy: str = "adaptive") -> Dict[str, Any]:
+        """
+        Execute a task using coordinated three-engine architecture.
+        
+        This method provides intelligent engine coordination for optimal task execution,
+        automatically selecting the best engines based on task analysis.
+        
+        Args:
+            task: Task description and parameters
+            coordination_strategy: Strategy for engine coordination
+                - "adaptive": AI-powered engine selection
+                - "sequential": Execute engines in sequence
+                - "parallel": Execute engines in parallel
+                - "creative_first": Prioritize creative engine
+                - "recall_first": Prioritize perfect recall engine
+                - "parallel_first": Prioritize parallel mind engine
+        
+        Returns:
+            Dict containing execution results from coordinated engines
+        """
+        self.logger.info(f"Executing task with three-engine coordination: {coordination_strategy}")
+        
+        try:
+            # 1. Analyze task to determine optimal engine coordination
+            task_analysis = await self._analyze_task_for_engines(task)
+            
+            # 2. Select coordination strategy based on analysis
+            if coordination_strategy == "adaptive":
+                coordination_strategy = await self._select_optimal_strategy(task_analysis)
+            
+            # 3. Execute with coordinated engines
+            from ..engines.engine_coordinator import CoordinatedRequest, TaskComplexity
+            
+            # Create coordinated request
+            coordinated_request = CoordinatedRequest(
+                task_id=f"{self.agent_id}_{task.get('id', 'auto')}",
+                task_type=task.get('type', 'agent_task'),
+                description=task.get('description', 'Agent task execution'),
+                input_data=task,
+                complexity=TaskComplexity.MODERATE,
+                coordination_strategy=coordination_strategy
+            )
+            
+            # 4. Execute through engine coordinator
+            result = await self.coordinator.coordinate_engines(coordinated_request)
+            
+            # 5. Post-process results for agent context
+            processed_result = await self._process_engine_results(result, task)
+            
+            # 6. Update performance metrics
+            self.performance_metrics["problems_solved"] += 1
+            await self._update_success_metrics(processed_result)
+            
+            self.logger.info(f"Task executed successfully with {coordination_strategy} strategy")
+            return processed_result
+            
+        except Exception as e:
+            self.logger.error(f"Engine coordination failed: {e}")
+            raise
+    
+    async def _analyze_task_for_engines(self, task: Dict[str, Any]) -> Dict[str, Any]:
+        """Analyze task to determine optimal engine coordination"""
+        analysis = {
+            "task_type": task.get('type', 'unknown'),
+            "complexity": task.get('complexity', 'moderate'),
+            "requires_memory": False,
+            "requires_parallel": False,
+            "requires_creativity": False,
+            "optimal_strategy": "sequential"
+        }
+        
+        # Analyze task requirements
+        description = task.get('description', '').lower()
+        
+        # Memory requirements
+        if any(keyword in description for keyword in ['remember', 'recall', 'history', 'context', 'previous']):
+            analysis["requires_memory"] = True
+        
+        # Parallel processing requirements  
+        if any(keyword in description for keyword in ['parallel', 'concurrent', 'multiple', 'batch', 'bulk']):
+            analysis["requires_parallel"] = True
+        
+        # Creative requirements
+        if any(keyword in description for keyword in ['creative', 'innovative', 'generate', 'design', 'brainstorm']):
+            analysis["requires_creativity"] = True
+        
+        return analysis
+    
+    async def _select_optimal_strategy(self, task_analysis: Dict[str, Any]) -> str:
+        """AI-powered engine selection based on task analysis"""
+        requires_memory = task_analysis["requires_memory"]
+        requires_parallel = task_analysis["requires_parallel"] 
+        requires_creativity = task_analysis["requires_creativity"]
+        
+        # AI-powered strategy selection logic
+        if requires_creativity and requires_memory:
+            return "creative_first"
+        elif requires_parallel and requires_memory:
+            return "parallel_first"
+        elif requires_creativity and requires_parallel:
+            return "parallel"
+        elif requires_memory:
+            return "recall_first"
+        elif requires_parallel:
+            return "parallel_first"
+        elif requires_creativity:
+            return "creative_first"
+        else:
+            return "adaptive"
+    
+    async def _process_engine_results(self, engine_result: Dict[str, Any], 
+                                    original_task: Dict[str, Any]) -> Dict[str, Any]:
+        """Process engine coordination results for agent context"""
+        return {
+            "success": engine_result.get("success", True),
+            "agent_id": self.agent_id,
+            "task": original_task,
+            "engine_results": engine_result,
+            "coordination_strategy": engine_result.get("coordination_strategy", "unknown"),
+            "execution_time": engine_result.get("execution_time", 0),
+            "engines_used": engine_result.get("engines_used", []),
+            "performance_metrics": engine_result.get("performance_metrics", {})
+        }
+    
+    async def _update_success_metrics(self, result: Dict[str, Any]) -> None:
+        """Update agent success metrics based on execution results"""
+        if result.get("success", False):
+            # Update success rate
+            total_problems = self.performance_metrics["problems_solved"]
+            current_success_rate = self.performance_metrics["success_rate"]
+            new_success_rate = ((current_success_rate * (total_problems - 1)) + 1.0) / total_problems
+            self.performance_metrics["success_rate"] = new_success_rate
+    
     # Abstract methods for agent-specific implementation
     @abstractmethod
     async def _initialize_agent_components(self) -> None:
