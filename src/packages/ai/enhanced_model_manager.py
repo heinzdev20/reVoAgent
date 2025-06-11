@@ -119,6 +119,9 @@ class EnhancedModelManager:
             "model_usage": {}
         }
         
+        # Performance metrics alias for compatibility
+        self.performance_metrics = self.metrics
+        
         # Health monitoring
         self.health_check_interval = 300  # 5 minutes
         self.health_check_task = None
