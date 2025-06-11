@@ -1,0 +1,78 @@
+{
+  "timestamp": "2025-06-11T16:40:39.912200",
+  "summary": {
+    "total_tests": 4,
+    "total_requests": 2700,
+    "overall_success_rate": 100.0
+  },
+  "results": [
+    {
+      "test_name": "secret_manager_performance",
+      "duration": 0.0021550655364990234,
+      "total_requests": 1000,
+      "successful_requests": 1000,
+      "failed_requests": 0,
+      "avg_response_time": 1.8153190612792968e-06,
+      "min_response_time": 1.430511474609375e-06,
+      "max_response_time": 3.647804260253906e-05,
+      "requests_per_second": 464023.0113950658,
+      "memory_usage": {
+        "start_mb": 40.46875,
+        "end_mb": 40.46875,
+        "delta_mb": 0.0
+      },
+      "cpu_usage": 0.0
+    },
+    {
+      "test_name": "rate_limiter_performance",
+      "duration": 0.007777690887451172,
+      "total_requests": 1000,
+      "successful_requests": 1000,
+      "failed_requests": 0,
+      "avg_response_time": 7.561206817626953e-06,
+      "min_response_time": 6.4373016357421875e-06,
+      "max_response_time": 8.296966552734375e-05,
+      "requests_per_second": 128572.86493777206,
+      "memory_usage": {
+        "start_mb": 40.46875,
+        "end_mb": 40.7265625,
+        "delta_mb": 0.2578125
+      },
+      "cpu_usage": 0.0
+    },
+    {
+      "test_name": "circuit_breaker_performance",
+      "duration": 0.5519769191741943,
+      "total_requests": 500,
+      "successful_requests": 500,
+      "failed_requests": 0,
+      "avg_response_time": 0.00110355281829834,
+      "min_response_time": 0.0010504722595214844,
+      "max_response_time": 0.0011966228485107422,
+      "requests_per_second": 905.8349772089088,
+      "memory_usage": {
+        "start_mb": 40.7265625,
+        "end_mb": 40.7265625,
+        "delta_mb": 0.0
+      },
+      "cpu_usage": 0.0
+    },
+    {
+      "test_name": "combined_services_performance",
+      "duration": 0.4779191017150879,
+      "total_requests": 200,
+      "successful_requests": 200,
+      "failed_requests": 0,
+      "avg_response_time": 0.002388724088668823,
+      "min_response_time": 0.002137422561645508,
+      "max_response_time": 0.002544403076171875,
+      "requests_per_second": 418.4808669129745,
+      "memory_usage": {
+        "start_mb": 40.7265625,
+        "end_mb": 40.7265625,
+        "delta_mb": 0.0
+      },
+      "cpu_usage": 0.0
+    }
+  ]
+}

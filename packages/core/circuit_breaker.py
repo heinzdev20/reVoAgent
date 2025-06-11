@@ -91,7 +91,7 @@ class CircuitBreaker:
         self._lock = asyncio.Lock()
         
         logger.info("Circuit breaker initialized", extra={
-            'name': config.name,
+            'circuit_name': config.name,
             'failure_threshold': config.failure_threshold,
             'recovery_timeout': config.recovery_timeout
         })
