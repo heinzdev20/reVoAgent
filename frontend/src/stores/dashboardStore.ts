@@ -90,7 +90,7 @@ const initialState: DashboardState = {
   performanceHistory: [],
 };
 
-let refreshInterval: NodeJS.Timeout | null = null;
+let refreshInterval: number | null = null;
 
 export const useDashboardStore = create<DashboardState & DashboardActions>()(
   subscribeWithSelector((set, get) => ({

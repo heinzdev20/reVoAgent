@@ -12,16 +12,22 @@ Tests all major components before Phase 5:
 """
 
 import asyncio
+import pytest
 import sys
+import pytest
 import subprocess
+import pytest
 import time
+import pytest
 import requests
+import pytest
 import json
+import pytest
 from pathlib import Path
 from typing import Dict, Any, List
 
 # Add packages to path
-sys.path.insert(0, str(Path(__file__).parent / "packages"))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 class SystemIntegrationTester:
     """Comprehensive system integration tester"""
@@ -171,8 +177,8 @@ class SystemIntegrationTester:
             # Test AI package
             print("   🤖 Testing AI package...")
             try:
-                from ai.model_loader import ModelLoader
-                from ai.deepseek_integration import DeepSeekIntegration
+                from packages.ai.model_loader import ModelLoader
+                from packages.ai.deepseek_integration import DeepSeekIntegration
                 import_results["ai"] = "success"
             except Exception as e:
                 import_results["ai"] = f"error: {e}"

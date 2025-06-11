@@ -79,7 +79,7 @@ export const ReVoChatDashboard: React.FC<ReVoChatDashboardProps> = ({ className 
       ]);
       
       setDashboardStats(stats);
-      setRecentActivity(activities);
+      setRecentActivity(activities.activities);
       setLastUpdate(new Date());
       setError(null);
     } catch (err) {
@@ -226,7 +226,7 @@ export const ReVoChatDashboard: React.FC<ReVoChatDashboardProps> = ({ className 
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-400">Active Agents</p>
-                <p className="text-2xl font-bold text-white">{dashboardStats.activeAgents}</p>
+                <p className="text-2xl font-bold text-white">{dashboardStats.agents?.total_active || 0}</p>
               </div>
               <Users className="h-8 w-8 text-blue-400" />
             </div>
@@ -238,7 +238,7 @@ export const ReVoChatDashboard: React.FC<ReVoChatDashboardProps> = ({ className 
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-400">Tasks Completed</p>
-                <p className="text-2xl font-bold text-white">{dashboardStats.tasksCompleted}</p>
+                <p className="text-2xl font-bold text-white">{dashboardStats.agents?.total_completed || 0}</p>
               </div>
               <CheckCircle className="h-8 w-8 text-green-400" />
             </div>
@@ -250,7 +250,7 @@ export const ReVoChatDashboard: React.FC<ReVoChatDashboardProps> = ({ className 
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-400">System Load</p>
-                <p className="text-2xl font-bold text-white">{dashboardStats.systemLoad}%</p>
+                <p className="text-2xl font-bold text-white">{dashboardStats.performance?.cpu_usage || '0%'}</p>
               </div>
               <Cpu className="h-8 w-8 text-yellow-400" />
             </div>
@@ -262,7 +262,7 @@ export const ReVoChatDashboard: React.FC<ReVoChatDashboardProps> = ({ className 
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-400">Memory Usage</p>
-                <p className="text-2xl font-bold text-white">{dashboardStats.memoryUsage}%</p>
+                <p className="text-2xl font-bold text-white">{dashboardStats.performance?.memory_usage || '0%'}</p>
               </div>
               <MemoryStick className="h-8 w-8 text-purple-400" />
             </div>
@@ -295,11 +295,11 @@ export const ReVoChatDashboard: React.FC<ReVoChatDashboardProps> = ({ className 
                     'bg-blue-400'
                   }`} />
                   <div className="flex-1">
-                    <p className="text-white text-sm">{activity.message}</p>
+                    <p className="text-white text-sm">{activity.title}</p>
                     <p className="text-gray-400 text-xs">{activity.timestamp}</p>
                   </div>
-                  <Badge variant={activity.type === 'success' ? 'default' : 'destructive'}>
-                    {activity.agent}
+                  <Badge variant={activity.type === 'success' ? 'success' : 'error'}>
+                    {activity.agent_type || activity.type}
                   </Badge>
                 </div>
               ))

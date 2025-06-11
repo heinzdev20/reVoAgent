@@ -1,28 +1,34 @@
 import React from 'react';
 
-interface ButtonProps {
+export interface ButtonProps {
   children: React.ReactNode;
   onClick?: () => void;
-  disabled?: boolean;
-  variant?: 'default' | 'outline' | 'destructive';
-  size?: 'sm' | 'md' | 'lg';
   className?: string;
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'default';
+  size?: 'sm' | 'md' | 'lg';
+  disabled?: boolean;
+  type?: 'button' | 'submit' | 'reset';
+  title?: string;
 }
 
-export const Button: React.FC<ButtonProps> = ({ 
-  children, 
-  onClick, 
-  disabled = false, 
-  variant = 'default',
+export const Button: React.FC<ButtonProps> = ({
+  children,
+  onClick,
+  className = '',
+  variant = 'primary',
   size = 'md',
-  className = '' 
+  disabled = false,
+  type = 'button',
+  title
 }) => {
   const baseClasses = 'inline-flex items-center justify-center rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2';
   
   const variantClasses = {
-    default: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500',
+    primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500',
+    secondary: 'bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500',
     outline: 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:ring-blue-500',
-    destructive: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500'
+    ghost: 'text-gray-700 hover:bg-gray-100 focus:ring-gray-500',
+    default: 'bg-gray-100 text-gray-900 hover:bg-gray-200 focus:ring-gray-500'
   };
   
   const sizeClasses = {
@@ -35,8 +41,10 @@ export const Button: React.FC<ButtonProps> = ({
   
   return (
     <button
+      type={type}
       onClick={onClick}
       disabled={disabled}
+      title={title}
       className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${disabledClasses} ${className}`}
     >
       {children}

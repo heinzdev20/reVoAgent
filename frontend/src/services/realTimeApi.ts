@@ -402,12 +402,4 @@ class RealTimeAPIService {
 export const realTimeAPI = new RealTimeAPIService();
 
 // Export types
-export type {
-  AgentExecutionRequest,
-  AgentExecutionResponse,
-  TaskStatus,
-  AITestRequest,
-  AITestResponse,
-  DashboardStats,
-  Activity
-};
+
