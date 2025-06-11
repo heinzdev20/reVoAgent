@@ -396,16 +396,64 @@ Choose the most appropriate tool(s) for the user's request. If no tool is needed
     
     async def _call_llm_with_functions(self, messages: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Call LLM with function calling capability."""
-        # This would integrate with your specific LLM client
-        # For now, return a mock response
-        return {
-            "choices": [{
-                "message": {
-                    "content": "I understand your request. Let me help you with that.",
-                    "tool_calls": None
-                }
-            }]
-        }
+        if not self.llm_client:
+            # Fallback response when no LLM client is available
+            return {
+                "choices": [{
+                    "message": {
+                        "content": "I understand your request, but I need an LLM client to provide intelligent responses.",
+                        "tool_calls": None
+                    }
+                }]
+            }
+        
+        try:
+            # Call the LLM with function calling
+            response = await self.llm_client.chat_completion(
+                messages=messages,
+                tools=self.tools_schema
+            )
+            
+            # Convert our LLMResponse to OpenAI-compatible format
+            tool_calls = None
+            if response.function_calls:
+                tool_calls = [
+                    {
+                        "function": {
+                            "name": call["name"],
+                            "arguments": json.dumps(call["arguments"])
+                        }
+                    }
+                    for call in response.function_calls
+                ]
+            
+            return {
+                "choices": [{
+                    "message": {
+                        "content": response.content,
+                        "tool_calls": tool_calls
+                    }
+                }],
+                "usage": {
+                    "total_tokens": response.tokens_used
+                },
+                "model": response.model,
+                "provider": response.provider.value,
+                "cost": response.cost,
+                "response_time": response.response_time
+            }
+            
+        except Exception as e:
+            logger.error(f"LLM call failed: {e}")
+            # Return error response
+            return {
+                "choices": [{
+                    "message": {
+                        "content": f"I encountered an error while processing your request: {str(e)}",
+                        "tool_calls": None
+                    }
+                }]
+            }
     
     async def _process_llm_response(self, response: Dict[str, Any], session_id: str):
         """Process LLM response and execute function calls if needed."""

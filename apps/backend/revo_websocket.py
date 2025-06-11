@@ -95,18 +95,23 @@ class ConnectionManager:
     async def _initialize_orchestrator(self, session_id: str, user_id: str):
         """Initialize ReVo Orchestrator for a session."""
         try:
+            # Initialize LLM client with multi-provider fallback
+            from ai.llm_config import create_llm_client_from_env
+            llm_client = create_llm_client_from_env()
+            
             # Initialize engines (these would be actual instances in production)
             perfect_recall_engine = None  # PerfectRecallEngine()
             creative_engine = None  # CreativeEngine()
             parallel_mind_engine = None  # ParallelMindEngine()
             workflow_engine = None  # WorkflowEngine()
             
-            # Create orchestrator
+            # Create orchestrator with real LLM client
             orchestrator = ReVoOrchestrator(
                 workflow_engine=workflow_engine,
                 perfect_recall_engine=perfect_recall_engine,
                 creative_engine=creative_engine,
-                parallel_mind_engine=parallel_mind_engine
+                parallel_mind_engine=parallel_mind_engine,
+                llm_client=llm_client
             )
             
             # Set WebSocket callback
