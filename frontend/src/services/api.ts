@@ -8,8 +8,9 @@ import type {
   AgentInfo 
 } from '@/types';
 
-// Use relative URL since we have proxy configured in vite.config.ts
-const API_BASE = '/api';
+// Connect to real backend running on port 12001
+const API_BASE = 'http://localhost:12001/api';
+const WS_BASE = 'ws://localhost:12001';
 
 // Agent types mapping
 export const AGENT_TYPES = {

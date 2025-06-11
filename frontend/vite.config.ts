@@ -14,7 +14,7 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 12000,
     cors: true,
-    allowedHosts: ['work-1-ryzjrsnspmrzyhpo.prod-runtime.all-hands.dev', 'work-2-ryzjrsnspmrzyhpo.prod-runtime.all-hands.dev', 'localhost', '127.0.0.1'],
+    allowedHosts: ['work-1-fmrkddnqeqzanber.prod-runtime.all-hands.dev', 'work-2-fmrkddnqeqzanber.prod-runtime.all-hands.dev', 'localhost', '127.0.0.1'],
     proxy: {
       '/api': {
         target: 'http://localhost:12001',

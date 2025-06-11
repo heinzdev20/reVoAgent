@@ -36,6 +36,14 @@ import { MCPMarketplace } from './components/mcp/MCPMarketplace';
 import { EnterpriseConsole } from './components/enterprise/EnterpriseConsole';
 import { ConfigurationManager } from './components/config/ConfigurationManager';
 
+// Glassmorphism theme
+import { GlassThemeProvider } from './contexts/GlassThemeContext';
+import { GlassParticleBackground, GlassFloatingShapes } from './components/GlassParticleBackground';
+import { GlassThemeSettings } from './components/GlassThemeSettings';
+
+// Mock API for demo
+import './services/mockApi';
+
 import { useWebSocket } from './hooks/useWebSocket';
 import { webSocketService } from './services/websocketService';
 import { useAuthStore } from './stores/authStore';
@@ -62,6 +70,7 @@ import {
 // Main Dashboard Component
 const MainDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabId>('dashboard');
+  const [showThemeSettings, setShowThemeSettings] = useState(false);
   
   // Initialize WebSocket connection
   useWebSocket();
@@ -158,14 +167,26 @@ const MainDashboard: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      <div className="flex h-screen">
-        <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
-        <main className="flex-1 overflow-y-auto">
-          {renderContent()}
-        </main>
+    <div className="min-h-screen relative">
+      {/* Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500" />
+      
+      {/* Main Content */}
+      <div className="relative z-10">
+        <Header />
+        <div className="flex h-screen">
+          <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
+          <main className="flex-1 overflow-y-auto">
+            {renderContent()}
+          </main>
+        </div>
       </div>
+
+      {/* Theme Settings Modal */}
+      <GlassThemeSettings 
+        isOpen={showThemeSettings} 
+        onClose={() => setShowThemeSettings(false)} 
+      />
     </div>
   );
 };
@@ -174,49 +195,51 @@ function App() {
   const { isAuthenticated } = useAuthStore();
 
   return (
-    <Router>
-      <Routes>
-        {/* Public routes */}
-        <Route 
-          path="/login" 
-          element={
-            isAuthenticated ? <Navigate to="/dashboard" replace /> : <LoginForm />
-          } 
-        />
-        <Route 
-          path="/register" 
-          element={
-            isAuthenticated ? <Navigate to="/dashboard" replace /> : <RegisterForm />
-          } 
-        />
-        
-        {/* Protected routes */}
-        <Route 
-          path="/dashboard/*" 
-          element={
-            <ProtectedRoute>
-              <MainDashboard />
-            </ProtectedRoute>
-          } 
-        />
-        
-        {/* Default redirect */}
-        <Route 
-          path="/" 
-          element={
-            <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />
-          } 
-        />
-        
-        {/* Catch all route */}
-        <Route 
-          path="*" 
-          element={
-            <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />
-          } 
-        />
-      </Routes>
-    </Router>
+    <GlassThemeProvider>
+      <Router>
+        <Routes>
+          {/* Public routes */}
+          <Route 
+            path="/login" 
+            element={
+              isAuthenticated ? <Navigate to="/dashboard" replace /> : <LoginForm />
+            } 
+          />
+          <Route 
+            path="/register" 
+            element={
+              isAuthenticated ? <Navigate to="/dashboard" replace /> : <RegisterForm />
+            } 
+          />
+          
+          {/* Protected routes */}
+          <Route 
+            path="/dashboard/*" 
+            element={
+              <ProtectedRoute>
+                <MainDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          
+          {/* Default redirect */}
+          <Route 
+            path="/" 
+            element={
+              <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />
+            } 
+          />
+          
+          {/* Catch all route */}
+          <Route 
+            path="*" 
+            element={
+              <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />
+            } 
+          />
+        </Routes>
+      </Router>
+    </GlassThemeProvider>
   );
 }
 

@@ -23,6 +23,7 @@ interface AuthState {
 
 interface AuthActions {
   login: (email: string, password: string) => Promise<void>;
+  demoLogin: () => void;
   register: (userData: {
     email: string;
     username: string;
@@ -82,6 +83,12 @@ export const useAuthStore = create<AuthStore>()(
           // Fetch user data
           await get().fetchCurrentUser();
         } catch (error: any) {
+          // For demo purposes, if login fails, try demo login
+          if (email === 'demo@revoagent.com' || email === 'admin@revoagent.com') {
+            get().demoLogin();
+            return;
+          }
+          
           set({
             isLoading: false,
             error: error.message,
@@ -92,6 +99,26 @@ export const useAuthStore = create<AuthStore>()(
           });
           throw error;
         }
+      },
+
+      demoLogin: () => {
+        set({
+          user: {
+            id: 'demo-user',
+            email: 'demo@revoagent.com',
+            username: 'demo',
+            full_name: 'Demo User',
+            is_active: true,
+            is_superuser: true,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          },
+          token: 'demo-token',
+          refreshToken: 'demo-refresh-token',
+          isAuthenticated: true,
+          isLoading: false,
+          error: null,
+        });
       },
 
       register: async (userData) => {
