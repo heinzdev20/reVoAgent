@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 
 // Enhanced Main Dashboard
 import { EnhancedMainDashboard } from './components/EnhancedMainDashboard';
+import ReVoAgentMainDashboard from './components/ReVoAgentMainDashboard';
 
 // Core Components
 import { Header } from './components/Header';
@@ -214,7 +215,7 @@ const UnifiedApp: React.FC = () => {
 
   // Enhanced navigation items with ReVo Chat and specialized agents
   const navigationItems = [
-    { id: 'dashboard' as TabId, label: 'Dashboard', icon: BarChart3, component: EnhancedDashboard },
+    { id: 'dashboard' as TabId, label: 'Dashboard', icon: BarChart3, component: ReVoAgentMainDashboard },
     { id: 'revo-chat' as TabId, label: 'ReVo Chat AI', icon: MessageSquare, component: ReVoChatDashboard },
     { id: 'three-engines' as TabId, label: 'Three Engines', icon: Cpu, component: ThreeEngineDashboard },
     { id: 'multi-agent-chat' as TabId, label: 'Multi-Agent Chat', icon: Users, component: MultiAgentChat },
@@ -321,10 +322,11 @@ const UnifiedApp: React.FC = () => {
                     <Routes>
                       {/* Enhanced Main Dashboard */}
                       <Route path="/enhanced" element={<EnhancedMainDashboard />} />
+                      <Route path="/three-engine-dashboard" element={<ReVoAgentMainDashboard />} />
                       
                       {/* Main Dashboard Routes */}
                       <Route path="/" element={renderActiveComponent()} />
-                      <Route path="/dashboard" element={<EnhancedDashboard />} />
+                      <Route path="/dashboard" element={<ReVoAgentMainDashboard />} />
                       <Route path="/revo-chat" element={<ReVoChatDashboard />} />
                       <Route path="/three-engines" element={<ThreeEngineDashboard />} />
                       <Route path="/multi-agent-chat" element={<MultiAgentChat />} />
