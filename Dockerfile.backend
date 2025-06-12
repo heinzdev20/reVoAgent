@@ -1,12 +1,10 @@
-# Modern FastAPI Backend Dockerfile
+# Multi-stage Dockerfile for reVoAgent Backend
 FROM python:3.11-slim as base
 
 # Set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PYTHONPATH=/app \
-    PIP_NO_CACHE_DIR=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONPATH=/app/src
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -18,36 +16,57 @@ RUN apt-get update && apt-get install -y \
 # Create app directory
 WORKDIR /app
 
-# Install Python dependencies
-COPY requirements.txt .
+# Copy requirements first for better caching
+COPY requirements*.txt ./
+COPY pyproject.toml ./
+
+# Development stage
+FROM base as development
+
+# Install development dependencies
 RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements-working.txt || true
 
-# Install additional AI/ML dependencies
-RUN pip install --no-cache-dir \
-    torch \
-    transformers \
-    accelerate \
-    bitsandbytes \
-    sentence-transformers \
-    faiss-cpu \
-    redis \
-    psycopg2-binary \
-    prometheus-client
-
-# Copy application code
+# Copy source code
 COPY src/ ./src/
 COPY config/ ./config/
-COPY backend_modern.py .
+COPY scripts/ ./scripts/
 
 # Create necessary directories
-RUN mkdir -p /app/data /app/models /app/logs /app/temp
+RUN mkdir -p data logs temp models
 
-# Expose ports
-EXPOSE 8000
+# Expose port
+EXPOSE 12001
+
+# Development command
+CMD ["python", "src/backend/main.py"]
+
+# Production stage
+FROM base as production
+
+# Install only production dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy source code
+COPY src/ ./src/
+COPY config/ ./config/
+
+# Create necessary directories with proper permissions
+RUN mkdir -p data logs temp models && \
+    chmod 755 data logs temp models
+
+# Create non-root user
+RUN useradd -m -u 1000 revoagent && \
+    chown -R revoagent:revoagent /app
+
+USER revoagent
+
+# Expose port
+EXPOSE 12001
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
+    CMD python -c "import requests; requests.get('http://localhost:12001/health')"
 
-# Run the application
-CMD ["python", "backend_modern.py"]
+# Production command
+CMD ["python", "src/backend/main.py"]

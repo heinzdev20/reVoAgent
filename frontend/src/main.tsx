@@ -1,21 +1,17 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { EnterpriseApp } from './EnterpriseApp.tsx'
-import { enterpriseWebSocket } from './services/enterpriseWebSocket'
+import UnifiedApp from './UnifiedApp.tsx'
 import './index.css'
 
-// Initialize enterprise WebSocket connection for real-time updates
-enterpriseWebSocket.connect().catch(error => {
-  console.error('Failed to connect to Enterprise WebSocket:', error);
-});
+// Initialize unified WebSocket connection
+import { unifiedWebSocketService } from './services/unifiedWebSocketService'
 
-// Production Enterprise Application
-const ProductionApp = () => {
-  return <EnterpriseApp />;
-};
+unifiedWebSocketService.connect().catch(error => {
+  console.error('Failed to connect to WebSocket:', error);
+});
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <ProductionApp />
+    <UnifiedApp />
   </React.StrictMode>,
 )

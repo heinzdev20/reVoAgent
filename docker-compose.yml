@@ -1,15 +1,15 @@
 version: '3.8'
 
 services:
-  # Main reVoAgent application
-  revoagent:
+  # Backend service
+  backend:
     build:
       context: .
+      dockerfile: Dockerfile.backend
       target: production
-    container_name: revoagent-app
+    container_name: revoagent-backend
     ports:
-      - "8000:8000"
-      - "8001:8001"
+      - "12001:12001"
     volumes:
       - ./data:/app/data
       - ./models:/app/models
@@ -19,17 +19,42 @@ services:
     environment:
       - REVOAGENT_CONFIG=/app/config/config.yaml
       - PYTHONPATH=/app/src
+      - REVOAGENT_MODE=production
     networks:
       - revoagent-network
     restart: unless-stopped
     depends_on:
       - redis
     healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health')"]
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:12001/health')"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
+
+  # Frontend service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: production
+    container_name: revoagent-frontend
+    ports:
+      - "12000:12000"
+    environment:
+      - VITE_API_URL=http://backend:12001
+      - VITE_WS_URL=ws://backend:12001
+      - VITE_APP_MODE=production
+    networks:
+      - revoagent-network
+    restart: unless-stopped
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:12000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   # Redis for caching and message queuing
   redis:
