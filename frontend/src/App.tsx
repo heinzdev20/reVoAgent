@@ -1,6 +1,9 @@
 import React, { useState, useEffect, Suspense, ErrorBoundary } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
+// Enhanced Main Dashboard
+import { EnhancedMainDashboard } from './components/EnhancedMainDashboard';
+
 // Core Components
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
@@ -316,6 +319,9 @@ const UnifiedApp: React.FC = () => {
                 <main className="flex-1 overflow-auto p-6">
                   <Suspense fallback={<LoadingSpinner />}>
                     <Routes>
+                      {/* Enhanced Main Dashboard */}
+                      <Route path="/enhanced" element={<EnhancedMainDashboard />} />
+                      
                       {/* Main Dashboard Routes */}
                       <Route path="/" element={renderActiveComponent()} />
                       <Route path="/dashboard" element={<EnhancedDashboard />} />
