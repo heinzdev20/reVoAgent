@@ -1,12 +1,8 @@
 export interface DashboardStats {
-  tasksCompleted: number;
-  successRate: number;
-  activeAgents: number;
-  responseTime: number;
-  modelsLoaded: number;
-  uptime: string;
-  apiCost: number;
-  memoryUsage: string;
+  agents: { active: number; total: number };
+  workflows: { active: number; total: number };
+  projects: { active: number; total: number };
+  system: { cpu_usage: number; memory_usage: number; disk_usage: number };
 }
 
 export interface WorkflowData {

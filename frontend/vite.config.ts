@@ -4,32 +4,32 @@ import path from 'path'
 
 export default defineConfig({
   plugins: [react()],
-  server: {
-    host: '0.0.0.0',
-    port: 12000,
-    strictPort: true,
-    cors: true,
-    allowedHosts: true,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:12001',
-        changeOrigin: true,
-        secure: false
-      },
-      '/ws': {
-        target: 'ws://localhost:12001',
-        ws: true,
-        changeOrigin: true
-      }
-    }
-  },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src')
-    }
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
+  server: {
+    port: 12000,
+    host: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/ws': {
+        target: 'ws://localhost:8000',
+        ws: true,
+        changeOrigin: true,
+      },
+    },
   },
   build: {
     outDir: 'dist',
-    sourcemap: true
-  }
+    sourcemap: true,
+  },
+  define: {
+    'process.env': process.env,
+  },
 })
