@@ -81,9 +81,9 @@ services:
       target: dev
     container_name: revoagent-dev
     ports:
-      - "8000:8000"
-      - "8001:8001"
-      - "3000:3000"  # For web dashboard development
+      - "12001:12001"  # Backend port standardized
+      - "12000:12000"  # Frontend port standardized
+      - "8001:8001"    # Additional services
     volumes:
       - .:/app
       - /var/run/docker.sock:/var/run/docker.sock  # For Docker-in-Docker
@@ -103,19 +103,20 @@ services:
   # Web dashboard (optional)
   dashboard:
     build:
-      context: ./web
+      context: ./frontend
       dockerfile: Dockerfile
     container_name: revoagent-dashboard
     ports:
       - "3000:3000"
     environment:
-      - REACT_APP_API_URL=http://localhost:8000
+      - VITE_API_URL=http://localhost:12001
+      - VITE_WS_URL=ws://localhost:12001
     networks:
       - revoagent-network
     profiles:
       - dashboard
     depends_on:
-      - revoagent
+      - backend
 
   # Model server for local models (optional)
   model-server:

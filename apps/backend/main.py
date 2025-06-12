@@ -4390,8 +4390,8 @@ async def startup_event():
 if __name__ == "__main__":
     import sys
     
-    # Check for port argument
-    port = 8000
+    # Check for port argument - default to 12001 for consistency
+    port = 12001
     if len(sys.argv) > 1 and sys.argv[1] == "--port" and len(sys.argv) > 2:
         port = int(sys.argv[2])
     
