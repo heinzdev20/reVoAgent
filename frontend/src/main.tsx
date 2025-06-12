@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import UnifiedApp from './UnifiedApp.tsx'
+import App from './App.tsx'
 import './index.css'
 
 // Initialize unified WebSocket connection
@@ -12,6 +12,6 @@ unifiedWebSocketService.connect().catch(error => {
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <UnifiedApp />
+    <App />
   </React.StrictMode>,
 )
