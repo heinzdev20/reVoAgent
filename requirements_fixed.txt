@@ -1,0 +1,33 @@
+# AI/ML Core
+torch>=2.2.0
+transformers>=4.35.0
+accelerate>=0.24.0
+sentence-transformers>=2.2.2
+
+# Backend Framework
+fastapi>=0.104.1
+uvicorn[standard]>=0.24.0
+websockets>=12.0
+pydantic>=2.4.2
+
+# Database & Cache
+asyncpg>=0.29.0
+redis>=5.0.1
+sqlalchemy>=2.0.23
+
+# Memory Integration (with fallback handling)
+networkx>=3.2.1
+psutil>=5.9.6
+
+# Authentication & Security
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+python-multipart>=0.0.6
+
+# Monitoring & Logging
+prometheus-client>=0.19.0
+structlog>=23.2.0
+
+# Additional dependencies
+aiofiles>=23.2.1
+python-dotenv>=1.0.0
