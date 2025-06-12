@@ -1,4 +1,3 @@
-
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
@@ -10,7 +9,7 @@ export default defineConfig({
     port: 12000,
     strictPort: true,
     cors: true,
-    allowedHosts: ['*'],
+    allowedHosts: true,
     proxy: {
       '/api': {
         target: 'http://localhost:12001',
