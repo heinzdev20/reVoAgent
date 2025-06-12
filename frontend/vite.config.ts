@@ -11,8 +11,14 @@ export default defineConfig({
   },
   server: {
     port: 12000,
-    host: true,
+    host: '0.0.0.0',
     strictPort: true, // Fail if port is in use instead of trying alternatives
+    allowedHosts: [
+      'localhost',
+      '127.0.0.1',
+      'work-1-cmasavtinjksmicy.prod-runtime.all-hands.dev',
+      'work-2-cmasavtinjksmicy.prod-runtime.all-hands.dev'
+    ],
     proxy: {
       '/api': {
         target: 'http://localhost:12001',

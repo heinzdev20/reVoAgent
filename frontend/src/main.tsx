@@ -1,10 +1,10 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import EnhancedApp from './EnhancedApp.tsx'
+import NewApp from './NewApp.tsx'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <EnhancedApp />
+    <NewApp />
   </React.StrictMode>,
 )

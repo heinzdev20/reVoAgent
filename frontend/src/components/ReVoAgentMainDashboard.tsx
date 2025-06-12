@@ -7,7 +7,7 @@ import {
   Bug, TestTube, Rocket, FileText, Monitor, Lock
 } from 'lucide-react';
 
-const ReVoAgentMainDashboard = () => {
+const ReVoAgentDashboard = () => {
   const [activeEngine, setActiveEngine] = useState('memory');
   const [selectedAgent, setSelectedAgent] = useState(null);
   const [notifications, setNotifications] = useState([]);
@@ -198,169 +198,313 @@ const ReVoAgentMainDashboard = () => {
             <div className="flex items-center gap-2">
               <Rocket className="w-8 h-8 text-blue-400" />
               <h1 className="text-2xl font-bold text-white">reVoAgent</h1>
+              <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded-full">v2.0</span>
             </div>
-            <div className="text-sm text-blue-200">Three-Engine Architecture</div>
+            <div className="flex items-center gap-6 ml-8">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                <span className="text-green-400 text-sm">Memory: Active</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                <span className="text-green-400 text-sm">Parallel: 10x Performance</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                <span className="text-green-400 text-sm">Creative: 94% Novelty</span>
+              </div>
+            </div>
           </div>
           <div className="flex items-center gap-4">
-            <div className="text-sm text-green-400">
-              💰 ${costSavings.totalSavings} saved this month
+            <div className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm font-bold">
+              Cost Savings: $0.00
             </div>
-            <div className="text-sm text-blue-200">
-              ⚡ {systemMetrics.activeRequests} active requests
-            </div>
-            <Bell className="w-5 h-5 text-blue-400 cursor-pointer" />
+            <button className="p-2 bg-white/10 rounded-lg hover:bg-white/20 transition-colors">
+              <Settings className="w-5 h-5 text-white" />
+            </button>
+            <div className="w-8 h-8 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full" />
           </div>
         </div>
       </div>
 
-      <div className="p-6 space-y-6">
-        {/* Three Engine Status */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <EngineStatusCard 
-            engine="memory" 
-            data={engineStatus.memory} 
-            icon={Brain} 
-          />
-          <EngineStatusCard 
-            engine="parallel" 
-            data={engineStatus.parallel} 
-            icon={Zap} 
-          />
-          <EngineStatusCard 
-            engine="creative" 
-            data={engineStatus.creative} 
-            icon={Palette} 
-          />
-        </div>
+      <div className="flex">
+        {/* Left Sidebar */}
+        <div className="w-80 bg-black/20 backdrop-blur-md border-r border-white/10 h-screen overflow-y-auto">
+          <div className="p-6 space-y-6">
+            {/* Dashboard Section */}
+            <div>
+              <h3 className="text-white font-bold mb-3 flex items-center gap-2">
+                <BarChart3 className="w-5 h-5 text-blue-400" />
+                DASHBOARD
+              </h3>
+              <div className="space-y-2">
+                <button className="w-full text-left p-2 text-blue-200 hover:bg-white/10 rounded-lg transition-colors">
+                  Three-Engine Overview
+                </button>
+                <button className="w-full text-left p-2 text-blue-200 hover:bg-white/10 rounded-lg transition-colors">
+                  System Health Monitor
+                </button>
+                <button className="w-full text-left p-2 text-blue-200 hover:bg-white/10 rounded-lg transition-colors">
+                  Cost Optimization Metrics
+                </button>
+              </div>
+            </div>
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Agents */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Agent Categories */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {Object.entries(agents).map(([category, agentList]) => (
-                <div key={category} className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-6">
-                  <h3 className="text-lg font-bold text-white mb-4 capitalize">
-                    {category.replace(/([A-Z])/g, ' $1').trim()} Agents
-                  </h3>
-                  <div className="space-y-3">
-                    {agentList.map(agent => (
-                      <AgentCard key={agent.id} agent={agent} category={category} />
+            {/* AI Agents Hub */}
+            <div>
+              <h3 className="text-white font-bold mb-3 flex items-center gap-2">
+                <Brain className="w-5 h-5 text-purple-400" />
+                AI AGENTS HUB (20+)
+              </h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <h4 className="text-purple-300 text-sm font-medium mb-2">Code Specialists</h4>
+                  <div className="space-y-1">
+                    {agents.codeSpecialists.map(agent => (
+                      <AgentCard key={agent.id} agent={agent} category="code" />
                     ))}
                   </div>
                 </div>
-              ))}
-            </div>
 
-            {/* Active Tasks */}
-            <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-6">
-              <h3 className="text-lg font-bold text-white mb-4">Active Tasks</h3>
-              <div className="space-y-3">
-                {activeTasks.map(task => (
-                  <div key={task.id} className="bg-white/5 rounded-lg p-3">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-white text-sm">{task.task}</span>
-                      <span className="text-blue-200 text-xs">{task.progress}%</span>
-                    </div>
-                    <div className="w-full bg-white/10 rounded-full h-1">
-                      <div 
-                        className="h-1 rounded-full bg-gradient-to-r from-blue-400 to-purple-600"
-                        style={{ width: `${task.progress}%` }}
-                      />
-                    </div>
+                <div>
+                  <h4 className="text-purple-300 text-sm font-medium mb-2">Development Workflow</h4>
+                  <div className="space-y-1">
+                    {agents.workflow.map(agent => (
+                      <AgentCard key={agent.id} agent={agent} category="workflow" />
+                    ))}
                   </div>
-                ))}
+                </div>
+
+                <div>
+                  <h4 className="text-purple-300 text-sm font-medium mb-2">Knowledge & Memory</h4>
+                  <div className="space-y-1">
+                    {agents.knowledge.map(agent => (
+                      <AgentCard key={agent.id} agent={agent} category="knowledge" />
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="text-purple-300 text-sm font-medium mb-2">Communication</h4>
+                  <div className="space-y-1">
+                    {agents.communication.map(agent => (
+                      <AgentCard key={agent.id} agent={agent} category="communication" />
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
+
+            {/* Additional Modules */}
+            <div className="space-y-3">
+              <button className="w-full flex items-center gap-3 p-3 text-white hover:bg-white/10 rounded-lg transition-colors">
+                <Database className="w-5 h-5 text-cyan-400" />
+                <span>Memory Center</span>
+              </button>
+              <button className="w-full flex items-center gap-3 p-3 text-white hover:bg-white/10 rounded-lg transition-colors">
+                <Zap className="w-5 h-5 text-yellow-400" />
+                <span>Parallel Processing</span>
+              </button>
+              <button className="w-full flex items-center gap-3 p-3 text-white hover:bg-white/10 rounded-lg transition-colors">
+                <Palette className="w-5 h-5 text-pink-400" />
+                <span>Creative Innovation Engine</span>
+              </button>
+              <button className="w-full flex items-center gap-3 p-3 text-white hover:bg-white/10 rounded-lg transition-colors">
+                <MessageSquare className="w-5 h-5 text-green-400" />
+                <span>Multi-Agent Chat</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 p-6 overflow-y-auto">
+          {/* Three Engine Status Overview */}
+          <div className="grid grid-cols-3 gap-6 mb-8">
+            <EngineStatusCard 
+              engine="memory" 
+              data={engineStatus.memory} 
+              icon={Brain} 
+            />
+            <EngineStatusCard 
+              engine="parallel" 
+              data={engineStatus.parallel} 
+              icon={Zap} 
+            />
+            <EngineStatusCard 
+              engine="creative" 
+              data={engineStatus.creative} 
+              icon={Palette} 
+            />
           </div>
 
-          {/* Right Column - Metrics & Cost */}
-          <div className="space-y-6">
+          <div className="grid grid-cols-2 gap-6 mb-8">
             {/* System Metrics */}
-            <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-6">
-              <h3 className="text-lg font-bold text-white mb-4">System Metrics</h3>
+            <div className="p-6 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20">
+              <h3 className="text-white text-xl font-bold mb-6 flex items-center gap-2">
+                <Monitor className="w-6 h-6 text-green-400" />
+                Real-Time System Metrics
+              </h3>
               <div className="space-y-4">
                 <MetricBar label="CPU" value={systemMetrics.cpu} color="blue" />
                 <MetricBar label="Memory" value={systemMetrics.memory} color="purple" />
                 <MetricBar label="Disk" value={systemMetrics.disk} color="green" />
                 <MetricBar label="Network" value={systemMetrics.network} color="yellow" />
               </div>
-              <div className="mt-4 pt-4 border-t border-white/10">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-blue-200">Response Time:</span>
-                    <div className="text-white font-mono">{systemMetrics.responseTime}s</div>
-                  </div>
-                  <div>
-                    <span className="text-blue-200">Uptime:</span>
-                    <div className="text-green-400 font-mono">{systemMetrics.uptime}%</div>
-                  </div>
+              <div className="grid grid-cols-2 gap-4 mt-6 pt-4 border-t border-white/10">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-white">{systemMetrics.activeRequests}</div>
+                  <div className="text-blue-200 text-sm">Active Requests</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-white">{systemMetrics.responseTime}s</div>
+                  <div className="text-blue-200 text-sm">Response Time</div>
                 </div>
               </div>
             </div>
 
             {/* Cost Optimization */}
-            <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-6">
-              <h3 className="text-lg font-bold text-white mb-4">Cost Optimization</h3>
-              <div className="space-y-4">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-green-400">${costSavings.totalSavings}</div>
-                  <div className="text-sm text-blue-200">Monthly Savings</div>
+            <div className="p-6 bg-gradient-to-br from-green-500/20 to-emerald-500/20 backdrop-blur-md rounded-2xl border border-green-400/30">
+              <h3 className="text-white text-xl font-bold mb-6 flex items-center gap-2">
+                <TrendingUp className="w-6 h-6 text-green-400" />
+                Cost Optimization Dashboard
+              </h3>
+              <div className="text-center mb-6">
+                <div className="text-3xl font-bold text-green-400">
+                  ${costSavings.totalSavings.toLocaleString()}
                 </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-blue-200">Local Processing:</span>
-                    <span className="text-green-400">{costSavings.localProcessing}%</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-blue-200">Cloud Fallback:</span>
-                    <span className="text-yellow-400">{costSavings.cloudFallback}%</span>
+                <div className="text-green-200">Total Savings This Month</div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-center p-3 bg-white/10 rounded-lg">
+                  <div className="text-lg font-bold text-white">{costSavings.localProcessing}%</div>
+                  <div className="text-green-200 text-sm">Local Processing</div>
+                </div>
+                <div className="text-center p-3 bg-white/10 rounded-lg">
+                  <div className="text-lg font-bold text-white">{costSavings.cloudFallback}%</div>
+                  <div className="text-yellow-200 text-sm">Cloud Fallback</div>
+                </div>
+              </div>
+              <div className="mt-4 text-center">
+                <div className="text-lg font-bold text-green-400">
+                  ${costSavings.monthlyProjection.toLocaleString()} projected savings
+                </div>
+                <div className="text-green-200 text-sm">vs cloud-only solutions</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Memory & Knowledge Graph */}
+          <div className="p-6 bg-gradient-to-br from-purple-500/20 to-blue-500/20 backdrop-blur-md rounded-2xl border border-purple-400/30 mb-8">
+            <h3 className="text-white text-xl font-bold mb-6 flex items-center gap-2">
+              <Database className="w-6 h-6 text-purple-400" />
+              Memory & Knowledge Graph Overview
+            </h3>
+            <div className="grid grid-cols-5 gap-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-purple-400">1.24M</div>
+                <div className="text-purple-200 text-sm">Knowledge Entities</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-400">3.45M</div>
+                <div className="text-blue-200 text-sm">Relationships</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-400">+2,341</div>
+                <div className="text-green-200 text-sm">Daily Growth</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-yellow-400">97.8%</div>
+                <div className="text-yellow-200 text-sm">Query Accuracy</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-cyan-400">89</div>
+                <div className="text-cyan-200 text-sm">Agent Connections</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Sidebar */}
+        <div className="w-80 bg-black/20 backdrop-blur-md border-l border-white/10 h-screen overflow-y-auto">
+          <div className="p-6 space-y-6">
+            {/* Quick Actions */}
+            <div>
+              <h3 className="text-white font-bold mb-4 flex items-center gap-2">
+                <Play className="w-5 h-5 text-green-400" />
+                Quick Actions
+              </h3>
+              <div className="space-y-3">
+                <button className="w-full p-3 bg-gradient-to-r from-blue-500/20 to-purple-500/20 hover:from-blue-500/30 hover:to-purple-500/30 rounded-lg text-white transition-all duration-200 flex items-center gap-2">
+                  <Play className="w-4 h-4" />
+                  Start Multi-Agent Task
+                </button>
+                <button className="w-full p-3 bg-gradient-to-r from-green-500/20 to-emerald-500/20 hover:from-green-500/30 hover:to-emerald-500/30 rounded-lg text-white transition-all duration-200 flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4" />
+                  Open Agent Chat
+                </button>
+                <button className="w-full p-3 bg-gradient-to-r from-purple-500/20 to-pink-500/20 hover:from-purple-500/30 hover:to-pink-500/30 rounded-lg text-white transition-all duration-200 flex items-center gap-2">
+                  <Settings className="w-4 h-4" />
+                  Build New Workflow
+                </button>
+                <button className="w-full p-3 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 hover:from-yellow-500/30 hover:to-orange-500/30 rounded-lg text-white transition-all duration-200 flex items-center gap-2">
+                  <BarChart3 className="w-4 h-4" />
+                  Generate Report
+                </button>
+              </div>
+            </div>
+
+            {/* Real-time Notifications */}
+            <div>
+              <h3 className="text-white font-bold mb-4 flex items-center gap-2">
+                <Bell className="w-5 h-5 text-blue-400" />
+                Live Notifications
+              </h3>
+              <div className="space-y-3">
+                <div className="p-3 bg-green-500/20 border border-green-400/30 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-400 rounded-full" />
+                    <span className="text-green-400 text-sm font-medium">Code analysis complete</span>
                   </div>
                 </div>
-                <div className="pt-4 border-t border-white/10">
-                  <div className="text-sm space-y-1">
-                    <div className="flex justify-between">
-                      <span className="text-blue-200">DeepSeek R1:</span>
-                      <span className="text-green-400">${costSavings.deepSeekCost}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-blue-200">Llama Local:</span>
-                      <span className="text-green-400">${costSavings.llamaCost}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-blue-200">OpenAI:</span>
-                      <span className="text-red-400">${costSavings.openAICost}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-blue-200">Anthropic:</span>
-                      <span className="text-red-400">${costSavings.anthropicCost}</span>
-                    </div>
+                <div className="p-3 bg-yellow-500/20 border border-yellow-400/30 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" />
+                    <span className="text-yellow-400 text-sm font-medium">Memory sync in progress</span>
+                  </div>
+                </div>
+                <div className="p-3 bg-blue-500/20 border border-blue-400/30 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-blue-400 rounded-full" />
+                    <span className="text-blue-400 text-sm font-medium">New pattern discovered</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Quick Actions */}
-            <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-6">
-              <h3 className="text-lg font-bold text-white mb-4">Quick Actions</h3>
-              <div className="grid grid-cols-2 gap-3">
-                <button className="bg-blue-500/20 hover:bg-blue-500/30 border border-blue-400/50 rounded-lg p-3 text-white text-sm transition-all">
-                  <Play className="w-4 h-4 mx-auto mb-1" />
-                  Start Task
-                </button>
-                <button className="bg-purple-500/20 hover:bg-purple-500/30 border border-purple-400/50 rounded-lg p-3 text-white text-sm transition-all">
-                  <Monitor className="w-4 h-4 mx-auto mb-1" />
-                  Monitor
-                </button>
-                <button className="bg-green-500/20 hover:bg-green-500/30 border border-green-400/50 rounded-lg p-3 text-white text-sm transition-all">
-                  <Download className="w-4 h-4 mx-auto mb-1" />
-                  Export
-                </button>
-                <button className="bg-orange-500/20 hover:bg-orange-500/30 border border-orange-400/50 rounded-lg p-3 text-white text-sm transition-all">
-                  <Settings className="w-4 h-4 mx-auto mb-1" />
-                  Settings
-                </button>
+            {/* Active Tasks */}
+            <div>
+              <h3 className="text-white font-bold mb-4 flex items-center gap-2">
+                <Activity className="w-5 h-5 text-purple-400" />
+                Active Tasks
+              </h3>
+              <div className="space-y-3">
+                {activeTasks.map(task => (
+                  <div key={task.id} className="p-3 bg-white/5 rounded-lg border border-white/10">
+                    <div className="text-white text-sm font-medium mb-2">{task.task}</div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="flex-1 bg-white/10 rounded-full h-1">
+                        <div 
+                          className="h-1 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full transition-all duration-300"
+                          style={{ width: `${task.progress}%` }}
+                        />
+                      </div>
+                      <span className="text-purple-300 text-xs">{task.progress}%</span>
+                    </div>
+                    <div className="text-purple-200 text-xs">Agent: {task.agent}</div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -370,4 +514,4 @@ const ReVoAgentMainDashboard = () => {
   );
 };
 
-export default ReVoAgentMainDashboard;
+export default ReVoAgentDashboard;
