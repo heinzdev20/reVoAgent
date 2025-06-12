@@ -1,0 +1,282 @@
+groups:
+  - name: revoagent.critical
+    interval: 30s
+    rules:
+      - alert: SystemDown
+        expr: up{job="revoagent"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: revoagent
+        annotations:
+          summary: "reVoAgent system is down"
+          description: "reVoAgent has been down for more than 1 minute"
+          runbook_url: "https://docs.revoagent.com/runbooks/system-down"
+
+      - alert: HighErrorRate
+        expr: rate(revoagent_errors_total[5m]) / rate(revoagent_requests_total[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: critical
+          service: revoagent
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value | humanizePercentage }} for the last 5 minutes"
+          runbook_url: "https://docs.revoagent.com/runbooks/high-error-rate"
+
+      - alert: DatabaseConnectionFailure
+        expr: revoagent_database_connections_failed_total > 0
+        for: 1m
+        labels:
+          severity: critical
+          service: database
+        annotations:
+          summary: "Database connection failures"
+          description: "{{ $value }} database connection failures in the last minute"
+          runbook_url: "https://docs.revoagent.com/runbooks/database-issues"
+
+      - alert: SecurityBreach
+        expr: rate(revoagent_security_violations_total[1m]) > 0
+        for: 0s
+        labels:
+          severity: critical
+          service: security
+        annotations:
+          summary: "Security breach detected"
+          description: "{{ $value }} security violations detected"
+          runbook_url: "https://docs.revoagent.com/runbooks/security-breach"
+
+  - name: revoagent.warning
+    interval: 1m
+    rules:
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(revoagent_request_duration_seconds_bucket[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+          service: revoagent
+        annotations:
+          summary: "High response time"
+          description: "95th percentile response time is {{ $value }}s for the last 5 minutes"
+          runbook_url: "https://docs.revoagent.com/runbooks/performance-issues"
+
+      - alert: HighMemoryUsage
+        expr: revoagent_memory_usage_percent > 85
+        for: 5m
+        labels:
+          severity: warning
+          service: revoagent
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is {{ $value }}% for the last 5 minutes"
+          runbook_url: "https://docs.revoagent.com/runbooks/resource-issues"
+
+      - alert: HighCPUUsage
+        expr: revoagent_cpu_usage_percent > 80
+        for: 10m
+        labels:
+          severity: warning
+          service: revoagent
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU usage is {{ $value }}% for the last 10 minutes"
+          runbook_url: "https://docs.revoagent.com/runbooks/resource-issues"
+
+      - alert: DiskSpaceLow
+        expr: revoagent_disk_usage_percent > 85
+        for: 5m
+        labels:
+          severity: warning
+          service: revoagent
+        annotations:
+          summary: "Low disk space"
+          description: "Disk usage is {{ $value }}% for the last 5 minutes"
+          runbook_url: "https://docs.revoagent.com/runbooks/disk-space"
+
+      - alert: AgentUnresponsive
+        expr: revoagent_agent_last_heartbeat_seconds > 300
+        for: 2m
+        labels:
+          severity: warning
+          service: agents
+        annotations:
+          summary: "Agent unresponsive"
+          description: "Agent {{ $labels.agent_name }} has not sent heartbeat for {{ $value }}s"
+          runbook_url: "https://docs.revoagent.com/runbooks/agent-issues"
+
+      - alert: WebSocketConnectionsHigh
+        expr: revoagent_websocket_connections > 1000
+        for: 5m
+        labels:
+          severity: warning
+          service: websocket
+        annotations:
+          summary: "High WebSocket connections"
+          description: "{{ $value }} WebSocket connections active"
+          runbook_url: "https://docs.revoagent.com/runbooks/websocket-issues"
+
+  - name: revoagent.performance
+    interval: 2m
+    rules:
+      - alert: ThroughputDrop
+        expr: rate(revoagent_requests_total[10m]) < rate(revoagent_requests_total[1h] offset 1h) * 0.5
+        for: 10m
+        labels:
+          severity: warning
+          service: revoagent
+        annotations:
+          summary: "Significant throughput drop"
+          description: "Request rate has dropped by more than 50% compared to 1 hour ago"
+          runbook_url: "https://docs.revoagent.com/runbooks/performance-issues"
+
+      - alert: QueueBacklog
+        expr: revoagent_task_queue_size > 100
+        for: 5m
+        labels:
+          severity: warning
+          service: agents
+        annotations:
+          summary: "Task queue backlog"
+          description: "{{ $value }} tasks in queue for the last 5 minutes"
+          runbook_url: "https://docs.revoagent.com/runbooks/queue-backlog"
+
+      - alert: ModelInferenceLatency
+        expr: histogram_quantile(0.95, rate(revoagent_model_inference_duration_seconds_bucket[5m])) > 5
+        for: 5m
+        labels:
+          severity: warning
+          service: ai
+        annotations:
+          summary: "High model inference latency"
+          description: "95th percentile model inference time is {{ $value }}s"
+          runbook_url: "https://docs.revoagent.com/runbooks/ai-performance"
+
+  - name: revoagent.business
+    interval: 5m
+    rules:
+      - alert: UserEngagementDrop
+        expr: rate(revoagent_user_sessions_total[1h]) < rate(revoagent_user_sessions_total[1h] offset 24h) * 0.7
+        for: 30m
+        labels:
+          severity: warning
+          service: business
+        annotations:
+          summary: "User engagement drop"
+          description: "User sessions have dropped by more than 30% compared to 24 hours ago"
+          runbook_url: "https://docs.revoagent.com/runbooks/user-engagement"
+
+      - alert: CostOptimizationFailure
+        expr: revoagent_local_model_usage_percent < 80
+        for: 1h
+        labels:
+          severity: warning
+          service: cost
+        annotations:
+          summary: "Cost optimization below target"
+          description: "Local model usage is {{ $value }}%, below 80% target"
+          runbook_url: "https://docs.revoagent.com/runbooks/cost-optimization"
+
+      - alert: AgentUtilizationLow
+        expr: avg(revoagent_agent_utilization_percent) < 30
+        for: 30m
+        labels:
+          severity: info
+          service: agents
+        annotations:
+          summary: "Low agent utilization"
+          description: "Average agent utilization is {{ $value }}%"
+          runbook_url: "https://docs.revoagent.com/runbooks/agent-utilization"
+
+  - name: revoagent.security
+    interval: 30s
+    rules:
+      - alert: AuthenticationFailureSpike
+        expr: rate(revoagent_auth_failures_total[5m]) > 10
+        for: 2m
+        labels:
+          severity: warning
+          service: security
+        annotations:
+          summary: "Authentication failure spike"
+          description: "{{ $value }} authentication failures per minute"
+          runbook_url: "https://docs.revoagent.com/runbooks/auth-failures"
+
+      - alert: SuspiciousActivity
+        expr: rate(revoagent_suspicious_activity_total[5m]) > 1
+        for: 1m
+        labels:
+          severity: warning
+          service: security
+        annotations:
+          summary: "Suspicious activity detected"
+          description: "{{ $value }} suspicious activities per minute"
+          runbook_url: "https://docs.revoagent.com/runbooks/suspicious-activity"
+
+      - alert: RateLimitingTriggered
+        expr: rate(revoagent_rate_limited_requests_total[5m]) > 50
+        for: 5m
+        labels:
+          severity: info
+          service: security
+        annotations:
+          summary: "High rate limiting activity"
+          description: "{{ $value }} requests rate limited per minute"
+          runbook_url: "https://docs.revoagent.com/runbooks/rate-limiting"
+
+      - alert: SSLCertificateExpiry
+        expr: revoagent_ssl_certificate_expiry_days < 30
+        for: 1h
+        labels:
+          severity: warning
+          service: security
+        annotations:
+          summary: "SSL certificate expiring soon"
+          description: "SSL certificate expires in {{ $value }} days"
+          runbook_url: "https://docs.revoagent.com/runbooks/ssl-renewal"
+
+  - name: revoagent.infrastructure
+    interval: 2m
+    rules:
+      - alert: PodCrashLooping
+        expr: rate(kube_pod_container_status_restarts_total{pod=~"revoagent.*"}[15m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+          service: kubernetes
+        annotations:
+          summary: "Pod crash looping"
+          description: "Pod {{ $labels.pod }} is crash looping"
+          runbook_url: "https://docs.revoagent.com/runbooks/pod-issues"
+
+      - alert: PersistentVolumeSpaceLow
+        expr: kubelet_volume_stats_available_bytes / kubelet_volume_stats_capacity_bytes < 0.1
+        for: 5m
+        labels:
+          severity: warning
+          service: storage
+        annotations:
+          summary: "Persistent volume space low"
+          description: "PV {{ $labels.persistentvolumeclaim }} has less than 10% space remaining"
+          runbook_url: "https://docs.revoagent.com/runbooks/storage-issues"
+
+      - alert: NodeNotReady
+        expr: kube_node_status_condition{condition="Ready",status="true"} == 0
+        for: 5m
+        labels:
+          severity: critical
+          service: kubernetes
+        annotations:
+          summary: "Node not ready"
+          description: "Node {{ $labels.node }} is not ready"
+          runbook_url: "https://docs.revoagent.com/runbooks/node-issues"
+
+      - alert: NetworkLatencyHigh
+        expr: histogram_quantile(0.95, rate(revoagent_network_latency_seconds_bucket[5m])) > 0.5
+        for: 10m
+        labels:
+          severity: warning
+          service: network
+        annotations:
+          summary: "High network latency"
+          description: "95th percentile network latency is {{ $value }}s"
+          runbook_url: "https://docs.revoagent.com/runbooks/network-issues"
