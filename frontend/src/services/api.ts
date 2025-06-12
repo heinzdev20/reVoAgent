@@ -14,8 +14,8 @@ import type {
 
 // Development-friendly API configuration
 const isDevelopment = import.meta.env.DEV;
-const API_BASE = import.meta.env.VITE_API_URL || 'https://work-2-cmasavtinjksmicy.prod-runtime.all-hands.dev';
-const WS_BASE = import.meta.env.VITE_WS_URL || 'wss://work-2-cmasavtinjksmicy.prod-runtime.all-hands.dev';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:12001';
+const WS_BASE = import.meta.env.VITE_WS_URL || 'ws://localhost:12001';
 
 // Enhanced error handling
 class ApiError extends Error {
