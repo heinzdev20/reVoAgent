@@ -17,6 +17,13 @@ import uvicorn
 # Add packages to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
+# Import security middleware
+from ..middleware.security_middleware import (
+    SecurityHeadersMiddleware,
+    CORSSecurityMiddleware,
+    RateLimitingMiddleware
+)
+
 # Import service modules
 from ..services.ai_service import ProductionAIService, create_production_ai_service, GenerationRequest
 from ..services.ai_team_coordinator import AITeamCoordinator
@@ -71,26 +78,53 @@ class BackendApplication:
         logger.info("🚀 Backend Application initialized")
     
     def _setup_middleware(self):
-        """Setup FastAPI middleware"""
+        """Setup FastAPI middleware with enterprise security"""
         
-        # CORS middleware
+        # 1. Security Headers Middleware (Applied first for all responses)
+        self.app.add_middleware(SecurityHeadersMiddleware)
+        
+        # 2. Rate Limiting Middleware
         self.app.add_middleware(
-            CORSMiddleware,
-            allow_origins=["*"],  # Configure appropriately for production
-            allow_credentials=True,
-            allow_methods=["*"],
-            allow_headers=["*"],
+            RateLimitingMiddleware,
+            requests_per_minute=100  # Configurable rate limit
         )
         
-        # Add custom middleware for request logging
+        # 3. Secure CORS Middleware (replaces default CORS)
+        self.app.add_middleware(
+            CORSSecurityMiddleware,
+            allowed_origins=[
+                "http://localhost:12000",  # Frontend development
+                "https://app.revoagent.dev",  # Production frontend
+                "http://localhost:3000",  # Alternative frontend port
+            ],
+            allowed_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+        )
+        
+        # 4. Request logging and performance monitoring
         @self.app.middleware("http")
-        async def log_requests(request, call_next):
+        async def log_requests_and_monitor(request, call_next):
             start_time = asyncio.get_event_loop().time()
-            response = await call_next(request)
-            process_time = asyncio.get_event_loop().time() - start_time
             
-            logger.info(f"📡 {request.method} {request.url.path} - {response.status_code} - {process_time:.3f}s")
-            return response
+            # Log incoming request
+            logger.info(f"📡 {request.method} {request.url.path} - Client: {request.client.host if request.client else 'unknown'}")
+            
+            try:
+                response = await call_next(request)
+                process_time = asyncio.get_event_loop().time() - start_time
+                
+                # Log response with performance metrics
+                logger.info(f"✅ {request.method} {request.url.path} - {response.status_code} - {process_time:.3f}s")
+                
+                # Add performance headers
+                response.headers["X-Response-Time"] = f"{process_time:.3f}s"
+                response.headers["X-Request-ID"] = str(id(request))
+                
+                return response
+                
+            except Exception as e:
+                process_time = asyncio.get_event_loop().time() - start_time
+                logger.error(f"❌ {request.method} {request.url.path} - Error: {str(e)} - {process_time:.3f}s")
+                raise
     
     def _setup_routes(self):
         """Setup API routes"""
