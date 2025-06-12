@@ -1,0 +1,491 @@
+# 🚀 Enhanced Kubernetes Auto-scaling Configuration
+# Phase 3 - Production Scaling Enhancement
+
+---
+# Vertical Pod Autoscaler for Perfect Recall Engine
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: perfect-recall-vpa
+  namespace: revoagent
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: perfect-recall-engine
+  updatePolicy:
+    updateMode: "Auto"
+  resourcePolicy:
+    containerPolicies:
+    - containerName: perfect-recall
+      minAllowed:
+        cpu: 500m
+        memory: 1Gi
+      maxAllowed:
+        cpu: 4000m
+        memory: 8Gi
+      controlledResources: ["cpu", "memory"]
+
+---
+# Enhanced HPA with Custom Metrics for Perfect Recall
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: perfect-recall-enhanced-hpa
+  namespace: revoagent
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: perfect-recall-engine
+  minReplicas: 3
+  maxReplicas: 20
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 75
+  - type: Pods
+    pods:
+      metric:
+        name: requests_per_second
+      target:
+        type: AverageValue
+        averageValue: "100"
+  - type: Pods
+    pods:
+      metric:
+        name: response_time_p95
+      target:
+        type: AverageValue
+        averageValue: "2000m"  # 2 seconds
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 10
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+      - type: Pods
+        value: 2
+        periodSeconds: 60
+      selectPolicy: Max
+
+---
+# Enhanced HPA for Parallel Mind Engine
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: parallel-mind-enhanced-hpa
+  namespace: revoagent
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: parallel-mind-engine
+  minReplicas: 2
+  maxReplicas: 15
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 75
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  - type: Pods
+    pods:
+      metric:
+        name: parallel_tasks_queue_length
+      target:
+        type: AverageValue
+        averageValue: "50"
+  - type: Pods
+    pods:
+      metric:
+        name: worker_utilization
+      target:
+        type: AverageValue
+        averageValue: "80"
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 15
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 30
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 30
+      - type: Pods
+        value: 3
+        periodSeconds: 30
+      selectPolicy: Max
+
+---
+# Enhanced HPA for Creative Engine
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: creative-engine-enhanced-hpa
+  namespace: revoagent
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: creative-engine
+  minReplicas: 2
+  maxReplicas: 12
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 75
+  - type: Pods
+    pods:
+      metric:
+        name: creative_generation_time
+      target:
+        type: AverageValue
+        averageValue: "30000m"  # 30 seconds
+  - type: Pods
+    pods:
+      metric:
+        name: solution_quality_score
+      target:
+        type: AverageValue
+        averageValue: "85"
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 600  # Longer stabilization for creative tasks
+      policies:
+      - type: Percent
+        value: 10
+        periodSeconds: 120
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 75
+        periodSeconds: 60
+      - type: Pods
+        value: 2
+        periodSeconds: 60
+      selectPolicy: Max
+
+---
+# Pod Disruption Budget for Perfect Recall
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: perfect-recall-pdb
+  namespace: revoagent
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: revoagent
+      component: perfect-recall
+
+---
+# Pod Disruption Budget for Parallel Mind
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: parallel-mind-pdb
+  namespace: revoagent
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: revoagent
+      component: parallel-mind
+
+---
+# Pod Disruption Budget for Creative Engine
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: creative-engine-pdb
+  namespace: revoagent
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: revoagent
+      component: creative-engine
+
+---
+# Resource Quota for reVoAgent namespace
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: revoagent-quota
+  namespace: revoagent
+spec:
+  hard:
+    requests.cpu: "50"
+    requests.memory: 100Gi
+    limits.cpu: "100"
+    limits.memory: 200Gi
+    persistentvolumeclaims: "10"
+    pods: "50"
+    services: "20"
+    secrets: "20"
+    configmaps: "20"
+
+---
+# Limit Range for resource constraints
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: revoagent-limits
+  namespace: revoagent
+spec:
+  limits:
+  - default:
+      cpu: "2000m"
+      memory: "4Gi"
+    defaultRequest:
+      cpu: "500m"
+      memory: "1Gi"
+    type: Container
+  - max:
+      cpu: "8000m"
+      memory: "16Gi"
+    min:
+      cpu: "100m"
+      memory: "128Mi"
+    type: Container
+
+---
+# Network Policy for secure communication
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: revoagent-network-policy
+  namespace: revoagent
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: revoagent
+    - namespaceSelector:
+        matchLabels:
+          name: monitoring
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: revoagent
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 53
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 443
+    - protocol: TCP
+      port: 80
+
+---
+# Priority Class for critical workloads
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: revoagent-critical
+value: 1000
+globalDefault: false
+description: "Priority class for critical reVoAgent components"
+
+---
+# Priority Class for standard workloads
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: revoagent-standard
+value: 500
+globalDefault: false
+description: "Priority class for standard reVoAgent components"
+
+---
+# Service Monitor for Prometheus scraping
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: revoagent-engines
+  namespace: revoagent
+  labels:
+    app: revoagent
+spec:
+  selector:
+    matchLabels:
+      app: revoagent
+  endpoints:
+  - port: metrics
+    interval: 15s
+    path: /metrics
+    honorLabels: true
+  - port: http
+    interval: 30s
+    path: /health
+    honorLabels: true
+
+---
+# Custom Resource Definition for Engine Scaling
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: enginescalings.revoagent.io
+spec:
+  group: revoagent.io
+  versions:
+  - name: v1
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              engineType:
+                type: string
+                enum: ["perfect-recall", "parallel-mind", "creative-engine"]
+              scalingPolicy:
+                type: object
+                properties:
+                  minReplicas:
+                    type: integer
+                    minimum: 1
+                  maxReplicas:
+                    type: integer
+                    minimum: 1
+                  targetMetrics:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        targetValue:
+                          type: string
+          status:
+            type: object
+            properties:
+              currentReplicas:
+                type: integer
+              desiredReplicas:
+                type: integer
+              lastScaleTime:
+                type: string
+                format: date-time
+  scope: Namespaced
+  names:
+    plural: enginescalings
+    singular: enginescaling
+    kind: EngineScaling
+
+---
+# Engine Scaling Custom Resource for Perfect Recall
+apiVersion: revoagent.io/v1
+kind: EngineScaling
+metadata:
+  name: perfect-recall-scaling
+  namespace: revoagent
+spec:
+  engineType: "perfect-recall"
+  scalingPolicy:
+    minReplicas: 3
+    maxReplicas: 20
+    targetMetrics:
+    - name: "memory_retrieval_time"
+      targetValue: "50ms"
+    - name: "cache_hit_rate"
+      targetValue: "95%"
+    - name: "concurrent_requests"
+      targetValue: "100"
+
+---
+# Engine Scaling Custom Resource for Parallel Mind
+apiVersion: revoagent.io/v1
+kind: EngineScaling
+metadata:
+  name: parallel-mind-scaling
+  namespace: revoagent
+spec:
+  engineType: "parallel-mind"
+  scalingPolicy:
+    minReplicas: 2
+    maxReplicas: 15
+    targetMetrics:
+    - name: "worker_utilization"
+      targetValue: "80%"
+    - name: "task_queue_length"
+      targetValue: "50"
+    - name: "processing_throughput"
+      targetValue: "500/min"
+
+---
+# Engine Scaling Custom Resource for Creative Engine
+apiVersion: revoagent.io/v1
+kind: EngineScaling
+metadata:
+  name: creative-engine-scaling
+  namespace: revoagent
+spec:
+  engineType: "creative-engine"
+  scalingPolicy:
+    minReplicas: 2
+    maxReplicas: 12
+    targetMetrics:
+    - name: "solution_generation_time"
+      targetValue: "30s"
+    - name: "creativity_score"
+      targetValue: "85%"
+    - name: "innovation_rate"
+      targetValue: "90%"

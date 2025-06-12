@@ -1,0 +1,316 @@
+# 📊 Enhanced Prometheus Configuration
+# Phase 3 - Comprehensive Monitoring Enhancement
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'revoagent-production'
+    environment: 'production'
+
+rule_files:
+  - "alert_rules.yml"
+  - "sli_slo_rules.yml"
+  - "business_rules.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+      timeout: 10s
+      api_version: v2
+
+scrape_configs:
+  # 🚀 reVoAgent Core Services
+  - job_name: 'revoagent-coordinator'
+    static_configs:
+      - targets: ['coordinator-service:9093']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    scrape_timeout: 5s
+    honor_labels: true
+    params:
+      format: ['prometheus']
+
+  - job_name: 'revoagent-perfect-recall'
+    static_configs:
+      - targets: ['perfect-recall-service:9090']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    scrape_timeout: 5s
+    honor_labels: true
+
+  - job_name: 'revoagent-parallel-mind'
+    static_configs:
+      - targets: ['parallel-mind-service:9091']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    scrape_timeout: 5s
+    honor_labels: true
+
+  - job_name: 'revoagent-creative-engine'
+    static_configs:
+      - targets: ['creative-engine-service:9092']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    scrape_timeout: 5s
+    honor_labels: true
+
+  # 🎯 Business Metrics
+  - job_name: 'revoagent-business-metrics'
+    static_configs:
+      - targets: ['coordinator-service:8000']
+    metrics_path: '/api/v1/metrics/business'
+    scrape_interval: 30s
+    scrape_timeout: 10s
+
+  # 💰 Cost Optimization Metrics
+  - job_name: 'revoagent-cost-metrics'
+    static_configs:
+      - targets: ['coordinator-service:8000']
+    metrics_path: '/api/v1/metrics/cost'
+    scrape_interval: 60s
+    scrape_timeout: 15s
+
+  # 🔒 Security Metrics
+  - job_name: 'revoagent-security-metrics'
+    static_configs:
+      - targets: ['coordinator-service:8000']
+    metrics_path: '/api/v1/metrics/security'
+    scrape_interval: 30s
+    scrape_timeout: 10s
+
+  # 🧠 AI Model Performance
+  - job_name: 'revoagent-ai-metrics'
+    static_configs:
+      - targets: ['coordinator-service:8000']
+    metrics_path: '/api/v1/metrics/ai'
+    scrape_interval: 20s
+    scrape_timeout: 10s
+
+  # 📊 System Metrics
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 15s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '([^:]+)(:[0-9]+)?'
+        replacement: '${1}'
+
+  # 🐳 Container Metrics
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+    scrape_interval: 15s
+    metrics_path: '/metrics'
+
+  # ☸️ Kubernetes API Server
+  - job_name: 'kubernetes-apiservers'
+    kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names:
+            - default
+    scheme: https
+    tls_config:
+      ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      insecure_skip_verify: true
+    bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+        action: keep
+        regex: default;kubernetes;https
+      - target_label: __address__
+        replacement: kubernetes.default.svc:443
+
+  # ☸️ Kubernetes Nodes
+  - job_name: 'kubernetes-nodes'
+    kubernetes_sd_configs:
+      - role: node
+    scheme: https
+    tls_config:
+      ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      insecure_skip_verify: true
+    bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+    relabel_configs:
+      - action: labelmap
+        regex: __meta_kubernetes_node_label_(.+)
+      - target_label: __address__
+        replacement: kubernetes.default.svc:443
+      - source_labels: [__meta_kubernetes_node_name]
+        regex: (.+)
+        target_label: __metrics_path__
+        replacement: /api/v1/nodes/${1}/proxy/metrics
+
+  # ☸️ Kubernetes Pods
+  - job_name: 'kubernetes-pods'
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - revoagent
+            - monitoring
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scheme]
+        action: replace
+        target_label: __scheme__
+        regex: (https?)
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+        action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__
+      - action: labelmap
+        regex: __meta_kubernetes_pod_label_(.+)
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: kubernetes_namespace
+      - source_labels: [__meta_kubernetes_pod_name]
+        action: replace
+        target_label: kubernetes_pod_name
+      - source_labels: [__meta_kubernetes_pod_container_name]
+        action: replace
+        target_label: kubernetes_container_name
+
+  # ☸️ Kubernetes Services
+  - job_name: 'kubernetes-services'
+    kubernetes_sd_configs:
+      - role: service
+        namespaces:
+          names:
+            - revoagent
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scheme]
+        action: replace
+        target_label: __scheme__
+        regex: (https?)
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      - source_labels: [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
+        action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__
+      - action: labelmap
+        regex: __meta_kubernetes_service_label_(.+)
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: kubernetes_namespace
+      - source_labels: [__meta_kubernetes_service_name]
+        action: replace
+        target_label: kubernetes_name
+
+  # 🗄️ Database Metrics
+  - job_name: 'postgresql'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+    scrape_interval: 30s
+
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+    scrape_interval: 30s
+
+  # 🌐 Load Balancer Metrics
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['nginx-exporter:9113']
+    scrape_interval: 30s
+
+  # 📡 Network Metrics
+  - job_name: 'blackbox'
+    static_configs:
+      - targets:
+        - http://coordinator-service:8000/health
+        - http://perfect-recall-service:8001/health
+        - http://parallel-mind-service:8002/health
+        - http://creative-engine-service:8003/health
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+  # 🔍 Custom Application Metrics
+  - job_name: 'revoagent-custom-metrics'
+    static_configs:
+      - targets: ['coordinator-service:8000']
+    metrics_path: '/api/v1/metrics/custom'
+    scrape_interval: 30s
+    params:
+      format: ['prometheus']
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'revoagent_(.+)'
+        target_label: __name__
+        replacement: 'revoagent_${1}'
+
+# 📈 Recording Rules for Performance
+recording_rules:
+  - name: revoagent_performance
+    interval: 30s
+    rules:
+      - record: revoagent:request_rate_5m
+        expr: rate(http_requests_total[5m])
+      
+      - record: revoagent:error_rate_5m
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m])
+      
+      - record: revoagent:response_time_p95_5m
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))
+      
+      - record: revoagent:response_time_p99_5m
+        expr: histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m]))
+
+  - name: revoagent_business
+    interval: 60s
+    rules:
+      - record: revoagent:cost_savings_hourly
+        expr: (revoagent_local_model_requests / revoagent_total_requests) * revoagent_estimated_cloud_cost
+      
+      - record: revoagent:ai_efficiency_score
+        expr: (revoagent_successful_ai_requests / revoagent_total_ai_requests) * 100
+      
+      - record: revoagent:user_satisfaction_score
+        expr: avg(revoagent_user_rating)
+
+# 🎯 SLI/SLO Definitions
+sli_slo_rules:
+  - name: revoagent_sli_slo
+    interval: 60s
+    rules:
+      # Availability SLI (target: 99.9%)
+      - record: revoagent:availability_sli
+        expr: (sum(rate(http_requests_total{status!~"5.."}[5m])) / sum(rate(http_requests_total[5m]))) * 100
+      
+      # Latency SLI (target: 95% < 2s)
+      - record: revoagent:latency_sli
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))
+      
+      # Throughput SLI (target: > 1000 RPS)
+      - record: revoagent:throughput_sli
+        expr: sum(rate(http_requests_total[5m]))
+      
+      # Error Budget Burn Rate
+      - record: revoagent:error_budget_burn_rate
+        expr: revoagent:error_rate_5m / (1 - 0.999)  # 99.9% availability target
