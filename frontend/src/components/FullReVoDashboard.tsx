@@ -6,29 +6,41 @@ import {
   Search, Download, Upload, RefreshCw, Eye, Code,
   Bug, TestTube, Rocket, FileText, Monitor, Lock,
   Palette, Home, Workflow, Store, BarChart, Link,
-  Cog, Menu, X, ChevronRight
+  Cog, Menu, X, ChevronRight, AlertCircle
 } from 'lucide-react';
+
+// Import our hooks and services
+import { useDashboardStats, useAgents, useSystemMetrics, useHealthCheck, useConnectionStatus } from '../hooks/useApi';
+import { useDashboardWebSocket } from '../hooks/useWebSocket';
 
 const FullReVoDashboard = () => {
   const [activeView, setActiveView] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  // System metrics
+  // Use our custom hooks for real data
+  const { stats, loading: statsLoading, error: statsError } = useDashboardStats();
+  const { agents, activeTasks, totalAgents, loading: agentsLoading } = useAgents();
+  const { metrics, loading: metricsLoading } = useSystemMetrics();
+  const { health, loading: healthLoading } = useHealthCheck();
+  const isOnline = useConnectionStatus();
+  const { isConnected, dashboardData, notifications } = useDashboardWebSocket();
+
+  // System metrics with fallback to static data
   const systemMetrics = {
-    cpu: 67.8,
-    memory: 89.2,
-    disk: 34.1,
+    cpu: metrics?.cpu?.value || 67.8,
+    memory: metrics?.memory?.value || 89.2,
+    disk: metrics?.disk?.value || 34.1,
     network: 56.3,
-    activeRequests: 47,
+    activeRequests: activeTasks || 47,
     queueLength: 12,
     responseTime: 0.002,
     uptime: 99.9
   };
 
-  // Three Engine Status
+  // Three Engine Status with real health data
   const engineStatus = {
     memory: { 
-      status: 'active', 
+      status: health?.services?.memory_engine === 'active' ? 'active' : 'inactive', 
       entities: 1247893, 
       speed: 95, 
       cost: 0,
@@ -37,14 +49,14 @@ const FullReVoDashboard = () => {
       dailyGrowth: 2341
     },
     parallel: { 
-      status: 'active', 
+      status: health?.services?.parallel_engine === 'active' ? 'active' : 'inactive', 
       workers: 8, 
-      load: 45.2, 
+      load: systemMetrics.cpu || 45.2, 
       throughput: 150,
       performance: '10x'
     },
     creative: { 
-      status: 'active', 
+      status: health?.services?.creative_engine === 'active' ? 'active' : 'inactive', 
       patterns: 15, 
       novelty: 94, 
       innovation: 7.2,
@@ -124,16 +136,22 @@ const FullReVoDashboard = () => {
           {/* Three-Engine Status Lights */}
           <div className="hidden md:flex items-center gap-6 ml-8">
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-              <span className="text-green-400 text-sm">Memory: Active (99.9%)</span>
+              <div className={`w-2 h-2 rounded-full ${engineStatus.memory.status === 'active' ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`} />
+              <span className={`text-sm ${engineStatus.memory.status === 'active' ? 'text-green-400' : 'text-red-400'}`}>
+                Memory: {engineStatus.memory.status === 'active' ? 'Active (99.9%)' : 'Inactive'}
+              </span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-              <span className="text-green-400 text-sm">Parallel: Active (10x Performance)</span>
+              <div className={`w-2 h-2 rounded-full ${engineStatus.parallel.status === 'active' ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`} />
+              <span className={`text-sm ${engineStatus.parallel.status === 'active' ? 'text-green-400' : 'text-red-400'}`}>
+                Parallel: {engineStatus.parallel.status === 'active' ? 'Active (10x Performance)' : 'Inactive'}
+              </span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-              <span className="text-green-400 text-sm">Creative: Active (94% Novelty)</span>
+              <div className={`w-2 h-2 rounded-full ${engineStatus.creative.status === 'active' ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`} />
+              <span className={`text-sm ${engineStatus.creative.status === 'active' ? 'text-green-400' : 'text-red-400'}`}>
+                Creative: {engineStatus.creative.status === 'active' ? 'Active (94% Novelty)' : 'Inactive'}
+              </span>
             </div>
           </div>
         </div>
@@ -142,6 +160,14 @@ const FullReVoDashboard = () => {
           {/* Cost Savings */}
           <div className="hidden md:flex items-center gap-2 bg-green-500/20 px-3 py-1 rounded-full">
             <span className="text-green-400 text-sm font-medium">Cost Savings: ${costSavings.totalSavings.toLocaleString()}</span>
+          </div>
+          
+          {/* Connection Status */}
+          <div className={`hidden lg:flex items-center gap-2 px-3 py-1 rounded-full ${isOnline && isConnected ? 'bg-green-500/20' : 'bg-red-500/20'}`}>
+            <div className={`w-2 h-2 rounded-full ${isOnline && isConnected ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`} />
+            <span className={`text-sm font-medium ${isOnline && isConnected ? 'text-green-400' : 'text-red-400'}`}>
+              {isOnline && isConnected ? 'Online' : 'Offline'}
+            </span>
           </div>
           
           {/* Memory Status */}
@@ -202,6 +228,25 @@ const FullReVoDashboard = () => {
 
   const DashboardView = () => (
     <div className="p-6 space-y-6">
+      {/* Loading and Error States */}
+      {(statsLoading || agentsLoading || metricsLoading || healthLoading) && (
+        <div className="bg-blue-500/20 backdrop-blur-md rounded-xl p-4 border border-blue-400/30">
+          <div className="flex items-center gap-3">
+            <RefreshCw className="w-5 h-5 text-blue-400 animate-spin" />
+            <span className="text-blue-400">Loading dashboard data...</span>
+          </div>
+        </div>
+      )}
+      
+      {statsError && (
+        <div className="bg-red-500/20 backdrop-blur-md rounded-xl p-4 border border-red-400/30">
+          <div className="flex items-center gap-3">
+            <AlertCircle className="w-5 h-5 text-red-400" />
+            <span className="text-red-400">Error loading data: {statsError}</span>
+          </div>
+        </div>
+      )}
+      
       {/* Three-Engine Status Overview */}
       <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20">
         <h2 className="text-xl font-bold text-white mb-6">THREE-ENGINE STATUS OVERVIEW</h2>
