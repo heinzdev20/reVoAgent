@@ -27,6 +27,7 @@ from .services.enhanced_monitoring_service import enhanced_monitoring_service
 # Import existing services
 from .engine_api import router as engine_router, initialize_engines, get_engine_coordinator
 from .memory_api import get_memory_routers, initialize_memory_system
+from .api.routes.ai_intelligence import router as ai_intelligence_router
 
 # Configure logging
 logging.basicConfig(
@@ -103,6 +104,7 @@ async def startup_event():
         
         # Include routers
         app.include_router(engine_router)
+        app.include_router(ai_intelligence_router)
         for router in get_memory_routers():
             app.include_router(router)
         

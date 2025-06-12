@@ -27,8 +27,7 @@ def check_dependencies():
         'fastapi',
         'uvicorn',
         'websockets',
-        'psutil',
-        'aioredis'
+        'psutil'
     ]
     
     missing_packages = []
