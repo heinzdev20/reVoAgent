@@ -18,7 +18,7 @@ class PortManager:
     def __init__(self):
         self.default_ports = {
             'backend': 12001,
-            'frontend': 3000,
+            'frontend': 12000,
             'redis': 6379,
             'prometheus': 9090,
             'grafana': 3001,

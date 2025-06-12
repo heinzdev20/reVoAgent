@@ -66,10 +66,10 @@ export interface AgentInfo {
   uptime: string;
 }
 
-export type TabId = 
-  | 'dashboard' 
-  | 'projects' 
-  | 'workflows' 
+export type TabId =
+  | 'dashboard'
+  | 'projects'
+  | 'workflows'
   | 'analytics'
   | 'code-generator'
   | 'debug-agent'
@@ -96,4 +96,53 @@ export interface WebSocketMessage {
   type: string;
   data: any;
   timestamp: string;
+}
+
+// Chat types
+export interface ChatMessage {
+  id: string;
+  content: string;
+  role: 'user' | 'assistant' | 'system';
+  timestamp: Date;
+  metadata?: {
+    provider?: string;
+    tokens_used?: number;
+    generation_time?: number;
+  };
+}
+
+export interface ChatResponse {
+  content: string;
+  provider: string;
+  tokens_used: number;
+  generation_time: number;
+}
+
+// Engine types
+export interface EngineStatus {
+  name: string;
+  status: 'active' | 'inactive' | 'error';
+  metrics: {
+    [key: string]: string | number;
+  };
+}
+
+// Agent execution types
+export interface AgentTask {
+  id: string;
+  agent_type: string;
+  parameters: Record<string, any>;
+  status: 'running' | 'completed' | 'failed' | 'cancelled';
+  created_at: string;
+  progress: number;
+  result?: any;
+  error?: string;
+}
+
+export interface AgentExecutionResult {
+  success: boolean;
+  task_id: string;
+  agent_type: string;
+  status: string;
+  estimated_completion: string;
 }

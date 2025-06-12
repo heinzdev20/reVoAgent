@@ -23,7 +23,7 @@ class PortManager:
         self.config_file = self.project_root / 'port_config.json'
         self.default_ports = {
             'backend': 12001,
-            'frontend': 3000,
+            'frontend': 12000,
             'postgres': 5432,
             'redis': 6379,
             'prometheus': 9090,
@@ -34,8 +34,8 @@ class PortManager:
             'nginx_ssl': 443
         }
         self.port_ranges = {
-            'backend': (12000, 12010),
-            'frontend': (3000, 3010),
+            'backend': (12001, 12010),
+            'frontend': (12000, 12010),
             'monitoring': (9000, 9100),
             'databases': (5400, 5500),
             'cache': (6300, 6400)
