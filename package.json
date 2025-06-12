@@ -1,0 +1,18 @@
+{
+  "name": "revoagent",
+  "version": "1.0.0",
+  "description": "Revolutionary Agentic Coding Platform",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd apps/backend && python main.py",
+    "build": "cd frontend && npm run build",
+    "start": "npm run start:backend",
+    "start:backend": "cd apps/backend && python main.py",
+    "install:all": "cd frontend && npm install",
+    "clean": "cd frontend && rm -rf dist node_modules && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
