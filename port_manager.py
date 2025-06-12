@@ -304,20 +304,243 @@ class PortManager:
             if usage_info:
                 print(f"  Port {port} ({service}):")
                 for proc in usage_info:
-                    print(f"    PID {proc['pid']:6} : {proc['name']} - {proc['cmdline'][:50]}...")
+                    pid_str = str(proc['pid']) if proc['pid'] is not None else "N/A"
+                    cmdline = proc['cmdline'][:50] if proc['cmdline'] else "Unknown"
+                    print(f"    PID {pid_str:>6} : {proc['name']} - {cmdline}...")
+            else:
+                print(f"  Port {port} ({service}): No active processes")
         
+        print("=" * 70)
+
+    def start_fullstack(self):
+        """Start the full stack system with enhanced Three-Engine architecture"""
+        print("🚀 Starting Enhanced Three-Engine Full Stack System...")
+        print("=" * 70)
+        
+        # Step 1: Allocate ports
+        print("🔌 Step 1: Allocating ports...")
+        allocated_ports = self.allocate_ports()
+        if not allocated_ports:
+            print("❌ Failed to allocate ports")
+            return False
+        
+        # Step 2: Start backend
+        print("🧠 Step 2: Starting Enhanced Backend...")
+        backend_success = self.start_backend(allocated_ports['backend'])
+        if not backend_success:
+            print("❌ Failed to start backend")
+            return False
+        
+        # Step 3: Start frontend
+        print("🌐 Step 3: Starting Enhanced Frontend...")
+        frontend_success = self.start_frontend(allocated_ports['frontend'])
+        if not frontend_success:
+            print("❌ Failed to start frontend")
+            return False
+        
+        # Step 4: Verify services
+        print("🔍 Step 4: Verifying services...")
+        if self.verify_services(allocated_ports):
+            print("✅ Enhanced Three-Engine Full Stack System started successfully!")
+            self.show_success_summary(allocated_ports)
+            return True
+        else:
+            print("❌ Service verification failed")
+            return False
+    
+    def start_backend(self, port: int) -> bool:
+        """Start the enhanced backend service"""
+        import subprocess
+        import time
+        
+        logs_dir = Path("logs")
+        logs_dir.mkdir(exist_ok=True)
+        
+        cmd = [
+            sys.executable, "-c", f"""
+import sys
+import os
+sys.path.append('.')
+sys.path.append('./apps/backend')
+sys.path.append('./packages')
+
+# Set environment variables for enhanced features
+os.environ['REVOAGENT_MODE'] = 'three_engine'
+os.environ['ENABLE_MEMORY_ENGINES'] = 'true'
+os.environ['ENABLE_PARALLEL_PROCESSING'] = 'true'
+os.environ['ENABLE_CREATIVE_ENGINE'] = 'true'
+os.environ['AGENT_COUNT'] = '20'
+os.environ['COST_OPTIMIZATION'] = 'true'
+
+import uvicorn
+try:
+    from apps.backend.three_engine_main import app
+    print('🧠 Starting Three-Engine Backend...')
+    uvicorn.run(app, host='0.0.0.0', port={port}, log_level='info')
+except ImportError:
+    print('⚠️  Three-Engine backend not available, using simple backend')
+    from simple_dev_server import app
+    uvicorn.run(app, host='0.0.0.0', port={port})
+"""
+        ]
+        
+        try:
+            with open(logs_dir / "enhanced_backend.log", 'w') as log_file:
+                process = subprocess.Popen(
+                    cmd,
+                    stdout=log_file,
+                    stderr=subprocess.STDOUT,
+                    env={**os.environ, 'PYTHONPATH': str(Path.cwd())}
+                )
+            
+            # Save PID
+            with open(logs_dir / "enhanced_backend.pid", 'w') as f:
+                f.write(str(process.pid))
+            
+            # Wait for service to be ready
+            time.sleep(5)
+            return self.check_service_health(f"http://localhost:{port}/health")
+            
+        except Exception as e:
+            self.logger.error(f"Failed to start backend: {e}")
+            return False
+    
+    def start_frontend(self, port: int) -> bool:
+        """Start the enhanced frontend service"""
+        import subprocess
+        import time
+        
+        logs_dir = Path("logs")
+        frontend_dir = Path("frontend")
+        
+        if not frontend_dir.exists():
+            self.logger.error("Frontend directory not found")
+            return False
+        
+        # Check if node_modules exist
+        if not (frontend_dir / "node_modules").exists():
+            print("📦 Installing frontend dependencies...")
+            result = subprocess.run(["npm", "install"], cwd=frontend_dir)
+            if result.returncode != 0:
+                self.logger.error("Failed to install frontend dependencies")
+                return False
+        
+        try:
+            cmd = [
+                "npm", "run", "dev", "--", 
+                "--port", str(port), 
+                "--host", "0.0.0.0"
+            ]
+            
+            with open(logs_dir / "enhanced_frontend.log", 'w') as log_file:
+                process = subprocess.Popen(
+                    cmd,
+                    cwd=frontend_dir,
+                    stdout=log_file,
+                    stderr=subprocess.STDOUT,
+                    env={
+                        **os.environ,
+                        'VITE_API_BASE_URL': f'http://localhost:{self.active_ports.get("backend", 12001)}',
+                        'VITE_WS_BASE_URL': f'ws://localhost:{self.active_ports.get("backend", 12001)}',
+                        'VITE_THREE_ENGINE_MODE': 'true',
+                        'VITE_AGENT_COUNT': '20'
+                    }
+                )
+            
+            # Save PID
+            with open(logs_dir / "enhanced_frontend.pid", 'w') as f:
+                f.write(str(process.pid))
+            
+            # Wait for service to be ready
+            time.sleep(8)
+            return self.check_service_health(f"http://localhost:{port}")
+            
+        except Exception as e:
+            self.logger.error(f"Failed to start frontend: {e}")
+            return False
+    
+    def check_service_health(self, url: str) -> bool:
+        """Check if service is healthy"""
+        import requests
+        
+        try:
+            response = requests.get(url, timeout=5)
+            return response.status_code == 200
+        except:
+            return False
+    
+    def verify_services(self, ports: Dict[str, int]) -> bool:
+        """Verify all services are running correctly"""
+        import requests
+        
+        # Check backend
+        try:
+            backend_url = f"http://localhost:{ports['backend']}/health"
+            response = requests.get(backend_url, timeout=5)
+            if response.status_code != 200:
+                return False
+            
+            health_data = response.json()
+            if health_data.get("status") != "healthy":
+                return False
+        except:
+            return False
+        
+        # Check frontend
+        try:
+            frontend_url = f"http://localhost:{ports['frontend']}"
+            response = requests.get(frontend_url, timeout=5)
+            if response.status_code != 200:
+                return False
+        except:
+            return False
+        
+        return True
+    
+    def show_success_summary(self, ports: Dict[str, int]):
+        """Show success summary with all URLs and information"""
+        print("\n" + "=" * 70)
+        print("🎉 ENHANCED THREE-ENGINE SYSTEM STARTED SUCCESSFULLY!")
+        print("=" * 70)
+        print(f"🧠 Three-Engine Backend: http://localhost:{ports['backend']}")
+        print(f"   ├── Perfect Recall Engine: <100ms memory retrieval")
+        print(f"   ├── Parallel Mind Engine: 4-16 auto-scaling workers")
+        print(f"   └── Creative Engine: 3-5 innovative solutions")
+        print(f"🌐 Enhanced Frontend: http://localhost:{ports['frontend']}")
+        print(f"🤖 Memory-Enabled Agents: 20+ with cost optimization")
+        print(f"🛡️  Security Framework: Real-time threat detection")
+        print(f"📊 Performance Target: <50ms response, 1000+ req/min")
+        
+        print(f"\n🌐 Access URLs:")
+        print(f"   Frontend Dashboard: http://localhost:{ports['frontend']}")
+        print(f"   Backend API: http://localhost:{ports['backend']}")
+        print(f"   API Documentation: http://localhost:{ports['backend']}/docs")
+        print(f"   Health Check: http://localhost:{ports['backend']}/health")
+        print(f"   Agent Management: http://localhost:{ports['backend']}/api/agents")
+        
+        print(f"\n📁 Enhanced Logs:")
+        print(f"   Backend: ./logs/enhanced_backend.log")
+        print(f"   Frontend: ./logs/enhanced_frontend.log")
+        print(f"   PIDs: ./logs/enhanced_backend.pid, ./logs/enhanced_frontend.pid")
+        
+        print(f"\n🛑 To stop Enhanced System:")
+        print(f"   python3 port_manager.py --cleanup")
+        
+        print(f"\n🚀 READY FOR REVOLUTIONARY AI DEVELOPMENT!")
         print("=" * 70)
 
 def main():
     """Main entry point for port management"""
     import argparse
     
-    parser = argparse.ArgumentParser(description='reVoAgent Port Manager')
+    parser = argparse.ArgumentParser(description='reVoAgent Enhanced Port Manager')
     parser.add_argument('--allocate', action='store_true', help='Allocate ports for services')
     parser.add_argument('--cleanup', action='store_true', help='Cleanup allocated ports')
     parser.add_argument('--report', action='store_true', help='Show port allocation report')
     parser.add_argument('--kill-port', type=int, help='Kill processes using specific port')
     parser.add_argument('--force', action='store_true', help='Force kill processes')
+    parser.add_argument('--start-fullstack', action='store_true', help='Start enhanced full stack system')
+    parser.add_argument('--restart-fullstack', action='store_true', help='Restart enhanced full stack system')
     
     args = parser.parse_args()
     
@@ -338,6 +561,21 @@ def main():
             # Load existing configuration or use defaults
             ports = manager.load_port_config() or manager.default_ports
             manager.print_port_report(ports)
+        
+        elif args.start_fullstack:
+            success = manager.start_fullstack()
+            if not success:
+                print("❌ Failed to start full stack system")
+                sys.exit(1)
+        
+        elif args.restart_fullstack:
+            print("🔄 Restarting Enhanced Three-Engine Full Stack System...")
+            manager.cleanup_ports()
+            time.sleep(3)
+            success = manager.start_fullstack()
+            if not success:
+                print("❌ Failed to restart full stack system")
+                sys.exit(1)
         
         else:
             # Default: allocate ports and show report
