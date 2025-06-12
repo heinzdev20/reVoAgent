@@ -12,14 +12,15 @@ export default defineConfig({
   server: {
     port: 12000,
     host: true,
+    strictPort: true, // Fail if port is in use instead of trying alternatives
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        target: 'http://localhost:12001',
         changeOrigin: true,
         secure: false,
       },
       '/ws': {
-        target: 'ws://localhost:8000',
+        target: 'ws://localhost:12001',
         ws: true,
         changeOrigin: true,
       },

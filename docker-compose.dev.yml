@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  # Development Backend
+  backend-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+      target: development
+    container_name: revoagent-backend-dev
+    ports:
+      - "12001:12001"
+    volumes:
+      - .:/app
+      - ./logs:/app/logs
+    environment:
+      - REVOAGENT_CONFIG=/app/config/config.yaml
+      - PYTHONPATH=/app/src
+      - REVOAGENT_DEBUG=true
+      - REVOAGENT_MODE=development
+    networks:
+      - revoagent-dev
+    restart: unless-stopped
+    command: python apps/backend/main.py
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:12001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Development Frontend
+  frontend-dev:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: development
+    container_name: revoagent-frontend-dev
+    ports:
+      - "12000:12000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules  # Anonymous volume for node_modules
+    environment:
+      - VITE_API_URL=http://backend-dev:12001
+      - VITE_WS_URL=ws://backend-dev:12001
+      - VITE_APP_MODE=development
+    networks:
+      - revoagent-dev
+    restart: unless-stopped
+    depends_on:
+      - backend-dev
+    command: npm run dev
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:12000"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Redis for development
+  redis-dev:
+    image: redis:7-alpine
+    container_name: revoagent-redis-dev
+    ports:
+      - "6379:6379"
+    networks:
+      - revoagent-dev
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
+networks:
+  revoagent-dev:
+    driver: bridge
+    name: revoagent-dev-network
