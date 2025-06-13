@@ -203,10 +203,11 @@ async def websocket_chat(websocket: WebSocket):
         logger.info("WebSocket client disconnected")
 
 if __name__ == "__main__":
+    port = int(os.getenv("PORT", 8000))
     uvicorn.run(
         app,
         host="0.0.0.0",
-        port=12001,
+        port=port,
         reload=False,
         log_level="info"
     )

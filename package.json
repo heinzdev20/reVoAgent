@@ -1,17 +1,63 @@
 {
-  "name": "revoagent",
+  "name": "revoagent-workspace",
   "version": "1.0.0",
-  "description": "Revolutionary Agentic Coding Platform",
+  "description": "🚀 reVoAgent Multi-Agent Workspace Arena - Revolutionary AI Development Platform",
+  "main": "index.js",
   "scripts": {
-    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
-    "dev:frontend": "cd frontend && npm run dev",
-    "dev:backend": "cd apps/backend && python main.py",
+    "dev": "./scripts/port-manager.sh dev",
+    "start": "./scripts/port-manager.sh start",
+    "stop": "./scripts/port-manager.sh stop",
+    "restart": "./scripts/port-manager.sh restart",
+    "status": "./scripts/port-manager.sh status",
+    "health": "./scripts/port-manager.sh health",
+    "setup": "./scripts/port-manager.sh setup",
+    "cleanup": "./scripts/port-manager.sh cleanup",
+    "kill-ports": "./scripts/port-manager.sh kill-ports",
+    "frontend": "cd frontend && npm run dev",
+    "backend": "cd backend && python3 main.py",
+    "install-all": "cd frontend && npm install && cd ../backend && pip install -r requirements.txt",
     "build": "cd frontend && npm run build",
-    "start": "npm run start:backend",
-    "start:backend": "cd apps/backend && python main.py",
-    "install:all": "cd frontend && npm install",
-    "clean": "cd frontend && rm -rf dist node_modules && npm install"
+    "test": "cd frontend && npm test && cd ../backend && python -m pytest",
+    "lint": "cd frontend && npm run lint",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "logs": "tail -f logs/*.log",
+    "monitor": "watch -n 2 './scripts/port-manager.sh status'",
+    "legacy:dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "legacy:dev:frontend": "cd frontend && npm run dev",
+    "legacy:dev:backend": "cd apps/backend && python main.py",
+    "legacy:start": "npm run start:backend",
+    "legacy:start:backend": "cd apps/backend && python main.py",
+    "legacy:install:all": "cd frontend && npm install",
+    "legacy:clean": "cd frontend && rm -rf dist node_modules && npm install"
   },
+  "keywords": [
+    "ai",
+    "agents",
+    "workspace",
+    "multi-agent",
+    "revoagent",
+    "dashboard",
+    "react",
+    "typescript",
+    "fastapi",
+    "python"
+  ],
+  "author": "reVoAgent Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/heinzdev20/reVoAgent.git"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "workspaces": [
+    "frontend"
+  ],
   "devDependencies": {
     "concurrently": "^8.2.2"
   }
