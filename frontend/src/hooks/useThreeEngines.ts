@@ -270,12 +270,16 @@ export const useThreeEngines = () => {
 
   return {
     engineStatus,
+    memoryEngine: engineStatus.memory,
+    parallelEngine: engineStatus.parallel,
+    creativeEngine: engineStatus.creative,
     isCoordinating,
     lastCoordination,
     threeEngineMode,
+    coordinationMode: 'balanced' as const,
     coordinateEngines,
-    startEngines,
-    stopEngines,
+    startCoordination: startEngines,
+    stopCoordination: stopEngines,
     resetEngines,
     fetchEngineStatus
   };
