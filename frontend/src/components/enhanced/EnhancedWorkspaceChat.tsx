@@ -657,7 +657,7 @@ Select your preferred agents and start collaborating! Choose from different mode
               <Send className="w-5 h-5" />
             )}
           </motion.button>
-        </div>
+          </div>
 
         {/* Quick Actions */}
         <div className="mt-3 flex items-center justify-between">
@@ -679,6 +679,7 @@ Select your preferred agents and start collaborating! Choose from different mode
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 };
