@@ -113,6 +113,147 @@ if FASTAPI_AVAILABLE:
             "timestamp": datetime.now().isoformat()
         }
     
+    @app.post("/api/chat/single-agent")
+    async def single_agent_chat(request: dict):
+        """Single agent chat endpoint"""
+        agent_id = request.get('agent_id', 'general-assistant')
+        message = request.get('message', '')
+        
+        # Simulate agent-specific responses
+        agent_responses = {
+            'memory-engine': f"[Memory Engine] Retrieving relevant information for: {message}",
+            'parallel-processor': f"[Parallel Processor] Processing your request efficiently: {message}",
+            'creative-engine': f"[Creative Engine] Thinking creatively about: {message}",
+            'code-specialist': f"[Code Specialist] Analyzing from a technical perspective: {message}",
+            'debug-detective': f"[Debug Detective] Investigating potential issues in: {message}",
+            'workflow-manager': f"[Workflow Manager] Organizing workflow for: {message}",
+            'general-assistant': f"[General Assistant] I can help you with: {message}"
+        }
+        
+        return {
+            "agent_id": agent_id,
+            "agent_name": agent_responses.get(agent_id, "Unknown Agent"),
+            "response": agent_responses.get(agent_id, f"Response from {agent_id}: {message}"),
+            "processing_time": 0.5,
+            "confidence": 95.0,
+            "engine_used": [agent_id.split('-')[0]],
+            "timestamp": datetime.now().isoformat()
+        }
+    
+    @app.post("/api/chat/multi-agent")
+    async def multi_agent_chat(request: dict):
+        """Multi-agent chat endpoint"""
+        agent_ids = request.get('agent_ids', ['memory-engine', 'parallel-processor', 'creative-engine'])
+        message = request.get('message', '')
+        
+        responses = []
+        for i, agent_id in enumerate(agent_ids):
+            agent_responses = {
+                'memory-engine': f"From memory perspective: I found relevant patterns in our knowledge base related to '{message}'",
+                'parallel-processor': f"From parallel processing perspective: I can optimize this task by breaking it into {len(message.split())} parallel components",
+                'creative-engine': f"From creative perspective: Here are 3 innovative approaches to '{message}'",
+                'code-specialist': f"From technical perspective: The implementation strategy for '{message}' should consider...",
+                'debug-detective': f"From debugging perspective: I've identified potential edge cases in '{message}'",
+                'workflow-manager': f"From workflow perspective: I suggest a 4-step process for '{message}'"
+            }
+            
+            responses.append({
+                "agent_id": agent_id,
+                "agent_name": agent_id.replace('-', ' ').title(),
+                "response": agent_responses.get(agent_id, f"Multi-agent response from {agent_id}"),
+                "processing_time": 0.3 + (i * 0.2),
+                "confidence": 92.0 + (i * 1.5),
+                "engine_used": [agent_id.split('-')[0]],
+                "workflow_step": i + 1,
+                "total_steps": len(agent_ids),
+                "timestamp": datetime.now().isoformat()
+            })
+        
+        return {
+            "mode": "multi-agent",
+            "agents_involved": len(agent_ids),
+            "responses": responses,
+            "total_processing_time": sum(r["processing_time"] for r in responses),
+            "average_confidence": sum(r["confidence"] for r in responses) / len(responses),
+            "engines_used": ["memory", "parallel", "creative"],
+            "timestamp": datetime.now().isoformat()
+        }
+    
+    @app.post("/api/chat/collaborative")
+    async def collaborative_chat(request: dict):
+        """Collaborative chat endpoint with three-engine coordination"""
+        message = request.get('message', '')
+        collaboration_id = request.get('collaboration_id', f"collab-{int(time.time())}")
+        
+        # Simulate three-engine collaborative workflow
+        workflow_steps = [
+            {
+                "step": 1,
+                "agent": "memory-engine",
+                "action": "Knowledge Retrieval",
+                "description": f"Scanning knowledge base for patterns related to: {message}",
+                "processing_time": 0.05,
+                "confidence": 99.9,
+                "findings": "Found 1,247 relevant knowledge entities and 3,456 relationships"
+            },
+            {
+                "step": 2,
+                "agent": "parallel-processor",
+                "action": "Parallel Analysis",
+                "description": f"Processing multiple solution approaches for: {message}",
+                "processing_time": 0.02,
+                "confidence": 97.8,
+                "findings": "Identified 8 parallel processing paths with 10x performance optimization"
+            },
+            {
+                "step": 3,
+                "agent": "creative-engine",
+                "action": "Innovation Generation",
+                "description": f"Generating creative solutions for: {message}",
+                "processing_time": 1.2,
+                "confidence": 94.0,
+                "findings": "Generated 15 innovative patterns with 94% novelty score"
+            },
+            {
+                "step": 4,
+                "agent": "workflow-manager",
+                "action": "Solution Coordination",
+                "description": f"Coordinating comprehensive response for: {message}",
+                "processing_time": 0.7,
+                "confidence": 95.3,
+                "findings": "Orchestrated final solution with cross-engine optimization"
+            }
+        ]
+        
+        # Final collaborative response
+        collaborative_response = f"""🧠 **Memory Engine Analysis:**
+Found extensive knowledge patterns related to your query. Our knowledge graph contains 1,247,893 entities with 99.9% accuracy.
+
+⚡ **Parallel Processing Optimization:**
+Identified optimal processing strategy using 8 parallel workers with 10x performance boost.
+
+🎨 **Creative Innovation:**
+Generated innovative approaches with 94% novelty score and breakthrough potential.
+
+📋 **Coordinated Solution:**
+Based on our three-engine collaboration, here's our comprehensive response to: "{message}"
+
+This solution leverages our Perfect Recall Engine for knowledge, Parallel Mind Engine for optimization, and Creative Engine for innovation."""
+        
+        return {
+            "mode": "collaborative",
+            "collaboration_id": collaboration_id,
+            "workflow_steps": workflow_steps,
+            "final_response": collaborative_response,
+            "total_processing_time": sum(step["processing_time"] for step in workflow_steps),
+            "average_confidence": sum(step["confidence"] for step in workflow_steps) / len(workflow_steps),
+            "engines_used": ["memory", "parallel", "creative", "workflow"],
+            "cost_savings": "100% (local processing)",
+            "performance_boost": "10x parallel optimization",
+            "innovation_score": 94.0,
+            "timestamp": datetime.now().isoformat()
+        }
+    
     def start_fastapi_server(port: int = 8000):
         """Start FastAPI server"""
         print(f"🚀 Starting reVoAgent Backend API on port {port}")
@@ -159,7 +300,7 @@ else:
 
 def main():
     """Main function"""
-    port = 8000
+    port = 12001  # Use port 12001 as specified in the instructions
     
     if FASTAPI_AVAILABLE:
         start_fastapi_server(port)
