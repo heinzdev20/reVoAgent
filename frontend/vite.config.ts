@@ -16,10 +16,8 @@ export default defineConfig({
     allowedHosts: [
       'localhost',
       '127.0.0.1',
-      'work-1-cmasavtinjksmicy.prod-runtime.all-hands.dev',
-      'work-2-cmasavtinjksmicy.prod-runtime.all-hands.dev',
-      'work-1-zcwvpagjtdgrexkr.prod-runtime.all-hands.dev',
-      'work-2-zcwvpagjtdgrexkr.prod-runtime.all-hands.dev'
+      'work-1-nqxcgeonuommqqgu.prod-runtime.all-hands.dev',
+      'work-2-nqxcgeonuommqqgu.prod-runtime.all-hands.dev'
     ],
     proxy: {
       '/api': {
