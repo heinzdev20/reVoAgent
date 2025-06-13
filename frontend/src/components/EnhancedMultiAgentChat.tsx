@@ -173,7 +173,7 @@ const EnhancedMultiAgentChat: React.FC<EnhancedMultiAgentChatProps> = ({
     }
   ];
 
-  // Available agents with enhanced metadata
+  // Available agents with enhanced metadata - 20+ specialized agents
   const availableAgents: Agent[] = [
     {
       id: 'general-assistant',
@@ -258,7 +258,7 @@ const EnhancedMultiAgentChat: React.FC<EnhancedMultiAgentChatProps> = ({
       avatar: '🔍',
       description: 'Specialized in finding and fixing bugs',
       capabilities: ['Bug Detection', 'Error Analysis', 'Performance Debugging', 'Security Auditing'],
-      isActive: false,
+      isActive: true,
       responseTime: 0.9,
       accuracy: 98.1,
       totalInteractions: 34567,
@@ -273,12 +273,282 @@ const EnhancedMultiAgentChat: React.FC<EnhancedMultiAgentChatProps> = ({
       avatar: '📋',
       description: 'Manages complex workflows and task coordination',
       capabilities: ['Task Management', 'Workflow Design', 'Process Optimization', 'Team Coordination'],
-      isActive: false,
+      isActive: true,
       responseTime: 0.7,
       accuracy: 95.3,
       totalInteractions: 12345,
       currentLoad: 12,
       specialization: ['Workflow Design', 'Task Management', 'Coordination']
+    },
+    {
+      id: 'data-analyst',
+      name: 'Data Analyst',
+      type: 'general',
+      status: 'online',
+      avatar: '📊',
+      description: 'Advanced data analysis and visualization expert',
+      capabilities: ['Data Mining', 'Statistical Analysis', 'Visualization', 'Reporting'],
+      isActive: true,
+      responseTime: 1.1,
+      accuracy: 96.8,
+      totalInteractions: 28934,
+      currentLoad: 42,
+      specialization: ['Data Science', 'Analytics', 'Visualization']
+    },
+    {
+      id: 'security-expert',
+      name: 'Security Expert',
+      type: 'code',
+      status: 'online',
+      avatar: '🛡️',
+      description: 'Cybersecurity and vulnerability assessment specialist',
+      capabilities: ['Security Auditing', 'Penetration Testing', 'Compliance', 'Risk Assessment'],
+      isActive: true,
+      responseTime: 0.9,
+      accuracy: 97.5,
+      totalInteractions: 19876,
+      currentLoad: 38,
+      specialization: ['Cybersecurity', 'Compliance', 'Risk Management']
+    },
+    {
+      id: 'devops-engineer',
+      name: 'DevOps Engineer',
+      type: 'code',
+      status: 'online',
+      avatar: '🔧',
+      description: 'Infrastructure automation and deployment specialist',
+      capabilities: ['CI/CD', 'Infrastructure as Code', 'Monitoring', 'Automation'],
+      isActive: true,
+      responseTime: 0.8,
+      accuracy: 95.9,
+      totalInteractions: 31245,
+      currentLoad: 51,
+      specialization: ['DevOps', 'Automation', 'Infrastructure']
+    },
+    {
+      id: 'ui-ux-designer',
+      name: 'UI/UX Designer',
+      type: 'creative',
+      status: 'online',
+      avatar: '🎯',
+      description: 'User interface and experience design expert',
+      capabilities: ['UI Design', 'UX Research', 'Prototyping', 'User Testing'],
+      isActive: true,
+      responseTime: 1.3,
+      accuracy: 94.7,
+      totalInteractions: 22156,
+      currentLoad: 29,
+      specialization: ['UI Design', 'UX Research', 'Prototyping']
+    },
+    {
+      id: 'ml-engineer',
+      name: 'ML Engineer',
+      type: 'parallel',
+      status: 'online',
+      avatar: '🤖',
+      description: 'Machine learning and AI model development specialist',
+      capabilities: ['Model Training', 'Feature Engineering', 'MLOps', 'Model Optimization'],
+      isActive: true,
+      responseTime: 1.5,
+      accuracy: 97.2,
+      totalInteractions: 18743,
+      currentLoad: 63,
+      specialization: ['Machine Learning', 'AI Models', 'MLOps']
+    },
+    {
+      id: 'content-writer',
+      name: 'Content Writer',
+      type: 'creative',
+      status: 'online',
+      avatar: '✍️',
+      description: 'Professional content creation and copywriting expert',
+      capabilities: ['Content Strategy', 'SEO Writing', 'Copywriting', 'Editorial'],
+      isActive: true,
+      responseTime: 1.0,
+      accuracy: 93.8,
+      totalInteractions: 35672,
+      currentLoad: 27,
+      specialization: ['Content Creation', 'SEO', 'Copywriting']
+    },
+    {
+      id: 'project-manager',
+      name: 'Project Manager',
+      type: 'general',
+      status: 'online',
+      avatar: '📈',
+      description: 'Agile project management and team coordination expert',
+      capabilities: ['Agile Methodology', 'Resource Planning', 'Risk Management', 'Stakeholder Communication'],
+      isActive: true,
+      responseTime: 0.9,
+      accuracy: 95.1,
+      totalInteractions: 24589,
+      currentLoad: 35,
+      specialization: ['Project Management', 'Agile', 'Team Leadership']
+    },
+    {
+      id: 'api-architect',
+      name: 'API Architect',
+      type: 'code',
+      status: 'online',
+      avatar: '🔗',
+      description: 'RESTful API design and microservices architecture expert',
+      capabilities: ['API Design', 'Microservices', 'Documentation', 'Integration'],
+      isActive: true,
+      responseTime: 0.7,
+      accuracy: 96.4,
+      totalInteractions: 16834,
+      currentLoad: 44,
+      specialization: ['API Design', 'Microservices', 'Integration']
+    },
+    {
+      id: 'database-admin',
+      name: 'Database Admin',
+      type: 'code',
+      status: 'online',
+      avatar: '🗄️',
+      description: 'Database optimization and management specialist',
+      capabilities: ['Query Optimization', 'Database Design', 'Performance Tuning', 'Backup & Recovery'],
+      isActive: true,
+      responseTime: 0.6,
+      accuracy: 97.8,
+      totalInteractions: 21456,
+      currentLoad: 58,
+      specialization: ['Database Management', 'Performance', 'Optimization']
+    },
+    {
+      id: 'cloud-architect',
+      name: 'Cloud Architect',
+      type: 'code',
+      status: 'online',
+      avatar: '☁️',
+      description: 'Cloud infrastructure and scalability expert',
+      capabilities: ['Cloud Design', 'Scalability', 'Cost Optimization', 'Multi-cloud Strategy'],
+      isActive: true,
+      responseTime: 1.0,
+      accuracy: 96.1,
+      totalInteractions: 19234,
+      currentLoad: 41,
+      specialization: ['Cloud Architecture', 'Scalability', 'Cost Optimization']
+    },
+    {
+      id: 'qa-engineer',
+      name: 'QA Engineer',
+      type: 'code',
+      status: 'online',
+      avatar: '🧪',
+      description: 'Quality assurance and automated testing specialist',
+      capabilities: ['Test Automation', 'Quality Assurance', 'Performance Testing', 'Test Strategy'],
+      isActive: true,
+      responseTime: 0.8,
+      accuracy: 95.6,
+      totalInteractions: 27891,
+      currentLoad: 33,
+      specialization: ['Quality Assurance', 'Test Automation', 'Performance Testing']
+    },
+    {
+      id: 'business-analyst',
+      name: 'Business Analyst',
+      type: 'general',
+      status: 'online',
+      avatar: '💼',
+      description: 'Business requirements and process optimization expert',
+      capabilities: ['Requirements Analysis', 'Process Mapping', 'Business Intelligence', 'Stakeholder Management'],
+      isActive: true,
+      responseTime: 1.1,
+      accuracy: 94.3,
+      totalInteractions: 22567,
+      currentLoad: 31,
+      specialization: ['Business Analysis', 'Process Optimization', 'Requirements']
+    },
+    {
+      id: 'technical-writer',
+      name: 'Technical Writer',
+      type: 'creative',
+      status: 'online',
+      avatar: '📝',
+      description: 'Technical documentation and API documentation specialist',
+      capabilities: ['Technical Documentation', 'API Docs', 'User Guides', 'Knowledge Base'],
+      isActive: true,
+      responseTime: 1.2,
+      accuracy: 93.9,
+      totalInteractions: 18456,
+      currentLoad: 26,
+      specialization: ['Technical Writing', 'Documentation', 'Knowledge Management']
+    },
+    {
+      id: 'performance-optimizer',
+      name: 'Performance Optimizer',
+      type: 'parallel',
+      status: 'online',
+      avatar: '⚡',
+      description: 'Application performance and optimization specialist',
+      capabilities: ['Performance Analysis', 'Code Optimization', 'Profiling', 'Benchmarking'],
+      isActive: true,
+      responseTime: 0.5,
+      accuracy: 97.6,
+      totalInteractions: 15234,
+      currentLoad: 52,
+      specialization: ['Performance Optimization', 'Profiling', 'Benchmarking']
+    },
+    {
+      id: 'integration-specialist',
+      name: 'Integration Specialist',
+      type: 'code',
+      status: 'online',
+      avatar: '🔄',
+      description: 'System integration and middleware expert',
+      capabilities: ['System Integration', 'Middleware', 'Data Migration', 'Legacy Systems'],
+      isActive: true,
+      responseTime: 0.9,
+      accuracy: 95.8,
+      totalInteractions: 13789,
+      currentLoad: 39,
+      specialization: ['System Integration', 'Middleware', 'Data Migration']
+    },
+    {
+      id: 'mobile-developer',
+      name: 'Mobile Developer',
+      type: 'code',
+      status: 'online',
+      avatar: '📱',
+      description: 'Cross-platform mobile application development expert',
+      capabilities: ['React Native', 'Flutter', 'iOS Development', 'Android Development'],
+      isActive: true,
+      responseTime: 1.0,
+      accuracy: 94.5,
+      totalInteractions: 20123,
+      currentLoad: 47,
+      specialization: ['Mobile Development', 'Cross-platform', 'App Store Optimization']
+    },
+    {
+      id: 'blockchain-expert',
+      name: 'Blockchain Expert',
+      type: 'code',
+      status: 'online',
+      avatar: '⛓️',
+      description: 'Blockchain and smart contract development specialist',
+      capabilities: ['Smart Contracts', 'DeFi', 'Web3', 'Cryptocurrency'],
+      isActive: true,
+      responseTime: 1.4,
+      accuracy: 93.2,
+      totalInteractions: 8945,
+      currentLoad: 28,
+      specialization: ['Blockchain', 'Smart Contracts', 'Web3']
+    },
+    {
+      id: 'ai-researcher',
+      name: 'AI Researcher',
+      type: 'memory',
+      status: 'online',
+      avatar: '🔬',
+      description: 'Artificial intelligence research and development specialist',
+      capabilities: ['AI Research', 'Neural Networks', 'Deep Learning', 'Computer Vision'],
+      isActive: true,
+      responseTime: 1.8,
+      accuracy: 98.5,
+      totalInteractions: 12456,
+      currentLoad: 71,
+      specialization: ['AI Research', 'Neural Networks', 'Computer Vision']
     }
   ];
 
@@ -591,10 +861,10 @@ const EnhancedMultiAgentChat: React.FC<EnhancedMultiAgentChatProps> = ({
     <div className="p-4 border-b border-white/10">
       <h4 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
         <Users className="w-4 h-4 text-green-400" />
-        Active Agents ({selectedAgents.length})
+        Available Agents ({availableAgents.length}) | Selected ({selectedAgents.length})
       </h4>
       
-      <div className="space-y-2 max-h-40 overflow-y-auto">
+      <div className="space-y-2 max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
         {availableAgents.map((agent) => {
           const isSelected = selectedAgents.includes(agent.id);
           const canSelect = chatMode === 'single' ? selectedAgents.length === 0 || isSelected : true;
@@ -755,7 +1025,7 @@ const EnhancedMultiAgentChat: React.FC<EnhancedMultiAgentChatProps> = ({
 
   // Input Area
   const InputArea = () => (
-    <div className="p-4 border-t border-white/10">
+    <div className="p-4 border-t border-white/10 bg-gray-900/50">
       <div className="flex items-end gap-3">
         <div className="flex-1">
           <textarea
@@ -769,8 +1039,8 @@ const EnhancedMultiAgentChat: React.FC<EnhancedMultiAgentChatProps> = ({
               }
             }}
             placeholder={`Message ${chatMode === 'single' ? 'agent' : 'agents'}...`}
-            className="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 resize-none"
-            rows={3}
+            className="w-full p-4 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 resize-none min-h-[60px]"
+            rows={2}
           />
         </div>
         
