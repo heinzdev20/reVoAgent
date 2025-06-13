@@ -345,9 +345,16 @@ Select your preferred agents and start collaborating! Choose from different mode
   const reactions = ['👍', '❤️', '😊', '🚀', '💡', '🎯', '⭐', '🔥'];
 
   return (
-    <div className="enhanced-workspace-chat h-full flex flex-col bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900">
+    <div className="enhanced-workspace-chat h-full flex flex-col bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 relative overflow-hidden">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,119,198,0.3),transparent_50%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(255,255,255,0.1),transparent_50%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(120,119,198,0.2),transparent_50%)]"></div>
+      </div>
+      
       {/* Chat Header */}
-      <div className="chat-header bg-gray-800/60 backdrop-blur-md border-b border-gray-700/50 p-4">
+      <div className="chat-header bg-gray-800/60 backdrop-blur-md border-b border-gray-700/50 p-4 relative z-10">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
@@ -427,7 +434,7 @@ Select your preferred agents and start collaborating! Choose from different mode
       </div>
 
       {/* Chat Messages */}
-      <div className="chat-messages flex-1 overflow-y-auto p-4 space-y-4" ref={chatRef}>
+      <div className="chat-messages flex-1 overflow-y-auto p-4 pb-32 space-y-4 relative z-10" ref={chatRef}>
         <AnimatePresence>
           {messages.map((message, index) => (
             <motion.div
@@ -438,12 +445,12 @@ Select your preferred agents and start collaborating! Choose from different mode
               transition={{ duration: 0.3, delay: index * 0.1 }}
               className={`message-container ${message.sender === 'user' ? 'user-message' : 'ai-message'}`}
             >
-              <div className={`message-bubble p-4 rounded-2xl max-w-4xl ${
+              <div className={`message-bubble p-4 rounded-2xl max-w-4xl backdrop-blur-sm shadow-lg ${
                 message.sender === 'user'
-                  ? 'bg-blue-600/20 border border-blue-500/30 ml-auto'
+                  ? 'bg-blue-600/20 border border-blue-500/30 ml-auto shadow-blue-500/10'
                   : message.sender === 'system'
-                  ? 'bg-gray-700/30 border border-gray-600/30'
-                  : 'bg-gray-800/40 border border-gray-700/30'
+                  ? 'bg-gray-700/30 border border-gray-600/30 shadow-gray-500/10'
+                  : 'bg-gray-800/40 border border-gray-700/30 shadow-purple-500/10'
               }`}>
                 {/* Message Header */}
                 <div className="flex items-center justify-between mb-2">
@@ -559,9 +566,10 @@ Select your preferred agents and start collaborating! Choose from different mode
         )}
       </div>
 
-      {/* Chat Input */}
-      <div className="chat-input bg-gray-800/60 backdrop-blur-md border-t border-gray-700/50 p-4">
-        <div className="flex items-end space-x-3">
+      {/* Chat Input - Fixed at Bottom */}
+      <div className="chat-input fixed bottom-0 left-0 right-0 bg-gray-800/90 backdrop-blur-md border-t border-gray-700/50 p-4 z-50">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-end space-x-3">
           <div className="flex-1 relative">
             <textarea
               ref={inputRef}
