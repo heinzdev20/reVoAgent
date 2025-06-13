@@ -8,7 +8,7 @@ import {
   Palette, Home, Workflow, Store, BarChart, Link,
   Cog, Menu, X, ChevronRight, AlertCircle, ChevronLeft,
   Maximize2, Minimize2, PanelLeftClose, PanelLeftOpen,
-  PanelRightClose, PanelRightOpen, Expand, Compress
+  PanelRightClose, PanelRightOpen, Expand, Shrink
 } from 'lucide-react';
 
 // Import our hooks and services
@@ -158,7 +158,7 @@ const EnhancedCollapsibleDashboard = () => {
                 className="p-2 hover:bg-white/10 rounded-lg transition-colors"
                 title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
               >
-                {isFullscreen ? <Compress className="w-5 h-5" /> : <Expand className="w-5 h-5" />}
+                {isFullscreen ? <Shrink className="w-5 h-5" /> : <Expand className="w-5 h-5" />}
               </button>
             </div>
           )}
