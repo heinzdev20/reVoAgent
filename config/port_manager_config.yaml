@@ -1,0 +1,197 @@
+# Enhanced Port Manager Configuration for reVoAgent
+# This file configures intelligent port management and conflict resolution
+
+monitoring:
+  enabled: true
+  interval: 30  # seconds between monitoring checks
+  auto_resolve_conflicts: true
+  notification_webhook: null  # Optional webhook for notifications
+  health_check_interval: 60  # seconds between health checks
+
+conflict_resolution:
+  strategy: "intelligent"  # conservative, aggressive, intelligent
+  allow_port_migration: true
+  preserve_external_processes: true
+  max_alternative_ports: 10
+  force_kill_timeout: 10  # seconds to wait before force killing
+  restart_delay: 5  # seconds to wait before restarting services
+
+health_checks:
+  enabled: true
+  timeout: 10  # seconds for health check requests
+  retry_attempts: 3
+  retry_delay: 2  # seconds between retries
+  failure_threshold: 3  # consecutive failures before marking unhealthy
+
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  max_file_size: "10MB"
+  backup_count: 5
+  log_to_console: true
+  log_to_file: true
+
+services:
+  backend:
+    name: "backend"
+    port: 8000
+    alternative_ports: [8001, 8002, 8003, 12001, 12002]
+    process_patterns:
+      - "python.*simple_backend_server"
+      - "python.*apps/backend/main"
+      - "uvicorn.*main:app"
+      - "python.*main.py.*{port}"
+    health_check_url: "http://localhost:{port}/health"
+    startup_command: "python simple_backend_server.py"
+    working_directory: "/workspace/reVoAgent"
+    environment:
+      HOST: "0.0.0.0"
+      PORT: "{port}"
+    dependencies: []
+    critical: true
+    auto_restart: true
+    max_restart_attempts: 3
+    startup_timeout: 30
+    shutdown_timeout: 10
+
+  frontend:
+    name: "frontend"
+    port: 12000
+    alternative_ports: [3000, 3001, 3002, 12001, 14000, 14001, 14002]
+    process_patterns:
+      - "npm.*dev"
+      - "vite.*--port.*{port}"
+      - "node.*vite.*{port}"
+      - "yarn.*dev"
+    health_check_url: "http://localhost:{port}"
+    startup_command: "npm run dev -- --host 0.0.0.0 --port {port}"
+    working_directory: "/workspace/reVoAgent/frontend"
+    environment:
+      HOST: "0.0.0.0"
+      PORT: "{port}"
+    dependencies: ["backend"]
+    critical: true
+    auto_restart: true
+    max_restart_attempts: 3
+    startup_timeout: 60
+    shutdown_timeout: 15
+
+  memory_api:
+    name: "memory_api"
+    port: 8001
+    alternative_ports: [8002, 8003, 8004, 8005]
+    process_patterns:
+      - "python.*memory.*api"
+      - "python.*cognee.*server"
+    health_check_url: "http://localhost:{port}/api/memory/health"
+    startup_command: "python -m packages.memory.api.main"
+    working_directory: "/workspace/reVoAgent"
+    environment:
+      MEMORY_API_PORT: "{port}"
+    dependencies: []
+    critical: false
+    auto_restart: true
+    max_restart_attempts: 2
+    startup_timeout: 30
+    shutdown_timeout: 10
+
+  three_engine:
+    name: "three_engine"
+    port: 8002
+    alternative_ports: [8003, 8004, 8005, 8006]
+    process_patterns:
+      - "python.*three_engine"
+      - "python.*start_three_engine"
+    health_check_url: "http://localhost:{port}/engines/status"
+    startup_command: "python start_three_engine_system.py"
+    working_directory: "/workspace/reVoAgent"
+    environment:
+      THREE_ENGINE_PORT: "{port}"
+    dependencies: ["backend", "memory_api"]
+    critical: false
+    auto_restart: true
+    max_restart_attempts: 2
+    startup_timeout: 45
+    shutdown_timeout: 15
+
+  websocket:
+    name: "websocket"
+    port: 8080
+    alternative_ports: [8081, 8082, 8083, 8084]
+    process_patterns:
+      - "python.*websocket"
+      - "node.*socket.io"
+    health_check_url: null  # WebSocket doesn't have HTTP health check
+    startup_command: null  # Usually embedded in backend
+    working_directory: "/workspace/reVoAgent"
+    dependencies: ["backend"]
+    critical: false
+    auto_restart: false
+    max_restart_attempts: 1
+    startup_timeout: 20
+    shutdown_timeout: 5
+
+# Port ranges to avoid (system/reserved ports)
+reserved_ports:
+  - [1, 1023]      # System ports
+  - [5432, 5432]   # PostgreSQL
+  - [6379, 6379]   # Redis
+  - [9090, 9090]   # Prometheus
+  - [3001, 3001]   # Grafana
+
+# External service ports to monitor but not manage
+external_services:
+  postgres:
+    port: 5432
+    name: "PostgreSQL"
+    critical: true
+  redis:
+    port: 6379
+    name: "Redis"
+    critical: false
+  prometheus:
+    port: 9090
+    name: "Prometheus"
+    critical: false
+  grafana:
+    port: 3001
+    name: "Grafana"
+    critical: false
+
+# Notification settings
+notifications:
+  enabled: false
+  webhook_url: null
+  slack_webhook: null
+  email_settings:
+    enabled: false
+    smtp_server: null
+    smtp_port: 587
+    username: null
+    password: null
+    recipients: []
+
+# Advanced settings
+advanced:
+  port_scan_timeout: 5  # seconds for port availability checks
+  process_discovery_timeout: 10  # seconds for process discovery
+  conflict_resolution_timeout: 30  # seconds for conflict resolution
+  max_concurrent_operations: 5
+  enable_process_monitoring: true
+  enable_resource_monitoring: true
+  resource_threshold:
+    cpu_percent: 80
+    memory_percent: 85
+  
+# Security settings
+security:
+  allow_external_process_termination: false
+  require_confirmation_for_critical_operations: false
+  log_all_operations: true
+  audit_log_retention_days: 30
+
+# Development settings
+development:
+  debug_mode: false
+  verbose_logging: false
+  dry_run_mode: false  # If true, only log what would be done
+  enable_experimental_features: false
