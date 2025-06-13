@@ -29,7 +29,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
   const [error, setError] = useState<string | null>(null);
 
   const wsRef = useRef<WebSocket | null>(null);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const reconnectTimeoutRef = useRef<number | null>(null);
   const reconnectCountRef = useRef(0);
   const mountedRef = useRef(true);
 

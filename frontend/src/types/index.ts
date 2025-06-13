@@ -113,9 +113,20 @@ export interface ChatMessage {
 
 export interface ChatResponse {
   content: string;
-  provider: string;
-  tokens_used: number;
-  generation_time: number;
+  provider?: string;
+  tokens_used?: number;
+  generation_time?: number;
+  agentName?: string;
+  agentType?: string;
+  type?: string;
+  metadata?: {
+    confidence?: number;
+    processingTime?: number;
+    tokens?: number;
+    cost?: number;
+    model?: string;
+    temperature?: number;
+  };
 }
 
 // Engine types

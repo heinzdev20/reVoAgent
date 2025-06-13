@@ -12,9 +12,10 @@ import {
 // Import our hooks and services
 import { useDashboardStats, useAgents, useSystemMetrics, useHealthCheck, useConnectionStatus } from '../hooks/useApi';
 import { useDashboardWebSocket } from '../hooks/useWebSocket';
+import ResponsiveAIChatInterface from './ResponsiveAIChatInterface';
 
 const FullReVoDashboard = () => {
-  const [activeView, setActiveView] = useState('dashboard');
+  const [activeView, setActiveView] = useState('chat');
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   // Use our custom hooks for real data
@@ -600,6 +601,35 @@ const FullReVoDashboard = () => {
         return <DashboardView />;
       case 'agents':
         return <AgentsView />;
+      case 'chat':
+        return <ResponsiveAIChatInterface />;
+      case 'memory':
+        return (
+          <div className="p-6">
+            <h2 className="text-2xl font-bold text-white mb-6">🧠 Memory Center</h2>
+            <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20">
+              <p className="text-gray-300">Memory management interface coming soon...</p>
+            </div>
+          </div>
+        );
+      case 'parallel':
+        return (
+          <div className="p-6">
+            <h2 className="text-2xl font-bold text-white mb-6">⚡ Parallel Processing</h2>
+            <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20">
+              <p className="text-gray-300">Parallel processing dashboard coming soon...</p>
+            </div>
+          </div>
+        );
+      case 'creative':
+        return (
+          <div className="p-6">
+            <h2 className="text-2xl font-bold text-white mb-6">🎨 Creative Innovation</h2>
+            <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20">
+              <p className="text-gray-300">Creative engine interface coming soon...</p>
+            </div>
+          </div>
+        );
       default:
         return (
           <div className="p-6">
