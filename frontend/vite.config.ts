@@ -17,7 +17,9 @@ export default defineConfig({
       'localhost',
       '127.0.0.1',
       'work-1-dziuemnamvipshbv.prod-runtime.all-hands.dev',
-      'work-2-dziuemnamvipshbv.prod-runtime.all-hands.dev'
+      'work-2-dziuemnamvipshbv.prod-runtime.all-hands.dev',
+      'work-1-ydgjvxkllrvmrvce.prod-runtime.all-hands.dev',
+      'work-2-ydgjvxkllrvmrvce.prod-runtime.all-hands.dev'
     ],
     proxy: {
       '/api': {
